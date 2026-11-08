@@ -65,6 +65,109 @@ class Comunidad(models.Model):
         return self.nombre
 
 
+class HuertoReal(models.Model):
+    class Diseno(models.TextChoices):
+        EN_TIERRA = "en_tierra", "En tierra (surcos, camadas, camellones o terrazas)"
+        VERTICAL = "vertical", "Vertical (paredes)"
+        COLGANTE = "colgante", "Colgante (techos)"
+        PISO = "piso", "En piso (maceteros, botellas, llantas)"
+
+    class Cerca(models.TextChoices):
+        VIVA = "viva", "Cerca viva (plantas protectoras)"
+        NATURAL = "natural", "Material natural (caña guadua, bahareque, tapial)"
+        RECICLADO = "reciclado", "Material reciclado (tablas, botellas, neumáticos)"
+        METALICA = "metalica", "Material metálico (alambre de púas)"
+        CONVENCIONAL = "convencional", "Material convencional (piedra, ladrillo, bloque)"
+
+    class Suelo(models.TextChoices):
+        ARCILLOSO = "arcilloso", "Arcilloso"
+        LIMOSO = "limoso", "Limoso"
+        ARENOSO = "arenoso", "Arenoso"
+        MARGOSO = "margoso", "Margoso"
+        GREDOSO = "gredoso", "Gredoso"
+        PANTANOSO = "pantanoso", "Pantanoso"
+
+    class AguaRiego(models.TextChoices):
+        RIO = "rio", "Río"
+        CANAL = "canal", "Canal de riego"
+        GOTEO = "goteo", "Riego por goteo"
+        OTRO = "otro", "Otro"
+
+    class Abono(models.TextChoices):
+        BARBECHO = "barbecho", "Barbecho"
+        RESTOS_VEGETALES = "restos_vegetales", "Restos vegetales"
+        HOJA = "hoja", "Hoja"
+        COMPOST = "compost", "Compost"
+        OTRO = "otro", "Otro"
+
+    class UnidadArea(models.TextChoices):
+        M2 = "m2", "metros cuadrados"
+        HA = "ha", "hectáreas"
+
+    comunidad = models.OneToOneField(Comunidad, on_delete=models.CASCADE, related_name="huerto_real")
+    provincia = models.CharField("Provincia", max_length=80)
+    parroquia = models.CharField("Parroquia", max_length=100)
+    direccion = models.CharField(
+        "Dirección o referencia",
+        max_length=200,
+        help_text="Uso interno del establecimiento de salud; no se publica.",
+    )
+    latitud = models.DecimalField(
+        "Latitud",
+        max_digits=9,
+        decimal_places=6,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+    )
+    longitud = models.DecimalField(
+        "Longitud",
+        max_digits=9,
+        decimal_places=6,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+    )
+    tipo_diseno = models.CharField("Diseño del huerto", max_length=16, choices=Diseno)
+    tecnica_diseno = models.CharField(
+        "Técnica específica",
+        max_length=120,
+        blank=True,
+        help_text="Por ejemplo: surcos, maceteros colgantes, botellas recicladas.",
+    )
+    tipo_cerca = models.CharField("Cerca de seguridad", max_length=16, choices=Cerca)
+    detalle_cerca = models.CharField(
+        "Detalle de la cerca",
+        max_length=150,
+        blank=True,
+        help_text="Por ejemplo: higuerilla, floripondio, caña guadua.",
+    )
+    area_total = models.DecimalField("Área total", max_digits=8, decimal_places=2)
+    unidad_area = models.CharField(max_length=4, choices=UnidadArea, default=UnidadArea.M2)
+    tipo_suelo = models.CharField("Tipo de suelo", max_length=16, choices=Suelo)
+    tipo_agua_riego = models.CharField("Agua de riego", max_length=16, choices=AguaRiego)
+    detalle_riego = models.CharField("Detalle del riego", max_length=150, blank=True)
+    tipo_abono = models.CharField("Abono natural", max_length=20, choices=Abono)
+    detalle_abono = models.CharField("Detalle del abono", max_length=150, blank=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Huerto real: {self.comunidad}"
+
+
+class Bodega(models.Model):
+    huerto_real = models.OneToOneField(HuertoReal, on_delete=models.CASCADE, related_name="bodega")
+    tiene_espacio_herramientas = models.BooleanField("Espacio para herramientas e implementos", default=False)
+    detalle_herramientas = models.CharField(max_length=150, blank=True)
+    tiene_espacio_semillas = models.BooleanField(
+        "Espacio para semillas, estacas, esquejes o plántulas",
+        default=False,
+    )
+    detalle_semillas = models.CharField(max_length=150, blank=True)
+    tiene_espacio_abonos = models.BooleanField("Espacio para abonos orgánicos y compost", default=False)
+    detalle_abonos = models.CharField(max_length=150, blank=True)
+
+    def __str__(self):
+        return f"Bodega: {self.huerto_real.comunidad}"
+
+
 class Miembro(models.Model):
     class Estado(models.TextChoices):
         SOLICITADA = "solicitada", "Solicitud enviada"

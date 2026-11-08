@@ -11,7 +11,9 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
+from .forms import BodegaForm
 from .forms import ComunidadForm
+from .forms import HuertoRealForm
 from .forms import SolicitudMiembroForm
 from .models import CertificacionTalento
 from .models import Comunidad
@@ -131,6 +133,36 @@ def retirar(request, pk):
         ("La comunidad ya no está publicada. Se conserva el registro de la solicitud."),
     )
     return redirect("comunidades:propias")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def huerto_real(request, pk):
+    comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
+    huerto = getattr(comunidad, "huerto_real", None)
+    bodega = getattr(huerto, "bodega", None) if huerto else None
+    huerto_form = HuertoRealForm(request.POST or None, instance=huerto)
+    bodega_form = BodegaForm(request.POST or None, instance=bodega)
+    if request.method == "POST" and huerto_form.is_valid() and bodega_form.is_valid():
+        with transaction.atomic():
+            huerto = huerto_form.save(commit=False)
+            huerto.comunidad = comunidad
+            huerto.save()
+            bodega = bodega_form.save(commit=False)
+            bodega.huerto_real = huerto
+            bodega.save()
+            EventoComunidad.objects.create(
+                comunidad=comunidad,
+                actor=request.user,
+                accion="huerto_real_actualizado",
+            )
+        messages.success(request, "Huerto real actualizado.")
+        return redirect("comunidades:detalle", pk=comunidad.pk)
+    return render(
+        request,
+        "comunidades/huerto_real.html",
+        {"comunidad": comunidad, "huerto_form": huerto_form, "bodega_form": bodega_form},
+    )
 
 
 @login_required

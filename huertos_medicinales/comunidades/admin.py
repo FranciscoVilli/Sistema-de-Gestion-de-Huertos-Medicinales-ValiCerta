@@ -56,7 +56,16 @@ class EventoComunidadAdmin(SoloLectura):
     list_display = ["comunidad", "actor", "accion", "creado"]
 
 # Forum moderation never rewrites authorship or grants public location consent.
-from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido, Miembro, CertificacionTalento
+from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido, Miembro, CertificacionTalento, HuertoReal, Bodega
+
+@admin.register(HuertoReal)
+class HuertoRealAdmin(SoloLectura):
+    list_display = ["comunidad", "tipo_diseno", "tipo_suelo", "area_total", "actualizado"]
+    list_filter = ["tipo_diseno", "tipo_suelo"]
+
+@admin.register(Bodega)
+class BodegaAdmin(SoloLectura):
+    list_display = ["huerto_real", "tiene_espacio_herramientas", "tiene_espacio_semillas", "tiene_espacio_abonos"]
 
 @admin.register(Miembro)
 class MiembroAdmin(SoloLectura):
