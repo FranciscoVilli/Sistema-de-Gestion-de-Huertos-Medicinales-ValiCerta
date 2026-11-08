@@ -26,4 +26,7 @@
 .plant-bubble-text{font-size:14px;line-height:1.6;color:#42594d;margin:0 0 10px}
 .plant-bubble-link{font-size:13px}
 .plant-illustration-caption{text-align:center;font-size:12px;color:#4c6255;margin-top:16px}
+.badge-caliente,.badge-fria{display:inline-block;border-radius:12px;padding:3px 9px;font-size:12px;font-weight:600}
+.badge-caliente{background:#fbe1dd;color:#9c3a26}
+.badge-fria{background:#e3f0e4;color:#2d5a3a;border:1px solid #cfe4d1}
 @media(max-width:480px){.plant-illustration{padding:42px 14px}.plant-tag{font-size:12px;padding:7px 11px}}

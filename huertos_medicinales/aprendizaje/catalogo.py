@@ -2,11 +2,51 @@
 
 XP_POR_LECCION = 25
 NIVELES = ((0, "Aprendiz"), (75, "Oficial"), (150, "Maestro"))
+
+# Clasificación "caliente"/"fría" por medicina andina: Cachiguango, Luis Enrique
+# (2012), Herbolaria simbólica andina, citado en Ministerio de Salud Pública del
+# Ecuador, Implementación de huertos medicinales en los establecimientos de
+# salud del primer nivel de atención. Lineamientos (2017, elaborado por la
+# DNSI en 2016), tabla "Plantas calientes / Plantas frescas", p. 73-74. Solo se
+# asigna cuando esa fuente (u otra equivalente) la confirma explícitamente;
+# si no, el campo queda vacío en vez de asumirse.
+PROVINCIAS_SIERRA = (
+    "Pichincha", "Carchi", "Imbabura", "Cotopaxi", "Tungurahua",
+    "Bolívar", "Chimborazo", "Cañar", "Azuay", "Loja",
+)
+FUENTE_SIERRA_NOMBRE = "MSP Ecuador (2017), Lineamientos de huertos medicinales, p. 20"
+FUENTE_SIERRA_URL = (
+    "https://www.salud.gob.ec/wp-content/uploads/2022/09/"
+    "MSP-Lineamientos-implementaci%D0%B2n-huertos-medicinales-PNA-2017-2.pdf"
+)
+# Umbral días->ciclo: el mismo documento describe el ciclo corto como de 6 a 8
+# semanas (42-56 días: lavanda, salvia, menta, ortiga, manzanilla) frente al
+# ciclo largo (cedrón, romero, laurel, marco), p. 49. Se deriva de
+# "dias_madurez" en vez de guardarse por planta para no requerir una fuente
+# nueva cada vez que se agregue una especie.
+UMBRAL_CICLO_CORTO_DIAS = 63
+
+
+def ciclo(planta):
+    return "corto" if planta["dias_madurez"] <= UMBRAL_CICLO_CORTO_DIAS else "largo"
+
+
 PLANTAS = (
     {
         "slug": "manzanilla",
         "nombre": "Manzanilla",
         "nombre_cientifico": "Matricaria chamomilla",
+        "otros_nombres": (),
+        "familia_botanica": "Asteraceae",
+        "provincias": PROVINCIAS_SIERRA,
+        "fuente_distribucion_nombre": FUENTE_SIERRA_NOMBRE,
+        "fuente_distribucion_url": FUENTE_SIERRA_URL,
+        "temperatura": "caliente",
+        "fuente_temperatura_nombre": (
+            "Cachiguango (2012), Herbolaria simbólica andina, cit. en MSP "
+            "Ecuador (2017), p. 73"
+        ),
+        "fuente_temperatura_url": FUENTE_SIERRA_URL,
         "xp": XP_POR_LECCION,
         "nota": "Tu primera ficha de aprendizaje.",
         "descripcion": (
@@ -41,6 +81,17 @@ PLANTAS = (
         "slug": "menta",
         "nombre": "Menta",
         "nombre_cientifico": "Mentha spicata",
+        "otros_nombres": ("Hierbabuena",),
+        "familia_botanica": "Lamiaceae",
+        "provincias": PROVINCIAS_SIERRA,
+        "fuente_distribucion_nombre": FUENTE_SIERRA_NOMBRE,
+        "fuente_distribucion_url": FUENTE_SIERRA_URL,
+        "temperatura": "caliente",
+        "fuente_temperatura_nombre": (
+            "Cachiguango (2012), Herbolaria simbólica andina, cit. en MSP "
+            "Ecuador (2017), p. 73 (\"Hierba buena y menta\")"
+        ),
+        "fuente_temperatura_url": FUENTE_SIERRA_URL,
         "xp": 50,
         "nota": "Otra planta para ampliar tus preguntas y observaciones.",
         "descripcion": (
@@ -71,6 +122,14 @@ PLANTAS = (
         "slug": "calendula",
         "nombre": "Caléndula",
         "nombre_cientifico": "Calendula officinalis",
+        "otros_nombres": (),
+        "familia_botanica": "Asteraceae",
+        "provincias": (),
+        "fuente_distribucion_nombre": "",
+        "fuente_distribucion_url": "",
+        "temperatura": "",
+        "fuente_temperatura_nombre": "",
+        "fuente_temperatura_url": "",
         "xp": 100,
         "nota": "Nuevas observaciones en tu camino de cultivo.",
         "descripcion": (
@@ -101,6 +160,17 @@ PLANTAS = (
         "slug": "romero",
         "nombre": "Romero",
         "nombre_cientifico": "Salvia rosmarinus",
+        "otros_nombres": (),
+        "familia_botanica": "Lamiaceae",
+        "provincias": PROVINCIAS_SIERRA,
+        "fuente_distribucion_nombre": FUENTE_SIERRA_NOMBRE,
+        "fuente_distribucion_url": FUENTE_SIERRA_URL,
+        "temperatura": "caliente",
+        "fuente_temperatura_nombre": (
+            "Cachiguango (2012), Herbolaria simbólica andina, cit. en MSP "
+            "Ecuador (2017), p. 73"
+        ),
+        "fuente_temperatura_url": FUENTE_SIERRA_URL,
         "xp": 150,
         "nota": "Una nueva ficha al completar esta ruta inicial.",
         "descripcion": (
@@ -129,6 +199,10 @@ PLANTAS = (
         "fuente_tiempos_url": "https://www.almanac.com/plant/rosemary",
     },
 )
+for _planta in PLANTAS:
+    _planta["ciclo"] = ciclo(_planta)
+del _planta
+
 LECCIONES = (
     {
         "slug": "conoce-tu-espacio",
