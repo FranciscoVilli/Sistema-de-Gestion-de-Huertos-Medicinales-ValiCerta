@@ -2,6 +2,7 @@ from django import forms
 from django.utils import timezone
 
 from .models import Devolucion
+from .models import Empaquetado
 from .models import Observacion
 from .models import Practica
 
@@ -40,7 +41,7 @@ class PracticaForm(forms.ModelForm):
 class ObservacionForm(forms.ModelForm):
     class Meta:
         model = Observacion
-        fields = ["fecha", "accion", "resultado", "pregunta", "foto"]
+        fields = ["fecha", "accion", "resultado", "pregunta", "foto", "video_url"]
         widgets = {
             "fecha": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
             **{
@@ -59,6 +60,20 @@ class ObservacionForm(forms.ModelForm):
             message = "Usa una fecha entre el inicio de la práctica y hoy."
             raise forms.ValidationError(message)
         return fecha
+
+
+class EmpaquetadoForm(forms.ModelForm):
+    class Meta:
+        model = Empaquetado
+        fields = [
+            "peso_gramos", "indicaciones", "dosificacion", "contraindicaciones",
+            "region", "fecha_empaquetado",
+        ]
+        widgets = {
+            "indicaciones": forms.Textarea(attrs={"rows": 3}),
+            "contraindicaciones": forms.Textarea(attrs={"rows": 3}),
+            "fecha_empaquetado": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+        }
 
 
 class DevolucionForm(forms.ModelForm):

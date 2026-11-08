@@ -44,3 +44,28 @@ def phase_on(day):
 
 def month_phases(month):
     return [dict(event) for event in events() if (event["date"].year,event["date"].month) == (month.year,month.month)]
+
+# Fases según conocimiento ancestral: MSP Ecuador (2017), Lineamientos de
+# huertos medicinales, p. 42-47 ("ritual de siembra en fase de luna creciente
+# o luna llena"; "si se va a utilizar las hojas, flores y frutos se cosecha
+# en fase de luna creciente o luna llena. Si se va a utilizar las semillas o
+# raíces se cosecha en cuarto menguante").
+CRECIENTE_O_LLENA = {"Luna creciente", "Cuarto creciente", "Gibosa creciente", "Luna llena"}
+MENGUANTE = {"Cuarto menguante", "Gibosa menguante", "Luna menguante"}
+
+def recomendacion(tipo, fecha, parte_usada=""):
+    fase = phase_on(fecha)
+    if fase is None:
+        return None
+    nombre = fase["name"]
+    if tipo == "preparacion":
+        ideal, detalle = nombre == "Luna nueva", "La preparación de la tierra se recomienda en luna nueva (oscura)."
+    elif tipo == "siembra":
+        ideal, detalle = nombre in CRECIENTE_O_LLENA, "La siembra se recomienda en luna creciente o luna llena."
+    elif tipo == "cosecha" and parte_usada == "hojas_flores_frutos":
+        ideal, detalle = nombre in CRECIENTE_O_LLENA, "La cosecha de hojas, flores o frutos se recomienda en luna creciente o luna llena."
+    elif tipo == "cosecha" and parte_usada == "semillas_raices":
+        ideal, detalle = nombre in MENGUANTE, "La cosecha de semillas o raíces se recomienda en cuarto menguante."
+    else:
+        return None
+    return dict(ideal=ideal, fase=nombre, icono=fase["icon"], detalle=detalle)

@@ -1,5 +1,5 @@
 import calendar
-from .lunar import phase_on, month_phases
+from .lunar import phase_on, month_phases, recomendacion
 from datetime import date
 from datetime import timedelta
 from urllib.parse import urlencode
@@ -20,7 +20,7 @@ from huertos_medicinales.seguimiento.models import Practica, Jardin
 class ActividadForm(forms.ModelForm):
     class Meta:
         model = ActividadCalendario
-        fields = ["practica", "tipo", "fecha", "hora", "notas"]
+        fields = ["practica", "tipo", "fecha", "hora", "tecnica", "propagacion", "parte_usada", "notas"]
         labels = {"practica": "Cultivo"}
         widgets = {"fecha": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}), "hora": forms.TimeInput(attrs={"type": "time"}), "notas": forms.Textarea(attrs={"rows": 3})}
 
@@ -87,7 +87,10 @@ def nueva(request, pk=None):
     if request.method == "POST" and form.is_valid():
         activity=form.save()
         return redirect(reverse("calendar")+"?dia="+activity.fecha.isoformat())
-    return render(request,"panel/calendario_form.html",{"form":form,"editing":instance is not None})
+    data = form.data if form.is_bound else form.initial
+    fecha_actual = parse_date(str(data.get("fecha","")), None)
+    luna = recomendacion(data.get("tipo",""), fecha_actual, data.get("parte_usada","")) if fecha_actual else None
+    return render(request,"panel/calendario_form.html",{"form":form,"editing":instance is not None,"luna":luna})
 
 
 @login_required

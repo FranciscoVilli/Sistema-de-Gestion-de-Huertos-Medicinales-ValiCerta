@@ -59,3 +59,24 @@ def test_complete_idempotent_and_permissions(client,data):
     assert client.get(reverse("calendar_edit",args=[f.pk])).status_code==404
     client.logout()
     assert client.get(reverse("calendar")).status_code==302
+
+def test_siembra_con_tecnica_propagacion_y_aviso_lunar(client,data):
+    p,foreign=data
+    from .lunar import events
+    llena=next(e for e in events() if e['phase']=='Full Moon')
+    payload={"practica":str(p.pk),"fecha":llena['date'].isoformat(),"tipo":"siembra","tecnica":"surcos","propagacion":"semilla"}
+    assert client.post(reverse("calendar_new"),payload).status_code==302
+    a=ActividadCalendario.objects.get(practica=p)
+    assert a.tecnica=="surcos" and a.propagacion=="semilla"
+    response=client.get(reverse("calendar_new"),{"dia":llena['date'].isoformat()})
+    assert response.context["luna"] is None  # formulario nuevo y vacio: "tipo" todavia no tiene valor
+    editar=client.get(reverse("calendar_edit",args=[a.pk]),{"dia":llena['date'].isoformat()})
+    assert editar.context["luna"]["ideal"] is True and editar.context["luna"]["fase"]=="Luna llena"
+
+def test_empaquetado_hereda_fecha_de_caducidad_por_region(client,data):
+    from huertos_medicinales.seguimiento.models import Empaquetado
+    p,foreign=data
+    sierra=Empaquetado.objects.create(practica=p,indicaciones="x",dosificacion="x",fecha_empaquetado=date(2026,1,1),region="sierra")
+    costa=Empaquetado.objects.create(practica=p,indicaciones="x",dosificacion="x",fecha_empaquetado=date(2026,1,1),region="costa")
+    assert sierra.fecha_caducidad==date(2027,1,1)
+    assert costa.fecha_caducidad==date(2026,6,30)

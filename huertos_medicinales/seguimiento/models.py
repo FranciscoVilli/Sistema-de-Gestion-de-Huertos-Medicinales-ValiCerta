@@ -123,6 +123,11 @@ class Observacion(models.Model):
         null=True,
         help_text="Opcional. Una foto que muestre el estado real de tu siembra.",
     )
+    video_url = models.URLField(
+        "Enlace a un video",
+        blank=True,
+        help_text="Opcional. Enlace a un video que muestre el crecimiento de tu siembra.",
+    )
     creada = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -168,11 +173,50 @@ class EventoPractica(models.Model):
 
 
 class ActividadCalendario(models.Model):
-    TIPOS = [("riego", "Riego"), ("revision", "Revisión"), ("foto", "Fotografía"), ("poda", "Poda"), ("cosecha", "Cosecha"), ("otro", "Otro cuidado")]
+    TIPOS = [
+        ("preparacion", "Preparación de la tierra"),
+        ("siembra", "Siembra"),
+        ("riego", "Riego"),
+        ("deshierbe_aporque", "Deshierbe y aporque"),
+        ("revision", "Revisión"),
+        ("foto", "Fotografía"),
+        ("poda", "Poda"),
+        ("cosecha", "Cosecha"),
+        ("secado", "Secado"),
+        ("empaquetado", "Empaquetado"),
+        ("otro", "Otro cuidado"),
+    ]
+    TECNICAS = [("surcos", "Surcos"), ("andenes", "Andenes o terrazas"), ("camellones", "Camellones")]
+    PROPAGACIONES = [("semilla", "Semilla"), ("estaca", "Estaca"), ("esqueje", "Esqueje"), ("plantula", "Plántula")]
+    PARTES = [
+        ("hojas_flores_frutos", "Hojas, flores o frutos"),
+        ("semillas_raices", "Semillas o raíces"),
+    ]
     practica = models.ForeignKey(Practica, on_delete=models.PROTECT, related_name="actividades_calendario")
-    tipo = models.CharField("Actividad", max_length=16, choices=TIPOS)
+    tipo = models.CharField("Actividad", max_length=18, choices=TIPOS)
     fecha = models.DateField("Fecha")
     hora = models.TimeField("Hora", blank=True, null=True)
+    tecnica = models.CharField(
+        "Técnica de siembra",
+        max_length=16,
+        choices=TECNICAS,
+        blank=True,
+        help_text="Solo para siembra.",
+    )
+    propagacion = models.CharField(
+        "Tipo de propagación",
+        max_length=16,
+        choices=PROPAGACIONES,
+        blank=True,
+        help_text="Solo para siembra.",
+    )
+    parte_usada = models.CharField(
+        "Parte de la planta a cosechar",
+        max_length=20,
+        choices=PARTES,
+        blank=True,
+        help_text="Solo para cosecha.",
+    )
     notas = models.TextField("Indicaciones", max_length=1500, blank=True)
     completada = models.BooleanField(default=False)
     completada_en = models.DateTimeField(null=True, blank=True)
@@ -182,3 +226,38 @@ class ActividadCalendario(models.Model):
 
     class Meta:
         ordering = ["fecha", "hora", "pk"]
+
+
+class Empaquetado(models.Model):
+    class Region(models.TextChoices):
+        SIERRA = "sierra", "Sierra"
+        COSTA = "costa", "Costa"
+        AMAZONIA = "amazonia", "Amazonía"
+
+    DIAS_CADUCIDAD = {Region.SIERRA: 365, Region.COSTA: 180, Region.AMAZONIA: 180}
+
+    practica = models.ForeignKey(Practica, on_delete=models.PROTECT, related_name="empaquetados")
+    peso_gramos = models.PositiveIntegerField(
+        "Peso del contenido (gramos)",
+        default=100,
+        help_text="El empacado tradicional es de 100 gramos por unidad.",
+    )
+    indicaciones = models.TextField("Indicaciones de uso", max_length=1000)
+    dosificacion = models.CharField("Dosificación", max_length=200)
+    contraindicaciones = models.TextField("Contraindicaciones", max_length=1000, blank=True)
+    region = models.CharField("Región de almacenaje", max_length=10, choices=Region, default=Region.SIERRA)
+    fecha_empaquetado = models.DateField("Fecha de empaquetado")
+    fecha_caducidad = models.DateField("Fecha de caducidad", editable=False)
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-fecha_empaquetado", "-pk"]
+
+    def __str__(self):
+        return f"Empaquetado: {self.practica} · {self.fecha_empaquetado}"
+
+    def save(self, *args, **kwargs):
+        from datetime import timedelta
+
+        self.fecha_caducidad = self.fecha_empaquetado + timedelta(days=self.DIAS_CADUCIDAD[self.region])
+        super().save(*args, **kwargs)

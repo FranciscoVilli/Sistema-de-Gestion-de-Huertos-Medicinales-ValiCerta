@@ -11,6 +11,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
 from .forms import DevolucionForm
+from .forms import EmpaquetadoForm
 from .forms import ObservacionForm
 from .forms import PracticaForm
 from .models import EventoPractica
@@ -200,6 +201,42 @@ def editar(request, pk):
         request,
         "seguimiento/formulario.html",
         {"form": form, "titulo": "Editar datos de la práctica", "practica": practica},
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def empaquetar(request, pk):
+    practica = get_object_or_404(Practica, pk=pk, participante=request.user)
+    form = EmpaquetadoForm(
+        request.POST or None,
+        initial={"fecha_empaquetado": timezone.localdate()},
+    )
+    if request.method == "POST" and form.is_valid():
+        with transaction.atomic():
+            registro = form.save(commit=False)
+            registro.practica = practica
+            registro.save()
+            EventoPractica.objects.create(
+                practica=practica,
+                actor=request.user,
+                accion="empaquetado",
+                detalle={
+                    "id": registro.pk,
+                    "fecha_empaquetado": str(registro.fecha_empaquetado),
+                    "fecha_caducidad": str(registro.fecha_caducidad),
+                    "region": registro.region,
+                },
+            )
+        messages.success(
+            request,
+            f"Empaquetado registrado. Caduca el {registro.fecha_caducidad:%d/%m/%Y}.",
+        )
+        return redirect("seguimiento:detalle", pk=pk)
+    return render(
+        request,
+        "seguimiento/empaquetar.html",
+        {"practica": practica, "form": form},
     )
 
 

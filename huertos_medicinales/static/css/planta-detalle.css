@@ -14,6 +14,9 @@
 .home-botanical .plant-dialog .plant-facts dt{font:600 12px Arial,sans-serif;color:#444154}
 .home-botanical .plant-dialog .plant-facts dd{font:13px Arial,sans-serif;min-width:0;overflow-wrap:normal}
 .home-botanical .plant-dialog .plant-highlight p,.home-botanical .plant-dialog .plant-identity>p{color:#494656}
+.badge-caliente,.badge-fria{display:inline-block;border-radius:12px;padding:3px 9px;font-size:12px;font-weight:600}
+.badge-caliente{background:#fbe1dd;color:#9c3a26}
+.badge-fria{background:#e3f0e4;color:#2d5a3a;border:1px solid #cfe4d1}
 html:has(#plant-detail:modal){overflow:hidden}
 
 .medicinal-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}.medicinal-cards article{display:flex;align-items:flex-start;gap:12px;background:#f6f3f2;border:1px solid #eee9ed;border-radius:18px;padding:18px}.medicinal-cards h4{font:700 19px/1.2 Georgia,serif;margin:0 0 8px;color:#30283e}.medicinal-cards p{font:14px/1.5 Arial,sans-serif;color:#514b5c;margin:9px 0 0}.medicinal-symbol{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;background:#fffafd;border-radius:50%;color:#9670ae;font-size:28px}.evidence-label{display:inline-block;font-size:10px;line-height:1.4;padding:4px 7px;border-radius:12px;background:#eae0f0;color:#65407b}.plant-info-note p{font:14px/1.5 Arial;margin:7px 0 0}.medicinal-sources{font-size:12px;margin-top:20px;color:#73677c}.medicinal-sources summary{cursor:pointer;min-height:30px}.medicinal-precautions{background:#fff2dd;padding:20px;border-radius:16px;color:#73522c}.medicinal-precautions p{margin:0;font-size:14px;line-height:1.6}.home-botanical .plant-dialog .plant-facts dd{max-width:58%;line-height:1.5}.plant-tab-panel .plant-care-row+.plant-primary{margin-bottom:22px}
