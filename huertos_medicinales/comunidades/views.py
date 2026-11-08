@@ -12,8 +12,11 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
 from .forms import ComunidadForm
+from .forms import SolicitudMiembroForm
+from .models import CertificacionTalento
 from .models import Comunidad
 from .models import EventoComunidad
+from .models import Miembro
 
 
 def _mapa_comunidades():
@@ -128,3 +131,123 @@ def retirar(request, pk):
         ("La comunidad ya no está publicada. Se conserva el registro de la solicitud."),
     )
     return redirect("comunidades:propias")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def solicitar_membresia(request, pk):
+    comunidad = get_object_or_404(Comunidad, pk=pk, estado=Comunidad.Estado.PUBLICADA)
+    existente = getattr(request.user, "membresia", None)
+    if existente and existente.estado != Miembro.Estado.RETIRADA:
+        messages.error(
+            request,
+            "Ya perteneces a una comunidad. Retírate de ella antes de solicitar unirte a otra.",
+        )
+        return redirect("comunidades:detalle", pk=comunidad.pk)
+    form = SolicitudMiembroForm(request.POST or None, instance=existente)
+    if request.method == "POST" and form.is_valid():
+        with transaction.atomic():
+            miembro = form.save(commit=False)
+            miembro.usuario = request.user
+            miembro.comunidad = comunidad
+            miembro.estado = Miembro.Estado.SOLICITADA
+            miembro.save()
+            EventoComunidad.objects.create(
+                comunidad=comunidad,
+                actor=request.user,
+                accion="miembro_solicitado",
+            )
+        messages.success(
+            request,
+            "Solicitud enviada. El responsable de la comunidad la revisará.",
+        )
+        return redirect("comunidades:detalle", pk=comunidad.pk)
+    return render(
+        request,
+        "comunidades/solicitar_membresia.html",
+        {"comunidad": comunidad, "form": form},
+    )
+
+
+@login_required
+def gestionar_miembros(request, pk):
+    comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
+    miembros = comunidad.miembros.select_related("usuario").prefetch_related("talentos")
+    return render(
+        request,
+        "comunidades/gestionar_miembros.html",
+        {
+            "comunidad": comunidad,
+            "solicitudes": miembros.filter(estado=Miembro.Estado.SOLICITADA),
+            "aprobados": miembros.filter(estado=Miembro.Estado.APROBADA),
+        },
+    )
+
+
+@login_required
+@require_POST
+def decidir_miembro(request, pk, miembro_pk):
+    accion = request.POST.get("accion")
+    with transaction.atomic():
+        comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
+        miembro = get_object_or_404(
+            Miembro.objects.select_for_update(),
+            pk=miembro_pk,
+            comunidad=comunidad,
+            estado=Miembro.Estado.SOLICITADA,
+        )
+        if accion == "aprobar":
+            miembro.estado = Miembro.Estado.APROBADA
+            registro = "miembro_aprobado"
+            texto = "Miembro aprobado."
+        else:
+            miembro.estado = Miembro.Estado.RETIRADA
+            registro = "miembro_rechazado"
+            texto = "Solicitud rechazada."
+        miembro.save(update_fields=["estado", "actualizado"])
+        EventoComunidad.objects.create(comunidad=comunidad, actor=request.user, accion=registro)
+    messages.success(request, texto)
+    return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+
+
+@login_required
+@require_POST
+def retirar_miembro(request, pk, miembro_pk):
+    with transaction.atomic():
+        comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
+        miembro = get_object_or_404(
+            Miembro.objects.select_for_update(),
+            pk=miembro_pk,
+            comunidad=comunidad,
+            estado=Miembro.Estado.APROBADA,
+        )
+        miembro.estado = Miembro.Estado.RETIRADA
+        miembro.save(update_fields=["estado", "actualizado"])
+        EventoComunidad.objects.create(comunidad=comunidad, actor=request.user, accion="miembro_retirado")
+    messages.success(request, "Miembro retirado de la comunidad.")
+    return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+
+
+@login_required
+@require_POST
+def proponer_talento(request, pk, miembro_pk):
+    talento = request.POST.get("talento", "").strip()[:80]
+    comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
+    miembro = get_object_or_404(
+        Miembro,
+        pk=miembro_pk,
+        comunidad=comunidad,
+        estado=Miembro.Estado.APROBADA,
+    )
+    if talento:
+        ya_existe = CertificacionTalento.objects.filter(
+            miembro=miembro,
+            talento=talento,
+            estado__in=[CertificacionTalento.Estado.PROPUESTA, CertificacionTalento.Estado.CERTIFICADA],
+        ).exists()
+        if ya_existe:
+            messages.info(request, "Ese talento ya está propuesto o certificado para este miembro.")
+        else:
+            CertificacionTalento.objects.create(miembro=miembro, talento=talento, propuesto_por=request.user)
+            messages.success(request, "Talento propuesto. Queda pendiente de certificación.")
+    return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)

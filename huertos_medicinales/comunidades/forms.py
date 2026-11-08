@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import Comunidad
+from .models import Miembro
 
 
 class ComunidadForm(forms.ModelForm):
@@ -38,3 +39,15 @@ class ComunidadForm(forms.ModelForm):
                 "aproximada, no un acceso exacto."
             ),
         }
+
+
+class SolicitudMiembroForm(forms.ModelForm):
+    confirmar_solicitud = forms.BooleanField(
+        label="Solicito unirme a esta comunidad",
+        required=True,
+    )
+
+    class Meta:
+        model = Miembro
+        fields = ["fecha_nacimiento", "genero"]
+        widgets = {"fecha_nacimiento": forms.DateInput(attrs={"type": "date"})}

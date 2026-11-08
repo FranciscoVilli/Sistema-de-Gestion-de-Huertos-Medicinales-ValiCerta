@@ -20,4 +20,9 @@ urlpatterns = [
     path("registrar/", views.crear, name="crear"),
     path("<uuid:pk>/", views.detalle, name="detalle"),
     path("<uuid:pk>/retirar/", views.retirar, name="retirar"),
+    path("<uuid:pk>/unirme/", views.solicitar_membresia, name="solicitar_membresia"),
+    path("<uuid:pk>/miembros/", views.gestionar_miembros, name="gestionar_miembros"),
+    path("<uuid:pk>/miembros/<int:miembro_pk>/decidir/", views.decidir_miembro, name="decidir_miembro"),
+    path("<uuid:pk>/miembros/<int:miembro_pk>/retirar/", views.retirar_miembro, name="retirar_miembro"),
+    path("<uuid:pk>/miembros/<int:miembro_pk>/talento/", views.proponer_talento, name="proponer_talento"),
 ]

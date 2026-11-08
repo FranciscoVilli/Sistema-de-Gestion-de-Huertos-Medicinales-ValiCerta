@@ -65,6 +65,80 @@ class Comunidad(models.Model):
         return self.nombre
 
 
+class Miembro(models.Model):
+    class Estado(models.TextChoices):
+        SOLICITADA = "solicitada", "Solicitud enviada"
+        APROBADA = "aprobada", "Miembro aprobado"
+        RETIRADA = "retirada", "Retirado de la comunidad"
+
+    class Genero(models.TextChoices):
+        FEMENINO = "femenino", "Femenino"
+        MASCULINO = "masculino", "Masculino"
+        OTRO = "otro", "Otro"
+        PREFIERE_NO_DECIR = "prefiere_no_decir", "Prefiere no decir"
+
+    class Nivel(models.TextChoices):
+        APRENDIZ = "aprendiz", "Aprendiz"
+        OFICIAL = "oficial", "Oficial"
+        MAESTRO = "maestro", "Maestro"
+
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="membresia")
+    comunidad = models.ForeignKey(Comunidad, on_delete=models.PROTECT, related_name="miembros")
+    fecha_nacimiento = models.DateField("Fecha de nacimiento")
+    genero = models.CharField("Género", max_length=20, choices=Genero, blank=True)
+    estado = models.CharField(max_length=16, choices=Estado, default=Estado.SOLICITADA, db_index=True)
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["comunidad_id", "usuario_id"]
+
+    def __str__(self):
+        return f"{self.usuario}: {self.comunidad}"
+
+    @property
+    def puntos(self):
+        # Se conecta a las actividades reales de cultivo en la Fase E.
+        return 0
+
+    @property
+    def nivel(self):
+        return self.Nivel.APRENDIZ
+
+
+class CertificacionTalento(models.Model):
+    class Estado(models.TextChoices):
+        PROPUESTA = "propuesta", "Propuesta por la comunidad"
+        CERTIFICADA = "certificada", "Certificada"
+        RECHAZADA = "rechazada", "Rechazada"
+
+    miembro = models.ForeignKey(Miembro, on_delete=models.CASCADE, related_name="talentos")
+    talento = models.CharField("Talento", max_length=80)
+    estado = models.CharField(max_length=16, choices=Estado, default=Estado.PROPUESTA, db_index=True)
+    propuesto_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="talentos_propuestos",
+    )
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["miembro", "talento"],
+                condition=models.Q(estado__in=["propuesta", "certificada"]),
+                name="unique_active_member_talent",
+            ),
+        ]
+        ordering = ["-creado"]
+        permissions = [
+            ("certificar_talento", "Certificar o rechazar talentos propuestos"),
+        ]
+
+    def __str__(self):
+        return f"{self.talento}: {self.miembro}"
+
+
 class EventoComunidad(models.Model):
     comunidad = models.ForeignKey(
         Comunidad,

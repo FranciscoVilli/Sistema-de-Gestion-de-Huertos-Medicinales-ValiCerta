@@ -56,7 +56,35 @@ class EventoComunidadAdmin(SoloLectura):
     list_display = ["comunidad", "actor", "accion", "creado"]
 
 # Forum moderation never rewrites authorship or grants public location consent.
-from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido
+from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido, Miembro, CertificacionTalento
+
+@admin.register(Miembro)
+class MiembroAdmin(SoloLectura):
+    list_display = ["usuario", "comunidad", "estado", "creado"]
+    list_filter = ["estado", "comunidad"]
+
+@admin.register(CertificacionTalento)
+class CertificacionTalentoAdmin(SoloLectura):
+    list_display = ["talento", "miembro", "estado", "propuesto_por", "creado"]
+    list_filter = ["estado"]
+    actions = ["certificar", "rechazar"]
+
+    def has_review_permission(self, request):
+        return request.user.has_perm("comunidades.certificar_talento")
+
+    @admin.action(description="Certificar talentos propuestos", permissions=["review"])
+    def certificar(self, request, queryset):
+        count = queryset.filter(estado=CertificacionTalento.Estado.PROPUESTA).update(
+            estado=CertificacionTalento.Estado.CERTIFICADA,
+        )
+        self.message_user(request, f"{count} talentos certificados.")
+
+    @admin.action(description="Rechazar talentos propuestos", permissions=["review"])
+    def rechazar(self, request, queryset):
+        count = queryset.filter(estado=CertificacionTalento.Estado.PROPUESTA).update(
+            estado=CertificacionTalento.Estado.RECHAZADA,
+        )
+        self.message_user(request, f"{count} talentos rechazados.")
 
 class ModeracionComunitaria(SoloLectura):
     actions = ['retirar_publicaciones']
