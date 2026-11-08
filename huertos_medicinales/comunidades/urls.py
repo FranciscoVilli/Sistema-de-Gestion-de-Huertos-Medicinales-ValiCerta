@@ -5,6 +5,7 @@ from . import views, community
 app_name = "comunidades"
 urlpatterns = [
     path("", community.hub, name="listado"),
+    path("reglas/", community.reglas, name="reglas"),
     path("iniciativas/", views.listado, name="iniciativas"),
     path("mapa/datos/", community.map_data, name="map_data"),
     path("preguntas/nueva/", community.question_edit, name="nueva_pregunta"),

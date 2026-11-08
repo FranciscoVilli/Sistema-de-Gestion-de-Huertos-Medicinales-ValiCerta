@@ -72,6 +72,10 @@ def test_fragments_and_consent(client,people):
  client.post(reverse('privacidad:guardar_cookies'),{'eleccion':'mapas'})
  r=client.get(reverse('comunidades:listado'));assert b'vendor/leaflet/leaflet.js' in r.content
 
+def test_reglas_publicas_y_enlazadas(client):
+ r=client.get(reverse('comunidades:reglas'));assert r.status_code==200 and b'Reglas de participaci' in r.content
+ assert reverse('comunidades:reglas').encode() in client.get(reverse('comunidades:listado')).content
+
 def test_demo_data_is_labeled_idempotent_and_separate(people,settings):
  from django.core.management import call_command
  from django.contrib.auth import get_user_model

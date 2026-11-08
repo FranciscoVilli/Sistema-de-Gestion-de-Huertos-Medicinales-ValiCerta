@@ -13,6 +13,9 @@ from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido
 from .community_forms import PreguntaForm, RespuestaForm, PerfilForm, CompartirForm, fingerprint
 
 
+def reglas(request):
+    return render(request,'comunidades/reglas.html')
+
 def public_name(user):
     profile=getattr(user,'perfil_comunitario',None)
     return profile.nombre if profile and profile.visible else f'Cultivador {user.pk}'
