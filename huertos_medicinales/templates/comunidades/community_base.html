@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Comunidad y mapa · Huertos Medicinales{% endblock %}
+{% block bodyclass %}home-botanical community-botanical{% endblock %}
+{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/inicio-botanico.css' %}"><link rel="stylesheet" href="{% static 'css/community.css' %}">{% if mapas_permitidos %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endif %}{% endblock %}
+{% block inline_javascript %}{% if mapas_permitidos %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>{% endif %}<script src="{% static 'js/community.js' %}" defer></script>{% endblock %}

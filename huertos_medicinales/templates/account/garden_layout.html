@@ -1,0 +1,14 @@
+{% load static %}<!doctype html>
+<html lang="es-EC"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f2f5ec"><title>{% block title %}Iniciar sesión · Huertos Medicinales{% endblock %}</title><link rel="icon" href="{% static 'images/huertos/semilla.svg' %}"><link rel="stylesheet" href="{% static 'css/garden-login.css' %}"><script defer src="{% static 'js/entrada-botanica.js' %}"></script><script defer src="{% static 'js/garden-login.js' %}"></script><link rel="stylesheet" href="{% static 'css/cookies-ui.css' %}"><link rel="stylesheet" href="{% static 'css/account-ui.css' %}"></head>
+<body><a class="skip" href="#login">Saltar al inicio de sesión</a>
+{% include 'components/icons.html' %}<svg class="icon-sprite" aria-hidden="true"><defs><symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></symbol></defs></svg>
+<main class="garden-shell">
+<section class="login-panel" id="login" aria-label="Inicio de sesión">
+<a class="brand" href="{% url 'home' %}"><span class="brand-emblem"><svg aria-hidden="true"><use href="#i-sprout"/></svg></span><span><strong>Huertos Medicinales</strong><small>APRENDER · CULTIVAR · COMPARTIR</small></span></a>
+<div class="form-content">{% if messages %}{% for message in messages %}<p class="notice" role="status">{{ message }}</p>{% endfor %}{% endif %}{% block content %}{% endblock %}</div>
+<nav class="legal" aria-label="Información legal"><a href="{% url 'privacidad:aviso' %}">Privacidad</a><span>·</span><a href="{% url 'privacidad:condiciones' %}">Condiciones de uso</a></nav>
+</section>
+<aside class="garden-story" aria-label="Aprender, cultivar y compartir"><div class="story-heading"><h2>Conocimiento que cultiva bienestar</h2><div class="leaf-line" aria-hidden="true">──</div><p>Sigue el ciclo de tus plantas medicinales, aprende, registra y comparte con tu comunidad.</p></div>
+<div class="benefits"><div class="benefit"><span><svg aria-hidden="true"><use href="#i-book"/></svg></span><div><h3>Aprende</h3></div></div><div class="benefit"><span><svg aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h3>Registra</h3></div></div><div class="benefit"><span><svg aria-hidden="true"><use href="#i-people"/></svg></span><div><h3>Comparte</h3></div></div></div>
+</aside></main>{% include 'privacidad/banner.html' %}{% block extra_body %}{% endblock %}</body></html>
+

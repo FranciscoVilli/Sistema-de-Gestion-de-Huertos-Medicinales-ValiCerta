@@ -1,0 +1,24 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Elegir planta · Espacio {{ posicion }}{% endblock %}
+{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/selector-plantas.css' %}">{% endblock %}
+{% block main %}
+<a class="text-link" href="{% url 'workspace' %}?jardin={{ jardin.pk }}">← Volver a {{ jardin.nombre }}</a>
+<section class="plant-picker" aria-labelledby="picker-title">
+<header class="picker-header"><div><h1 id="picker-title"><svg aria-hidden="true"><use href="#i-sprout"/></svg>Espacio {{ posicion }}</h1><span class="picker-status">{% if ocupado %}Espacio ocupado{% else %}Sin planta (libre){% endif %}</span></div><div class="picker-date"><svg aria-hidden="true"><use href="#i-calendar"/></svg><div>Inicio del registro:<time datetime="{{ hoy|date:'Y-m-d' }}">{{ hoy|date:'Y-m-d' }}</time></div></div></header>
+{% if error %}<p class="notice" role="alert">{{ error }}</p>{% endif %}
+{% if not ocupado %}
+<h2>Selecciona la planta para este espacio</h2>
+{% if plantas_disponibles %}
+<label class="picker-search"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="plant-search" placeholder="Buscar planta…" aria-label="Buscar entre tus plantas desbloqueadas"></label>
+<form method="post" id="plant-selection">{% csrf_token %}<input type="hidden" name="modo" value="seleccionar">
+<fieldset class="plant-options"><legend class="visually-hidden">Plantas desbloqueadas por tu aprendizaje</legend>
+{% for p in plantas_disponibles %}<label class="plant-choice" data-plant-name="{{ p.nombre }}"><input type="radio" name="planta" value="{{ p.slug }}" required {% if seleccion == p.slug %}checked{% endif %}><span class="plant-choice-card"><img src="{% static 'images/huertos/plantas/' %}{{ p.slug }}.png" alt="" loading="lazy"><span class="choice-check" aria-hidden="true">✓</span><strong>{{ p.nombre }}</strong></span></label>{% endfor %}
+</fieldset><p id="plant-no-results" hidden role="status">No hay plantas desbloqueadas con ese nombre.</p>
+<p class="picker-help">Estas especies están disponibles por las competencias que has aprobado.</p>
+<button class="assign-plant" type="submit"><svg aria-hidden="true"><use href="#i-sprout"/></svg>Asignar planta al Espacio {{ posicion }}</button>
+<p class="picker-note">El registro comienza hoy. Añade después la ubicación real, las observaciones y las fotos de tu siembra desde su seguimiento.</p>
+</form>
+{% else %}<div class="picker-empty"><svg aria-hidden="true"><use href="#i-book"/></svg><h3>Tu próxima planta empieza con lo que aprendes</h3><p>Completa los contenidos y aprueba las evaluaciones requeridas de una ruta por planta. Cuando la desbloquees, aparecerá aquí.</p><a class="assign-plant" href="{% url 'learning' %}">Continuar aprendiendo →</a></div>{% endif %}
+{% if existentes %}<details class="picker-existing"><summary>Colocar una de mis siembras existentes</summary><p>Se moverá a este espacio y conservará su fecha y su bitácora.</p><form method="post">{% csrf_token %}<input type="hidden" name="modo" value="existente"><div class="existing-options">{% for p in existentes %}<label><input type="radio" name="cultivo" value="{{ p.pk }}" required><img src="{% static p.imagen_referencia %}" alt=""><span><strong>{{ p.titulo }}</strong><small>{% if p.jardin %}{{ p.jardin.nombre }} · Espacio {{ p.posicion }}{% else %}Sin colocar{% endif %}</small></span></label>{% endfor %}</div><button class="assign-plant" type="submit">Mover al Espacio {{ posicion }}</button></form></details>{% endif %}
+{% endif %}</section>{% endblock %}
+{% block inline_javascript %}<script defer src="{% static 'js/selector-plantas.js' %}"></script>{% endblock %}

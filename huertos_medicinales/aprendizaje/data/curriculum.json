@@ -1,0 +1,979 @@
+{
+  "sources": {
+    "intro": [
+      "Plantas: evidencia y seguridad",
+      "NCCIH",
+      "https://www.nccih.nih.gov/health/herbsataglance"
+    ],
+    "botany": [
+      "Botánica",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/3-botany"
+    ],
+    "organs": [
+      "Órganos vegetativos",
+      "Oregon State University",
+      "https://extension.oregonstate.edu/catalog/em-9904-vegetative-plant-parts"
+    ],
+    "cycle": [
+      "Ciclos anuales, bienales y perennes",
+      "Oregon State University",
+      "https://extension.oregonstate.edu/catalog/em-9899-know-life-cycles-plants-annuals-biennials-perennials"
+    ],
+    "pots": [
+      "Cultivo en recipientes",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/18-plants-grown-in-containers"
+    ],
+    "soil": [
+      "Suelo y nutrientes",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/1-soils-and-plant-nutrients"
+    ],
+    "compost": [
+      "Compostaje",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/2-composting"
+    ],
+    "water": [
+      "Cuidados de plantas en recipientes",
+      "Iowa State University",
+      "https://yardandgarden.extension.iastate.edu/how-to/care-plants-growing-containers"
+    ],
+    "environment": [
+      "Factores ambientales del crecimiento",
+      "Oregon State University",
+      "https://extension.oregonstate.edu/catalog/em-9903-environmental-factors-affecting-plant-growth"
+    ],
+    "setup": [
+      "Preparar jardín y recipientes",
+      "University of Minnesota",
+      "https://extension.umn.edu/about/our-stories/news/starting-your-garden-and-containers-off-right"
+    ],
+    "seeds": [
+      "Semilleros en interiores",
+      "University of Minnesota",
+      "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/starting-seeds-indoors"
+    ],
+    "propagation": [
+      "Propagación vegetal",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/13-propagation"
+    ],
+    "transplant": [
+      "Preparar y trasplantar plántulas",
+      "Clemson University",
+      "https://hgic.clemson.edu/factsheet/starting-seeds-indoors/"
+    ],
+    "herbs": [
+      "Cultivar y mantener hierbas",
+      "Iowa State University",
+      "https://yardandgarden.extension.iastate.edu/how-to/growing-harvesting-and-drying-herbs"
+    ],
+    "moon": [
+      "Luna y jardinería",
+      "University of Illinois",
+      "https://extension.illinois.edu/blogs/garden-scoop/2022-04-16-lunar-influence-gardening"
+    ],
+    "insects": [
+      "Insectos y otros artrópodos",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/4-insects"
+    ],
+    "disease": [
+      "Enfermedades y trastornos",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/5-diseases-and-disorders"
+    ],
+    "diagnosis": [
+      "Diagnóstico vegetal",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/7-diagnostics"
+    ],
+    "ipm": [
+      "Manejo integrado de plagas",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/8-integrated-pest-management-ipm"
+    ],
+    "harvest": [
+      "Cómo cosechar hierbas",
+      "Iowa State University",
+      "https://yardandgarden.extension.iastate.edu/faq/how-do-i-harvest-herbs"
+    ],
+    "dry": [
+      "Cosecha y conservación de hierbas",
+      "University of Maryland",
+      "https://extension.umd.edu/resource/harvesting-and-preserving-herbs"
+    ],
+    "safety": [
+      "Uso responsable de suplementos",
+      "NCCIH",
+      "https://www.nccih.nih.gov/health/using-dietary-supplements-wisely"
+    ],
+    "chamomile": [
+      "Manzanilla: evidencia y seguridad",
+      "NCCIH",
+      "https://www.nccih.nih.gov/health/chamomile"
+    ],
+    "ecology": [
+      "Jardinería orgánica",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/17-organic-gardening"
+    ],
+    "records": [
+      "Planificación y registros del huerto",
+      "NC State Extension",
+      "https://content.ces.ncsu.edu/extension-gardener-handbook/16-vegetable-gardening"
+    ]
+  },
+  "chapters": [
+    {
+      "numero": 1,
+      "fuentes": [
+        "intro",
+        "chamomile"
+      ],
+      "imagen": "manzanilla",
+      "secciones": [
+        {
+          "titulo": "Qué significa medicinal",
+          "texto": "Una planta puede tener usos medicinales tradicionales y ser objeto de investigación. Esas dos situaciones no equivalen a demostrar que cualquier preparación sea eficaz o segura. Las fichas científicas separan lo que se ha estudiado de lo que todavía se desconoce."
+        },
+        {
+          "titulo": "Identidad y memoria de la comunidad",
+          "texto": "Antes de atribuirle un uso, identifica la especie. Registra el nombre local, el nombre científico confirmado y quién compartió el conocimiento. En este curso trataremos los relatos familiares como saberes que merecen documentarse, sin convertir un testimonio en una recomendación médica."
+        },
+        {
+          "titulo": "Aprender a leer la evidencia",
+          "texto": "Pregunta qué se investigó: la planta, un extracto o una preparación concreta. Un resultado sobre un producto no se puede trasladar automáticamente a todo lo que tenga el mismo nombre. En manzanilla, NCCIH describe incertidumbres e interacciones; su popularidad no elimina esas limitaciones."
+        },
+        {
+          "titulo": "Cultivar con un propósito responsable",
+          "texto": "Tu primera meta es reconocer, cultivar y observar. Crea una ficha con tres columnas: «sé», «fuente» y «necesito confirmar». Incluye una pregunta para una persona de la comunidad y otra para una fuente científica. No pruebes una planta para identificarla."
+        }
+      ],
+      "caso": "Una persona afirma: «Es tradicional, entonces es segura para cualquiera». ¿Cómo responderías?",
+      "opciones": [
+        "Revisaría especie, evidencia y precauciones antes de atribuirle seguridad.",
+        "La recomendaría a todas las personas.",
+        "Bastaría con olerla para confirmar su seguridad."
+      ],
+      "explicacion": "Un uso tradicional documenta una práctica; no demuestra seguridad universal.",
+      "verdadero": "Es útil distinguir un relato tradicional de una investigación.",
+      "falso": "Todas las preparaciones de una planta tienen efectos idénticos.",
+      "practica": "Elige una planta del catálogo y escribe una pregunta cultural y una pregunta científica. Busca quién podría ayudarte a responder cada una."
+    },
+    {
+      "numero": 2,
+      "fuentes": [
+        "organs",
+        "botany"
+      ],
+      "imagen": "anatomia",
+      "secciones": [
+        {
+          "titulo": "Raíz y tallo: sostén y transporte",
+          "texto": "Las raíces anclan y absorben agua y nutrientes minerales. El tallo sostiene hojas y flores y contiene tejidos de transporte. Sus nudos son puntos donde se insertan hojas o brotes; reconocerlos ayuda a describir la planta."
+        },
+        {
+          "titulo": "Hojas: una superficie activa",
+          "texto": "En las hojas ocurre gran parte de la fotosíntesis. Los estomas permiten intercambio gaseoso y participan en la pérdida de agua por transpiración. Una hoja no es únicamente un adorno: observa su forma, disposición, nervaduras y estado."
+        },
+        {
+          "titulo": "Flores, frutos y semillas",
+          "texto": "En las plantas con flores, estas participan en la reproducción sexual. Tras la fecundación pueden desarrollarse semillas y frutos. Una flor abierta no significa que ya existan semillas maduras. Usa esas diferencias al registrar una etapa."
+        },
+        {
+          "titulo": "Observar sin dañar",
+          "texto": "Mira una planta entera y luego un detalle. Dibuja una línea desde cada nombre hasta el órgano correspondiente. No arranques raíces para completar el ejercicio: usa el esquema. Separa lo visible de lo que solo puedes inferir."
+        }
+      ],
+      "caso": "Ves una hoja nueva saliendo de un punto del tallo. ¿Qué detalle registrarías?",
+      "opciones": [
+        "El nudo y la aparición del nuevo brote.",
+        "Que las raíces ya dejaron de funcionar.",
+        "Que obligatoriamente comenzó la cosecha."
+      ],
+      "explicacion": "Un brote visible permite describir crecimiento, pero no prueba cosecha ni estado de las raíces.",
+      "verdadero": "La raíz participa en la absorción de agua y minerales.",
+      "falso": "Una flor abierta demuestra que las semillas están maduras.",
+      "practica": "Haz dos dibujos: planta completa y detalle de una hoja. Rotula raíz, tallo, hoja y flor donde corresponda; marca lo que no puedes observar."
+    },
+    {
+      "numero": 3,
+      "fuentes": [
+        "cycle"
+      ],
+      "imagen": "ciclo",
+      "secciones": [
+        {
+          "titulo": "Del inicio al crecimiento",
+          "texto": "Germinación, desarrollo vegetativo y reproducción describen cambios de la planta. En una semilla que germina emerge la raíz inicial; después se desarrollan estructuras aéreas. Un esqueje comienza desde material vegetativo y no atraviesa una germinación de semilla."
+        },
+        {
+          "titulo": "Anual, bienal y perenne",
+          "texto": "Una anual completa su ciclo en una temporada de crecimiento; una bienal suele distribuirlo en dos; una perenne vive más de dos años. El comportamiento también depende del ambiente. Perennidad no significa floración continua ni ausencia de cuidados."
+        },
+        {
+          "titulo": "Madurez y cosecha no son sinónimos",
+          "texto": "La parte que se busca aprovechar cambia el momento de cosecha. En el sistema, la edad es tiempo transcurrido; la etapa observada exige evidencia. No cambies una observación real solo porque el dibujo o una estimación haya avanzado."
+        },
+        {
+          "titulo": "Construye una secuencia propia",
+          "texto": "Ordena fotografías de la misma planta por fecha. Escribe qué cambió entre dos imágenes, qué órgano lo muestra y qué todavía no aparece. Si no tienes fotos, practica con el esquema; no lo registres como evidencia de tu siembra."
+        }
+      ],
+      "caso": "El calendario estima floración, pero tu planta solo tiene hojas. ¿Qué registras?",
+      "opciones": [
+        "La etapa que observas y la diferencia con la estimación.",
+        "Una floración que no has visto.",
+        "Que el cultivo fracasó necesariamente."
+      ],
+      "explicacion": "Una fecha estimada no sustituye la observación.",
+      "verdadero": "La etapa observada debe apoyarse en cambios visibles.",
+      "falso": "Todas las plantas germinan y florecen en el mismo número de días.",
+      "practica": "Prepara una línea de tiempo con fecha, órgano observado y fotografía. Deja las etapas futuras como estimadas, sin marcarlas como realizadas."
+    },
+    {
+      "numero": 4,
+      "fuentes": [
+        "pots"
+      ],
+      "imagen": "jardin",
+      "secciones": [
+        {
+          "titulo": "Un huerto puede ser pequeño",
+          "texto": "Las macetas y jardineras permiten cultivar sin disponer de terreno. Puedes organizar un rincón, un patio o un conjunto de recipientes. El espacio útil incluye el volumen para raíces y el acceso para cuidar, no solo el lugar que ocupa una maceta vista desde arriba."
+        },
+        {
+          "titulo": "Comparar formatos",
+          "texto": "Un recipiente facilita cambiar la ubicación; una jardinera reúne plantas en un mismo volumen; un bancal delimita una zona de suelo. Compara drenaje, acceso, luz y disponibilidad de agua. Agrupa especies con necesidades compatibles."
+        },
+        {
+          "titulo": "Huerto familiar y comunitario",
+          "texto": "Para este proyecto, el huerto familiar organiza responsabilidades dentro del hogar. En uno comunitario conviene acordar turnos, identificación de plantas y uso de herramientas. Es una propuesta de organización: cada grupo puede adaptar sus reglas."
+        },
+        {
+          "titulo": "Diseña tu espacio",
+          "texto": "Dibuja el lugar con sus pasos libres y punto de agua. Marca dónde llegan luz y lluvia. Asigna un nombre a cada recipiente. En «Mi huerto», un jardín representa un espacio personal de organización, aunque físicamente sea un balcón."
+        }
+      ],
+      "caso": "Solo tienes una ventana accesible. ¿Puede ser el comienzo de tu huerto?",
+      "opciones": [
+        "Sí, si verifico las condiciones y elijo un recipiente y especie adecuados.",
+        "No, siempre se necesita un terreno.",
+        "Sí, sin revisar luz ni drenaje."
+      ],
+      "explicacion": "La escala puede ser pequeña; las condiciones siguen importando.",
+      "verdadero": "Un huerto puede organizarse en recipientes.",
+      "falso": "El tamaño del terreno es el único criterio para elegir el espacio.",
+      "practica": "Dibuja dos alternativas para tu rincón y compara cuál permite cuidar y observar mejor. No necesitas comprar materiales para hacer este plano."
+    },
+    {
+      "numero": 5,
+      "fuentes": [
+        "soil"
+      ],
+      "imagen": "suelo",
+      "secciones": [
+        {
+          "titulo": "Textura y estructura",
+          "texto": "La textura describe proporciones de arena, limo y arcilla. La estructura describe cómo se agrupan las partículas. Son conceptos diferentes: una observación de tacto orienta, pero no sustituye un análisis cuando necesitas una caracterización precisa."
+        },
+        {
+          "titulo": "Poros, agua y materia orgánica",
+          "texto": "Entre partículas hay poros donde circulan aire y agua. La compactación modifica esos espacios. La materia orgánica participa en las propiedades del suelo y su actividad biológica. Una mezcla para recipiente se elige por su comportamiento, no solo por su color."
+        },
+        {
+          "titulo": "Qué nos dice el pH",
+          "texto": "El pH expresa acidez o alcalinidad y afecta la disponibilidad de nutrientes. No se deduce por mirar una foto. Evita corregirlo con productos sin medición, necesidad comprobada e indicaciones para el cultivo."
+        },
+        {
+          "titulo": "Comparación razonada",
+          "texto": "Prepara una tabla con «material», «uso indicado», «drenaje observado» y «dato pendiente». Compara una etiqueta de sustrato para maceta con una descripción de suelo de jardín. No inventes un pH ni una receta universal para todas las especies."
+        }
+      ],
+      "caso": "Una mezcla es muy oscura. ¿Puedes afirmar que tiene el pH ideal?",
+      "opciones": [
+        "No; hace falta medir e interpretar según la especie.",
+        "Sí; el color basta.",
+        "Sí; cualquier mezcla oscura sirve para todo."
+      ],
+      "explicacion": "El color no mide el pH.",
+      "verdadero": "Textura y estructura describen propiedades diferentes.",
+      "falso": "Una fotografía permite medir el pH del sustrato.",
+      "practica": "Completa tu tabla con información disponible y escribe «sin medir» en los datos que todavía no tengas. Conserva la etiqueta de la mezcla si existe."
+    },
+    {
+      "numero": 6,
+      "fuentes": [
+        "soil",
+        "compost"
+      ],
+      "imagen": "nutrientes",
+      "secciones": [
+        {
+          "titulo": "Necesidades minerales",
+          "texto": "Nitrógeno, fósforo y potasio son macronutrientes; otros como hierro o zinc se requieren en menor cantidad. «Micro» describe cantidad requerida, no falta de importancia. La necesidad de aportar nutrientes depende del cultivo y del medio."
+        },
+        {
+          "titulo": "Leer antes de fertilizar",
+          "texto": "Revisa qué contiene el producto, para qué uso está indicado y cómo debe aplicarse. No traduzcas una hoja amarilla directamente en «falta abono». El exceso de fertilización también perjudica y puede contribuir a pérdidas de nutrientes al ambiente."
+        },
+        {
+          "titulo": "Compost y madurez",
+          "texto": "El compost procede de descomposición controlada con humedad y aire. El proceso y la maduración importan: restos recién incorporados no equivalen a compost listo. No todos los compost tienen igual composición ni sustituyen un plan de nutrición."
+        },
+        {
+          "titulo": "Una decisión documentada",
+          "texto": "En una etiqueta real identifica composición, instrucciones y precauciones. Anota qué datos necesitarías para decidir una aplicación. Este ejercicio consiste en interpretar, no en dosificar ni añadir un producto durante la lectura."
+        }
+      ],
+      "caso": "Una hoja amarillea. ¿Cuál es el siguiente paso razonable?",
+      "opciones": [
+        "Revisar condiciones e historial antes de decidir fertilizar.",
+        "Duplicar cualquier fertilizante.",
+        "Añadir restos frescos y asumir que son compost maduro."
+      ],
+      "explicacion": "El síntoma por sí solo no justifica una dosis.",
+      "verdadero": "Un exceso de fertilización puede causar problemas.",
+      "falso": "Todos los compost contienen exactamente los mismos nutrientes.",
+      "practica": "Fotografía una etiqueta sin datos personales y señala composición y uso. Si no tienes producto, escribe las preguntas que harías antes de adquirirlo."
+    },
+    {
+      "numero": 7,
+      "fuentes": [
+        "water"
+      ],
+      "imagen": "agua",
+      "secciones": [
+        {
+          "titulo": "El agua y el recipiente",
+          "texto": "El riego cambia según especie, tamaño y material del recipiente, mezcla y condiciones ambientales. Dos macetas contiguas pueden secarse a diferente velocidad. Una alarma recuerda revisar; no demuestra que ambas necesiten agua."
+        },
+        {
+          "titulo": "Comprobar antes de actuar",
+          "texto": "Observa humedad del medio, peso del recipiente y estado de la planta cuando sea posible. Evita decidir solo por una superficie seca o por una hoja caída. Contrasta el conjunto con las necesidades de tu especie."
+        },
+        {
+          "titulo": "Aplicar y dejar drenar",
+          "texto": "En recipientes convencionales con orificios se busca humedecer el medio y permitir que salga el exceso. Comprueba que la salida no esté obstruida. No conviertas la maceta en un depósito de agua permanente. Los sistemas con reserva tienen un funcionamiento específico."
+        },
+        {
+          "titulo": "Ahorrar mediante observación",
+          "texto": "Anota fecha, cantidad si la mediste y respuesta posterior. Para comparar dos riegos usa el mismo recipiente de medida. Si cambió el tiempo, registra también ese cambio. Un dato que no mediste debe quedar como desconocido."
+        }
+      ],
+      "caso": "La alarma indica riego, pero el sustrato sigue muy húmedo. ¿Qué haces?",
+      "opciones": [
+        "Reviso las condiciones antes de añadir agua.",
+        "Riego automáticamente el doble.",
+        "Registro una cantidad que no medí."
+      ],
+      "explicacion": "El recordatorio organiza la revisión; la decisión depende de las condiciones.",
+      "verdadero": "La frecuencia de riego varía con el recipiente y el ambiente.",
+      "falso": "Todas las macetas deben recibir igual cantidad diaria.",
+      "practica": "Compara dos recipientes sin regarlos todavía: anota tamaño, mezcla conocida, humedad observada y dudas. Decide qué información falta."
+    },
+    {
+      "numero": 8,
+      "fuentes": [
+        "botany",
+        "environment"
+      ],
+      "imagen": "luz",
+      "secciones": [
+        {
+          "titulo": "Fotosíntesis y energía",
+          "texto": "La fotosíntesis usa energía luminosa para formar azúcares a partir de agua y dióxido de carbono. La planta también respira. El fertilizante aporta nutrientes minerales, pero no reemplaza la energía de la luz."
+        },
+        {
+          "titulo": "Cantidad, duración y ubicación",
+          "texto": "Intensidad y duración no son lo mismo. Una ventana puede recibir luz difusa muchas horas y sol directo solo un intervalo. Paredes, árboles y distancia al vidrio cambian la exposición. Consulta el requerimiento de la especie."
+        },
+        {
+          "titulo": "Reconocer un cambio",
+          "texto": "Mover de sombra a una exposición intensa cambia las condiciones de la planta. Observa su respuesta y evita asumir que más sol siempre es mejor. Para comparar posiciones, conserva registros de horario y ubicación."
+        },
+        {
+          "titulo": "Haz un mapa de luz",
+          "texto": "Dibuja tres puntos del espacio y revísalos en mañana, mediodía y tarde. Marca «sol directo», «luz sin sol directo» o «sombra». No conviertas esa observación de un día en una regla permanente para todo el año."
+        }
+      ],
+      "caso": "Una ventana recibe claridad todo el día y sol directo una hora. ¿Cómo lo registras?",
+      "opciones": [
+        "Separo claridad y duración de sol directo.",
+        "Anoto que tuvo sol directo todo el día.",
+        "Compenso sin luz con más abono."
+      ],
+      "explicacion": "Describir ambas condiciones permite comparar ubicaciones.",
+      "verdadero": "El abono no sustituye la luz para la fotosíntesis.",
+      "falso": "Claridad y sol directo significan siempre lo mismo.",
+      "practica": "Prepara tu mapa horario y elige qué ubicación investigarías para una especie del catálogo. Explica qué dato todavía debes consultar."
+    },
+    {
+      "numero": 9,
+      "fuentes": [
+        "environment"
+      ],
+      "imagen": "clima",
+      "secciones": [
+        {
+          "titulo": "Factores que actúan juntos",
+          "texto": "Temperatura, humedad, agua y luz influyen en el crecimiento. Un factor desfavorable puede limitar la respuesta aunque los demás sean adecuados. No existe una única condición ambiental ideal para todas las plantas."
+        },
+        {
+          "titulo": "El microclima de tu rincón",
+          "texto": "Un muro, una cubierta o una corriente de aire cambian el entorno inmediato. El viento puede aumentar la pérdida de agua y la lluvia modifica la humedad. Una previsión de ciudad no describe exactamente cada balcón."
+        },
+        {
+          "titulo": "Adaptar al lugar",
+          "texto": "En este curso trabajaremos con observaciones de tu sitio: localidad, exposición y cambios recientes. No trasladaremos automáticamente calendarios de regiones templadas a Ecuador ni usaremos altitud como sustituto de una medición de temperatura."
+        },
+        {
+          "titulo": "Plan de observación",
+          "texto": "Durante varios días anota hora, lluvia observada, exposición y temperatura solo si tienes un instrumento. Compara días diferentes. Cuando no haya medición escribe «no medido»; una sensación de calor no es un valor en grados."
+        }
+      ],
+      "caso": "Una aplicación indica temperatura de la ciudad. ¿Es una medición exacta de tu maceta?",
+      "opciones": [
+        "No; sirve como referencia y debo observar el sitio.",
+        "Sí, reemplaza cualquier observación local.",
+        "Sí, permite saber la humedad exacta del sustrato."
+      ],
+      "explicacion": "La referencia regional no equivale a una medición del recipiente.",
+      "verdadero": "Las condiciones ambientales interactúan.",
+      "falso": "Un mismo calendario climático funciona sin ajustes en todos los lugares.",
+      "practica": "Diseña una tabla de cinco días con hora, lluvia y cambios visibles. Distingue datos medidos, referencias externas y observaciones personales."
+    },
+    {
+      "numero": 10,
+      "fuentes": [
+        "setup",
+        "pots"
+      ],
+      "imagen": "jardin",
+      "secciones": [
+        {
+          "titulo": "Escoger y preparar",
+          "texto": "Antes de sembrar revisa accesibilidad, exposición y posibilidad de regar sin dejar agua acumulada. Prepara el espacio de trabajo y selecciona un recipiente apropiado. Un diseño bonito debe permitir el mantenimiento cotidiano."
+        },
+        {
+          "titulo": "Materiales y limpieza",
+          "texto": "Organiza recipiente, mezcla destinada a ese uso, etiqueta y herramientas limpias. Comprueba la salida de agua. Separa el material de trabajo de los objetos domésticos usados para alimentos."
+        },
+        {
+          "titulo": "Distribuir con intención",
+          "texto": "Deja acceso para observar y retirar una maceta sin aplastar otras. Señala el lugar previsto de cada cultivo. Registra la especie y fecha real cuando siembres; preparar el espacio no equivale a haber sembrado."
+        },
+        {
+          "titulo": "Ensayo sin plantar",
+          "texto": "Haz una revisión con el recipiente vacío: estabilidad, drenaje, acceso y etiqueta. Marca lo resuelto y lo pendiente. Si aún faltan condiciones, tu avance educativo puede continuar mientras terminas la preparación."
+        }
+      ],
+      "caso": "Ya pusiste una maceta vacía en el jardín. ¿Qué actividad corresponde?",
+      "opciones": [
+        "Preparación del espacio; aún no registrar siembra realizada.",
+        "Siembra completada con foto de una planta ajena.",
+        "Cosecha terminada."
+      ],
+      "explicacion": "El registro debe describir lo que realmente hiciste.",
+      "verdadero": "Preparar y sembrar son actividades distintas.",
+      "falso": "Una imagen decorativa demuestra que se realizó una siembra física.",
+      "practica": "Escribe tu lista de materiales y verifica con el recipiente vacío. Deja explícitamente pendientes las condiciones que no hayas comprobado."
+    },
+    {
+      "numero": 11,
+      "fuentes": [
+        "seeds"
+      ],
+      "imagen": "semillas",
+      "secciones": [
+        {
+          "titulo": "Leer la información de la semilla",
+          "texto": "Identifica especie, procedencia, fecha e instrucciones del envase. La conservación afecta la viabilidad. Guarda la identificación del lote para interpretar resultados; un sobre sin nombre no permite elegir condiciones con seguridad."
+        },
+        {
+          "titulo": "Condiciones de germinación",
+          "texto": "La germinación necesita humedad, oxígeno y temperatura apropiados; la necesidad de luz varía. Respeta profundidad e indicaciones de la especie. Mantener humedad no significa dejar el semillero inundado."
+        },
+        {
+          "titulo": "Después de emerger",
+          "texto": "Las plántulas necesitan luz adecuada. Usa recipientes limpios y evita una densidad que dificulte el manejo. Una semilla que no emerge puede haber fallado por distintas razones; revisa el conjunto antes de concluir."
+        },
+        {
+          "titulo": "Contar para aprender",
+          "texto": "En un ejemplo, de diez semillas emergen siete: el porcentaje observado de emergencia es 70 %. No es una garantía de futuros lotes. Anota también fecha de siembra y de observación, sin desenterrar semillas repetidamente."
+        }
+      ],
+      "caso": "De 10 semillas emergen 7. ¿Qué dato puedes afirmar?",
+      "opciones": [
+        "Observé 70 % de emergencia en ese lote y fecha.",
+        "Toda semilla de la especie germinará al 70 %.",
+        "Las tres restantes están necesariamente muertas."
+      ],
+      "explicacion": "El recuento describe ese ensayo, no todas las semillas.",
+      "verdadero": "Las condiciones de germinación dependen de la especie.",
+      "falso": "Toda semilla debe enterrarse a la misma profundidad.",
+      "practica": "Diseña una etiqueta con especie, lote y fecha. Prepara una tabla de número sembrado y emergido; usa datos ficticios claramente marcados si aún no sembraste."
+    },
+    {
+      "numero": 12,
+      "fuentes": [
+        "propagation"
+      ],
+      "imagen": "propagacion",
+      "secciones": [
+        {
+          "titulo": "Semilla y propagación vegetativa",
+          "texto": "La reproducción por semilla puede generar variación. La propagación vegetativa utiliza partes de una planta, como tallos o divisiones. El método se elige según especie y objetivo, no porque todos parezcan intercambiables."
+        },
+        {
+          "titulo": "Siembra directa o semillero",
+          "texto": "La siembra directa comienza en el sitio de cultivo; el semillero permite atender plántulas antes del traslado. Revisa si la especie tolera ese traslado. Etiqueta el inicio y conserva las instrucciones del lote."
+        },
+        {
+          "titulo": "Esquejes y división",
+          "texto": "Un esqueje es una porción que se intenta enraizar; una división separa partes con capacidad de continuar creciendo. Se parte de material sano y se sigue un método adecuado a la especie. No cualquier hoja cortada produce una planta nueva."
+        },
+        {
+          "titulo": "Elegir antes de cortar",
+          "texto": "Completa una ficha: especie confirmada, método documentado, material necesario y señales de seguimiento. En este ejercicio compara métodos sobre papel; no cortes una planta sin confirmar que el método corresponde."
+        }
+      ],
+      "caso": "Tienes un tallo para enraizar. ¿Cómo nombras ese inicio?",
+      "opciones": [
+        "Propagación por esqueje.",
+        "Germinación de una semilla.",
+        "Cosecha de semillas maduras."
+      ],
+      "explicacion": "El esqueje utiliza material vegetativo.",
+      "verdadero": "El método de propagación debe corresponder a la especie.",
+      "falso": "Cualquier hoja de cualquier planta enraíza del mismo modo.",
+      "practica": "Compara semilla, esqueje y división. Para una especie del catálogo busca cuál está documentado y anota la fuente antes de elegir."
+    },
+    {
+      "numero": 13,
+      "fuentes": [
+        "transplant",
+        "seeds"
+      ],
+      "imagen": "trasplante",
+      "secciones": [
+        {
+          "titulo": "Evaluar la plántula",
+          "texto": "Considera desarrollo de hojas verdaderas, raíces y estado general, además de la fecha. Los cotiledones son las hojas iniciales de la semilla y no siempre se parecen a las hojas posteriores. No impongas un mismo día de trasplante para todas las especies."
+        },
+        {
+          "titulo": "Aclimatar gradualmente",
+          "texto": "Una plántula criada protegida necesita adaptación progresiva al exterior. La exposición gradual reduce el cambio brusco de luz, viento y temperatura. Ajusta el proceso al clima local y evita confundir aclimatación con dejarla sufrir sequía."
+        },
+        {
+          "titulo": "Cuidar raíces y tallos",
+          "texto": "Prepara el destino antes de extraerla. Manipula con cuidado para no aplastar el tallo ni destruir el conjunto de raíces. Sigue la profundidad indicada para la especie. Después observa humedad y respuesta, sin interpretar toda caída de hojas como una carencia."
+        },
+        {
+          "titulo": "Comparar antes y después",
+          "texto": "Toma una fotografía inicial y otra desde un ángulo semejante después del traslado. Anota ubicación y cambios de ambiente. Describe hechos: hojas caídas, nuevos brotes o color; evita escribir «todo perfecto» sin observaciones."
+        }
+      ],
+      "caso": "Una plántula estuvo siempre protegida. ¿Qué conviene planificar antes de llevarla al exterior?",
+      "opciones": [
+        "Una adaptación gradual a las nuevas condiciones.",
+        "Exposición máxima de golpe para fortalecerla.",
+        "Eliminar sus hojas para que no transpire."
+      ],
+      "explicacion": "La adaptación progresiva reduce el cambio brusco del entorno.",
+      "verdadero": "Las hojas verdaderas pueden diferir de los cotiledones.",
+      "falso": "La edad en días es el único criterio para trasplantar.",
+      "practica": "Redacta un plan de traslado con ubicación, condiciones que cambian y observaciones posteriores. Comprueba primero la recomendación de tu especie."
+    },
+    {
+      "numero": 14,
+      "fuentes": [
+        "herbs"
+      ],
+      "imagen": "menta",
+      "secciones": [
+        {
+          "titulo": "Una rutina de revisión",
+          "texto": "El mantenimiento reúne observación, limpieza y cuidados según la especie. Mira hojas y tallos, revisa el recipiente y anota cambios. No es necesario ejecutar todas las tareas cada vez que visitas el huerto."
+        },
+        {
+          "titulo": "Poda con un objetivo",
+          "texto": "Podar puede ayudar a mantener forma o renovar crecimiento, pero la intensidad y momento varían. Identifica qué parte retirar y por qué. Usa herramientas limpias; una planta pequeña o debilitada no se maneja igual que una establecida."
+        },
+        {
+          "titulo": "Cobertura y plantas espontáneas",
+          "texto": "La cobertura del suelo ayuda a conservar humedad y limitar hierbas competidoras. Mantén una revisión del medio bajo ella. Identifica las plantas espontáneas antes de retirarlas para no confundir una nueva plántula de tu cultivo."
+        },
+        {
+          "titulo": "Tutor y orden",
+          "texto": "Si la especie requiere soporte, observa dónde colocarlo sin lesionar tallos. Para practicar, diseña una lista semanal: observar, decidir y registrar. La tarea debe incluir un motivo; «podar porque toca» no explica la necesidad."
+        }
+      ],
+      "caso": "Visitas el huerto y no observas necesidad de poda. ¿Qué puedes registrar?",
+      "opciones": [
+        "La revisión y las condiciones observadas, sin inventar una poda.",
+        "Una poda aunque no se realizó.",
+        "Que la revisión no tiene ningún valor."
+      ],
+      "explicacion": "Observar también aporta información al seguimiento.",
+      "verdadero": "El mantenimiento debe ajustarse a la especie y al estado de la planta.",
+      "falso": "Cada visita obliga a podar todas las plantas.",
+      "practica": "Escribe tres tareas posibles y, junto a cada una, la señal que justificaría realizarla. Diferencia revisar de intervenir."
+    },
+    {
+      "numero": 15,
+      "fuentes": [
+        "moon"
+      ],
+      "imagen": "luna",
+      "secciones": [
+        {
+          "titulo": "Un calendario para organizar",
+          "texto": "En el sistema puedes programar revisiones y registrar acciones realizadas. Separa fecha prevista y fecha real. Si llueve o cambia el estado del cultivo, revisa la tarea en lugar de cumplirla automáticamente."
+        },
+        {
+          "titulo": "Qué representa la fase lunar",
+          "texto": "Las fases describen el aspecto iluminado de la Luna visto desde la Tierra. Se han usado históricamente como referencias de tiempo y en tradiciones agrícolas. Documentar esa tradición no demuestra que una fase cause mayor rendimiento."
+        },
+        {
+          "titulo": "Tradición y comprobación",
+          "texto": "La revisión de Illinois Extension señala falta de respaldo sólido para muchas afirmaciones de jardinería lunar. En este curso no asignaremos días obligatorios de siembra por fase. Las necesidades de la especie y las condiciones observadas siguen siendo esenciales."
+        },
+        {
+          "titulo": "Comparar con cuidado",
+          "texto": "Si deseas estudiar una práctica tradicional, escribe una pregunta y registra también riego, luz y temperatura. Dos plantas distintas en lugares distintos no aíslan el efecto de la Luna. Presenta resultados como observaciones, no como prueba causal."
+        }
+      ],
+      "caso": "Coinciden una fase considerada favorable y un recipiente encharcado. ¿Qué priorizas?",
+      "opciones": [
+        "Revisar las condiciones del cultivo.",
+        "Sembrar obligatoriamente por la fase.",
+        "Afirmar que la Luna eliminará el exceso de agua."
+      ],
+      "explicacion": "La tradición no sustituye la comprobación de las condiciones.",
+      "verdadero": "Una coincidencia de fechas no prueba una causa.",
+      "falso": "Una fase lunar garantiza el éxito de cualquier siembra.",
+      "practica": "Programa una revisión y escribe qué observarás. Si añades la fase lunar, etiquétala como contexto cultural, no como garantía de resultado."
+    },
+    {
+      "numero": 16,
+      "fuentes": [
+        "insects"
+      ],
+      "imagen": "insectos",
+      "secciones": [
+        {
+          "titulo": "No todo visitante es una plaga",
+          "texto": "Hay insectos polinizadores, depredadores y descomponedores. La presencia de un organismo no basta para justificar eliminarlo. Relaciona su identidad, abundancia y daño observado antes de intervenir."
+        },
+        {
+          "titulo": "Reconocer grupos",
+          "texto": "Pulgones, trips y moscas blancas tienen formas y comportamientos diferentes. Los ácaros no son insectos. Observa tamaño, ubicación y agrupación con una lupa si dispones de ella; una foto borrosa puede no permitir identificación."
+        },
+        {
+          "titulo": "Mirar la planta completa",
+          "texto": "Revisa ambas caras de las hojas y brotes, sin limitarte a la parte más visible. Distingue tejido mordido de cambios de color. La lesión orienta la búsqueda, pero puede tener más de una explicación."
+        },
+        {
+          "titulo": "Un registro útil",
+          "texto": "Describe «tres organismos bajo una hoja» antes de escribir el nombre de una especie no confirmada. Fotografía detalle y planta completa. Conserva la fecha para comparar si la situación aumenta o disminuye."
+        }
+      ],
+      "caso": "Ves un insecto sin daño visible. ¿Cuál es el primer paso?",
+      "opciones": [
+        "Observar e intentar identificar su función.",
+        "Eliminar todos los insectos del huerto.",
+        "Aplicar un producto sin leer indicaciones."
+      ],
+      "explicacion": "Algunos visitantes cumplen funciones beneficiosas.",
+      "verdadero": "Los ácaros no pertenecen al grupo de los insectos.",
+      "falso": "Todo insecto presente en una planta es necesariamente dañino.",
+      "practica": "Practica una descripción sin diagnóstico: número, tamaño aproximado, ubicación y daño visible. No manipules un organismo que no reconozcas."
+    },
+    {
+      "numero": 17,
+      "fuentes": [
+        "disease"
+      ],
+      "imagen": "enfermedad",
+      "secciones": [
+        {
+          "titulo": "Infección y trastorno ambiental",
+          "texto": "Hongos, bacterias y virus pueden causar enfermedades; también hay daños por agua, temperatura o nutrición. Síntomas parecidos no demuestran causas iguales. Una imagen aislada no suele bastar para confirmar un agente."
+        },
+        {
+          "titulo": "Condiciones de enfermedad",
+          "texto": "La enfermedad infecciosa depende de una planta susceptible, un agente y condiciones favorables. La humedad y ventilación pueden influir, pero sus efectos dependen del patógeno. No todas las manchas se resuelven con el mismo tratamiento."
+        },
+        {
+          "titulo": "Oídio, mildiu y pudriciones",
+          "texto": "Son nombres que orientan a grupos de problemas, no diagnósticos automáticos. Observa aspecto, cara de la hoja, distribución y avance. Las pudriciones pueden afectar distintos órganos; evita arrancar raíces sanas solo para buscar una fotografía."
+        },
+        {
+          "titulo": "Preparar una consulta",
+          "texto": "Reúne nombre de la planta, fotos de detalle y conjunto, fecha de inicio y cuidados recientes. Si el problema progresa, consulta apoyo técnico local. No conviertas una sospecha en un tratamiento químico inmediato."
+        }
+      ],
+      "caso": "Una fotografía muestra manchas. ¿Qué puedes concluir con seguridad?",
+      "opciones": [
+        "Que hay un cambio visible que necesita contexto e identificación.",
+        "Que siempre es el mismo hongo.",
+        "Que todos los cultivos deben recibir fungicida."
+      ],
+      "explicacion": "Mancha es una descripción, no una identificación confirmada.",
+      "verdadero": "Problemas ambientales e infecciones pueden parecerse.",
+      "falso": "Todas las enfermedades vegetales tienen el mismo tratamiento.",
+      "practica": "Redacta una ficha para consulta con cinco datos que ayuden a entender la evolución del problema. Marca por separado síntomas y causas sospechadas."
+    },
+    {
+      "numero": 18,
+      "fuentes": [
+        "diagnosis"
+      ],
+      "imagen": "diagnostico",
+      "secciones": [
+        {
+          "titulo": "Describir antes de nombrar",
+          "texto": "Amarilleo, marchitez, manchas y crecimiento lento son síntomas. Empieza por identificar la planta y conocer su aspecto normal. Una característica habitual puede confundirse con enfermedad si no conoces la especie."
+        },
+        {
+          "titulo": "Buscar el patrón",
+          "texto": "Pregunta dónde comenzó: hojas nuevas o viejas, una rama o toda la planta, una maceta o varias. Registra desde cuándo ocurre. El patrón y la secuencia ayudan a ordenar hipótesis."
+        },
+        {
+          "titulo": "Revisar el historial",
+          "texto": "Cambios de ubicación, riego, productos o clima aportan pistas. Compara con plantas que no presentan el problema. No sumes varias intervenciones simultáneas si después necesitas interpretar cuál tuvo efecto."
+        },
+        {
+          "titulo": "Mantener la incertidumbre",
+          "texto": "Usa tres campos: hecho observado, hipótesis y dato necesario. «Hoja amarilla» es un hecho; «carencia» es una hipótesis. Solicita apoyo cuando los datos no permiten distinguir causas; el curso no diagnostica por fotografía."
+        }
+      ],
+      "caso": "Anotas «hojas caídas después de cambiar de lugar». ¿Qué falta para diagnosticar?",
+      "opciones": [
+        "Revisar condiciones, evolución y otras posibles causas.",
+        "Nada; siempre falta agua.",
+        "Nada; siempre falta fertilizante."
+      ],
+      "explicacion": "La secuencia temporal aporta pistas, pero no determina una sola causa.",
+      "verdadero": "Conviene separar observación e hipótesis.",
+      "falso": "Marchitez siempre significa que debes regar más.",
+      "practica": "Escribe dos hipótesis distintas para una planta marchita y un dato que ayudaría a diferenciarlas. No apliques tratamientos para completar el ejercicio."
+    },
+    {
+      "numero": 19,
+      "fuentes": [
+        "ipm"
+      ],
+      "imagen": "prevencion",
+      "secciones": [
+        {
+          "titulo": "Observar y decidir",
+          "texto": "El manejo integrado combina identificación, seguimiento y medidas ajustadas al problema. Busca reducir daños, no eliminar toda vida del huerto. Define qué observarás y cómo revisarás la respuesta."
+        },
+        {
+          "titulo": "Prevenir y actuar con criterio",
+          "texto": "Una ubicación y cuidados adecuados, higiene y material sano reducen riesgos. Según el problema pueden servir medidas físicas o favorecer organismos útiles. Ninguna medida se elige solo porque se llame natural."
+        },
+        {
+          "titulo": "Productos: una decisión específica",
+          "texto": "Si se considera un producto, hay que confirmar que sea apropiado y autorizado localmente para ese uso, leer la etiqueta y respetar sus restricciones. No extrapoles productos o dosis de una guía extranjera a tu cultivo."
+        },
+        {
+          "titulo": "Evaluar después",
+          "texto": "Registra qué hiciste, cuándo y qué cambió. Si no mejora, revisa la identificación. Una aplicación realizada no es prueba de control exitoso. Conserva el historial para pedir orientación técnica."
+        }
+      ],
+      "caso": "Te ofrecen una mezcla casera «natural para cualquier plaga». ¿Cómo decides?",
+      "opciones": [
+        "Primero identifico el problema y reviso seguridad y pertinencia.",
+        "La uso porque natural significa inocua.",
+        "La mezclo con otros productos para potenciarla."
+      ],
+      "explicacion": "Natural no garantiza seguridad ni eficacia.",
+      "verdadero": "El seguimiento permite evaluar una medida aplicada.",
+      "falso": "El objetivo del manejo integrado es eliminar todos los organismos.",
+      "practica": "Elabora un plan con problema observado, dato pendiente, medida preventiva posible y fecha de revisión. No incluyas productos sin identificación y orientación válida."
+    },
+    {
+      "numero": 20,
+      "fuentes": [
+        "harvest"
+      ],
+      "imagen": "calendula",
+      "secciones": [
+        {
+          "titulo": "Qué parte se busca",
+          "texto": "Hojas, flores, frutos y semillas tienen momentos de aprovechamiento diferentes. Confirma especie y parte antes de cosechar. La floración no es una señal universal de que todo esté listo."
+        },
+        {
+          "titulo": "Elegir el momento",
+          "texto": "Para muchas hierbas de hoja se cosecha material establecido antes de floración, pero debe verificarse la especie y finalidad. Evita aplicar una regla de hojas a flores o semillas. Usa una guía específica."
+        },
+        {
+          "titulo": "Cortar y conservar la planta",
+          "texto": "Emplea herramientas limpias y cortes cuidadosos. Deja suficiente tejido para que la planta continúe cuando ese sea el objetivo. No recolectes material no identificado ni uses la apariencia para declarar seguridad medicinal."
+        },
+        {
+          "titulo": "Registrar el lote",
+          "texto": "Anota especie, parte, fecha y cantidad solo si la mediste. Añade una fotografía del material y su procedencia. Registra por separado cosecha realizada y cosecha prevista; no adelantes la actividad por una estimación del calendario."
+        }
+      ],
+      "caso": "La aplicación estima cosecha, pero no has confirmado la parte y su madurez. ¿Qué haces?",
+      "opciones": [
+        "Verifico especie, parte y criterio antes de recolectar.",
+        "Corto toda la planta por la fecha.",
+        "Registro cosecha aunque no se realizó."
+      ],
+      "explicacion": "La cosecha exige criterios observables y específicos.",
+      "verdadero": "La parte cosechada debe constar en el registro.",
+      "falso": "Hojas, flores y semillas siempre se cosechan al mismo tiempo.",
+      "practica": "Diseña una etiqueta de lote y escribe qué señal de madurez debes consultar para la parte que deseas cosechar. No necesitas cortar material para hacerlo."
+    },
+    {
+      "numero": 21,
+      "fuentes": [
+        "dry"
+      ],
+      "imagen": "conservacion",
+      "secciones": [
+        {
+          "titulo": "Elegir un método",
+          "texto": "El secado reduce humedad para conservar; el método depende del material. Hojas, tallos y flores no se comportan igual. Una hierba aromática conservada no se convierte por ello en un medicamento de eficacia conocida."
+        },
+        {
+          "titulo": "Aire y distribución",
+          "texto": "Para secado al aire se distribuye el material de modo que permita circulación, en condiciones apropiadas y protegido de contaminación. Evita amontonar material húmedo. Un deshidratador requiere seguir instrucciones adecuadas al producto."
+        },
+        {
+          "titulo": "Envasar y revisar",
+          "texto": "Almacena material suficientemente seco en recipientes apropiados, identificado y protegido de luz y humedad. Revisa condensación, cambios y moho. No ocultes un problema de conservación mezclando lotes ni reutilices material visiblemente deteriorado."
+        },
+        {
+          "titulo": "Trazabilidad doméstica",
+          "texto": "Etiqueta especie, parte, cosecha, inicio de secado y envasado. No inventes una fecha universal de caducidad. Guarda cada lote separado para relacionar su evolución con el método empleado."
+        }
+      ],
+      "caso": "Aparece condensación en un envase recién cerrado. ¿Qué significa para tu registro?",
+      "opciones": [
+        "Debo revisar el proceso y no asumir conservación correcta.",
+        "Es prueba de secado perfecto.",
+        "Puedo mezclarlo con otro lote para ocultarla."
+      ],
+      "explicacion": "La condensación obliga a revisar humedad y conservación.",
+      "verdadero": "Identificar los lotes ayuda a seguir su evolución.",
+      "falso": "Cerrar un recipiente garantiza por sí solo ausencia de deterioro.",
+      "practica": "Diseña dos etiquetas de lotes distintos y una lista de revisión. Utiliza material ilustrativo; no consumas una muestra como prueba de conservación."
+    },
+    {
+      "numero": 22,
+      "fuentes": [
+        "safety",
+        "chamomile"
+      ],
+      "imagen": "seguridad",
+      "secciones": [
+        {
+          "titulo": "Uso tradicional y uso investigado",
+          "texto": "Registra para qué se ha utilizado una planta y qué respaldo tiene esa afirmación. Un estudio de laboratorio no equivale por sí solo a beneficio demostrado en personas. La parte, preparación y concentración importan al interpretar una investigación."
+        },
+        {
+          "titulo": "Natural no significa inocuo",
+          "texto": "Productos herbales pueden provocar efectos adversos e interactuar con medicamentos. Algunas poblaciones requieren precauciones especiales, entre ellas embarazo, lactancia y niñez. No sustituyas un tratamiento ni retrases atención por una ficha de cultivo."
+        },
+        {
+          "titulo": "Ejemplo: manzanilla",
+          "texto": "NCCIH informa posibles alergias e interacciones y señala limitaciones en la evidencia para distintos usos. Cultivar manzanilla permite aprender botánica, pero no autoriza a extrapolar dosis ni recomendarla a cualquier persona."
+        },
+        {
+          "titulo": "Preparar una consulta informada",
+          "texto": "Anota nombre científico confirmado, parte y producto exacto, motivo de consulta y medicamentos o condiciones relevantes para comentarlos de forma privada con un profesional. No publiques datos de salud en la comunidad del huerto."
+        }
+      ],
+      "caso": "Una persona toma medicación y pregunta qué cantidad de planta usar. ¿Qué corresponde?",
+      "opciones": [
+        "Consultar a un profesional con el producto y la medicación exactos.",
+        "Indicar una dosis porque la planta es natural.",
+        "Recomendar suspender el medicamento."
+      ],
+      "explicacion": "Las interacciones y circunstancias personales requieren valoración profesional.",
+      "verdadero": "Una planta puede interactuar con medicamentos.",
+      "falso": "Un resultado de laboratorio demuestra eficacia clínica en cualquier preparación.",
+      "practica": "Transforma «esta planta cura» en una pregunta verificable sobre evidencia y seguridad. No prepares ni consumas productos para superar el capítulo."
+    },
+    {
+      "numero": 23,
+      "fuentes": [
+        "ecology",
+        "compost"
+      ],
+      "imagen": "ecologia",
+      "secciones": [
+        {
+          "titulo": "Pensar en el conjunto",
+          "texto": "El cultivo ecológico considera suelo, diversidad, agua y manejo de problemas como un sistema. No consiste solamente en cambiar un producto por otro con etiqueta natural. Observa efectos sobre el espacio y sus organismos."
+        },
+        {
+          "titulo": "Diversidad y asociaciones",
+          "texto": "Considera compatibilidad de luz, riego y espacio. Plantas variadas pueden ofrecer recursos a organismos útiles. No atribuyas protección garantizada a cualquier asociación: registra lo que ocurre y consulta evidencia para cada afirmación."
+        },
+        {
+          "titulo": "Cerrar ciclos con criterio",
+          "texto": "El compostaje aprovecha materiales adecuados, pero necesita manejo. En compost doméstico no todos los residuos son convenientes. La descomposición fría no garantiza eliminar patógenos o semillas; evita usar el proceso como solución indiscriminada para material enfermo."
+        },
+        {
+          "titulo": "Una mejora verificable",
+          "texto": "Elige una meta: registrar agua usada, reducir un residuo o mejorar la observación de visitantes. Define cómo medirás el cambio. «Más sostenible» debe acompañarse de una acción y un indicador que puedas revisar."
+        }
+      ],
+      "caso": "Quieres evaluar ahorro de agua. ¿Qué comparación ayuda?",
+      "opciones": [
+        "Medir de forma consistente antes y después y registrar las condiciones.",
+        "Afirmar ahorro sin medir nada.",
+        "Usar el color verde de la planta como litros ahorrados."
+      ],
+      "explicacion": "Un indicador explícito permite revisar tu propuesta.",
+      "verdadero": "El compostaje requiere selección y manejo de materiales.",
+      "falso": "Cualquier asociación de plantas garantiza ausencia de plagas.",
+      "practica": "Elige una mejora pequeña y define indicador, situación inicial y fecha de revisión. Explica qué no podrás concluir con una sola observación."
+    },
+    {
+      "numero": 24,
+      "fuentes": [
+        "records"
+      ],
+      "imagen": "registro",
+      "secciones": [
+        {
+          "titulo": "Una bitácora que permita comparar",
+          "texto": "Registra identificación, fechas, intervenciones, condiciones y resultados. Fotografías y mediciones complementan la descripción. Un registro útil permite reconstruir qué ocurrió; no necesita afirmar que todo salió bien."
+        },
+        {
+          "titulo": "Medir con consistencia",
+          "texto": "Para comparar alturas utiliza el mismo punto de referencia y unidad. Fotografía desde un ángulo semejante e incluye una referencia de escala cuando sea posible. No deduzcas centímetros exactos de imágenes sin escala."
+        },
+        {
+          "titulo": "Estimación y evidencia real",
+          "texto": "En esta aplicación, la edad y las ilustraciones sirven para orientar. La foto subida y las observaciones describen tu siembra física. Adelantar tiempo como administrador no cambia la edad real ni demuestra crecimiento ocurrido."
+        },
+        {
+          "titulo": "Aprender de lo observado",
+          "texto": "Al revisar la semana separa acción, resultado e interpretación. Si hiciste varios cambios juntos, reconoce que no puedes atribuir el resultado a uno solo. Formula una pregunta y una próxima observación concreta."
+        }
+      ],
+      "caso": "El administrador adelanta la visualización siete días. ¿Qué ocurre con la evidencia física?",
+      "opciones": [
+        "No cambia; las fotos y fechas reales siguen describiendo lo ocurrido.",
+        "La planta real crece siete días instantáneamente.",
+        "Se pueden inventar fotos de seguimiento."
+      ],
+      "explicacion": "Una simulación temporal no genera evidencia física.",
+      "verdadero": "Las mediciones comparables necesitan referencia y unidad.",
+      "falso": "Una ilustración del sistema equivale a una fotografía de tu cultivo.",
+      "practica": "Escribe un registro con fecha, acción, observación, foto propia opcional e hipótesis separada. Si practicas con un ejemplo, identifícalo como ficticio."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{% extends 'account/garden_layout.html' %}
+{% block content %}
+<div class="welcome"><h1>¡Bienvenido de nuevo!</h1><p>Ingresa para continuar aprendiendo<br>y gestionando tu huerto medicinal.</p></div>
+{% if request.user.is_authenticated %}
+<p>Ya tienes una sesión iniciada.</p><a class="primary" href="{% url 'workspace' %}">Ir a mi espacio →</a>
+{% else %}
+<button class="google-button" type="button" id="google-login" aria-controls="google-status" aria-expanded="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.73-.06-1.42-.19-2.09H12v3.96h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-7.95Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.8l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.16v2.85A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.84 13.97A6.6 6.6 0 0 1 5.5 12c0-.68.12-1.35.34-1.97V7.18H2.16A11 11 0 0 0 1 12c0 1.77.42 3.44 1.16 4.82l3.68-2.85Z"/><path fill="#EA4335" d="M12 5.5c1.62 0 3.07.56 4.21 1.65l3.16-3.16A10.56 10.56 0 0 0 12 1a11 11 0 0 0-9.84 6.18l3.68 2.85C6.71 7.43 9.14 5.5 12 5.5Z"/></svg>Continuar con Google</button>
+<p id="google-status" class="notice" role="status" hidden>El acceso con Google aún no está habilitado. Por ahora, ingresa con tu correo y contraseña.</p>
+<div class="divider"><span>o</span></div>
+<form method="post" action="{% url 'account_login' %}">
+{% csrf_token %}
+{% if form.non_field_errors %}<div class="errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+{% for field in form %}{% if field.name != 'remember' %}
+<div class="field"><label for="{{ field.id_for_label }}">{% if field.name == 'login' %}Correo electrónico{% elif field.name == 'password' %}Contraseña{% else %}{{ field.label }}{% endif %}</label><div class="input-wrap"><svg aria-hidden="true"><use href="{% if field.name == 'password' %}#i-lock{% else %}#i-mail{% endif %}"/></svg>{% if field.name == 'login' %}<input type="email" name="login" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" placeholder="Correo electrónico" autocomplete="username" maxlength="320" required>{% elif field.name == 'password' %}<input type="password" name="password" id="{{ field.id_for_label }}" placeholder="Contraseña" autocomplete="current-password" required>{% else %}{{ field }}{% endif %}{% if field.name == 'password' %}<button class="show-password" type="button" data-show-password="{{ field.id_for_label }}" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>{% endif %}</div>{% if field.errors %}<div class="errors" role="alert">{{ field.errors }}</div>{% endif %}</div>
+{% endif %}{% endfor %}
+<div class="options"><label>{{ form.remember }} Recordarme</label><a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a></div>
+{% if redirect_field_value %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">{% endif %}
+<button class="primary" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button>
+</form>
+<p class="register">¿No tienes una cuenta? <a href="{% url 'account_signup' %}{% if redirect_field_value %}?next={{ redirect_field_value|urlencode }}{% endif %}">Regístrate</a></p>
+{% endif %}
+{% endblock %}

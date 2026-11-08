@@ -1,0 +1,1 @@
+{% if notice %}<p class="modal-notice">{{ notice }}</p>{% endif %}<form method="post" action="{{ request.path }}" data-community-form class="community-form">{% csrf_token %}{{ form.as_p }}<button class="purple-button" type="submit">{{ submit_label }}</button></form>
