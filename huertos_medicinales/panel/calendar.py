@@ -100,4 +100,9 @@ def completar(request, pk):
     # Explicit state makes retries safe; checking a task does not fabricate a photo or observation.
     done=request.POST.get("completada")=="1"
     ActividadCalendario.objects.filter(pk=activity.pk).update(completada=done,completada_en=timezone.now() if done else None)
+    if done:
+        miembro=getattr(request.user,"membresia",None)
+        if miembro and miembro.estado=="aprobada":
+            from huertos_medicinales.comunidades.gamificacion import evaluar_insignias
+            evaluar_insignias(miembro)
     return redirect(reverse("calendar")+"?dia="+activity.fecha.isoformat())

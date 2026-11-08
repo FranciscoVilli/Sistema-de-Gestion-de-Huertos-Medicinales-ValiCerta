@@ -7,6 +7,7 @@ urlpatterns = [
     path("", community.hub, name="listado"),
     path("reglas/", community.reglas, name="reglas"),
     path("iniciativas/", views.listado, name="iniciativas"),
+    path("ranking/", views.ranking, name="ranking"),
     path("mapa/datos/", community.map_data, name="map_data"),
     path("preguntas/nueva/", community.question_edit, name="nueva_pregunta"),
     path("preguntas/<int:pk>/", community.question, name="pregunta"),

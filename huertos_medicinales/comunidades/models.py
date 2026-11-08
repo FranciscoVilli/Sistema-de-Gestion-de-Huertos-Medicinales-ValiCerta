@@ -64,6 +64,10 @@ class Comunidad(models.Model):
     def __str__(self):
         return self.nombre
 
+    @property
+    def puntos(self):
+        return sum(m.puntos for m in self.miembros.filter(estado="aprobada"))
+
 
 class HuertoReal(models.Model):
     class Diseno(models.TextChoices):
@@ -201,12 +205,60 @@ class Miembro(models.Model):
 
     @property
     def puntos(self):
-        # Se conecta a las actividades reales de cultivo en la Fase E.
-        return 0
+        from . import gamificacion
+        return gamificacion.calcular_puntos(self)
 
     @property
     def nivel(self):
+        from . import gamificacion
+        puntos = self.puntos
+        if puntos >= gamificacion.UMBRAL_MAESTRO:
+            return self.Nivel.MAESTRO
+        if puntos >= gamificacion.UMBRAL_OFICIAL:
+            return self.Nivel.OFICIAL
         return self.Nivel.APRENDIZ
+
+    @property
+    def insignias(self):
+        return self.insignias_obtenidas.all()
+
+
+class InsigniaObtenida(models.Model):
+    miembro = models.ForeignKey(Miembro, on_delete=models.CASCADE, related_name="insignias_obtenidas")
+    clave = models.CharField(max_length=40)
+    obtenida = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["miembro", "clave"], name="unique_member_badge"),
+        ]
+        ordering = ["-obtenida"]
+
+    def __str__(self):
+        return f"{self.clave}: {self.miembro}"
+
+    @property
+    def info(self):
+        from .gamificacion import INSIGNIAS
+        return next((i for i in INSIGNIAS if i["clave"] == self.clave), None)
+
+
+class Mision(models.Model):
+    titulo = models.CharField("Título del reto", max_length=120)
+    descripcion = models.TextField("Descripción", max_length=500)
+    meta_actividades = models.PositiveSmallIntegerField(
+        "Actividades a completar en el período",
+    )
+    puntos_recompensa = models.PositiveSmallIntegerField("Puntos de recompensa")
+    fecha_inicio = models.DateField("Fecha de inicio")
+    fecha_fin = models.DateField("Fecha de cierre")
+    activa = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-fecha_inicio"]
+
+    def __str__(self):
+        return self.titulo
 
 
 class CertificacionTalento(models.Model):

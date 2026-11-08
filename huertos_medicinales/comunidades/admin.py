@@ -56,7 +56,7 @@ class EventoComunidadAdmin(SoloLectura):
     list_display = ["comunidad", "actor", "accion", "creado"]
 
 # Forum moderation never rewrites authorship or grants public location consent.
-from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido, Miembro, CertificacionTalento, HuertoReal, Bodega
+from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido, Miembro, CertificacionTalento, HuertoReal, Bodega, InsigniaObtenida, Mision
 
 @admin.register(HuertoReal)
 class HuertoRealAdmin(SoloLectura):
@@ -66,6 +66,16 @@ class HuertoRealAdmin(SoloLectura):
 @admin.register(Bodega)
 class BodegaAdmin(SoloLectura):
     list_display = ["huerto_real", "tiene_espacio_herramientas", "tiene_espacio_semillas", "tiene_espacio_abonos"]
+
+@admin.register(InsigniaObtenida)
+class InsigniaObtenidaAdmin(SoloLectura):
+    list_display = ["clave", "miembro", "obtenida"]
+    list_filter = ["clave"]
+
+@admin.register(Mision)
+class MisionAdmin(admin.ModelAdmin):
+    list_display = ["titulo", "meta_actividades", "puntos_recompensa", "fecha_inicio", "fecha_fin", "activa"]
+    list_filter = ["activa"]
 
 @admin.register(Miembro)
 class MiembroAdmin(SoloLectura):
@@ -83,9 +93,13 @@ class CertificacionTalentoAdmin(SoloLectura):
 
     @admin.action(description="Certificar talentos propuestos", permissions=["review"])
     def certificar(self, request, queryset):
-        count = queryset.filter(estado=CertificacionTalento.Estado.PROPUESTA).update(
-            estado=CertificacionTalento.Estado.CERTIFICADA,
-        )
+        from . import gamificacion
+        propuestos = list(queryset.filter(estado=CertificacionTalento.Estado.PROPUESTA))
+        count = CertificacionTalento.objects.filter(
+            pk__in=[c.pk for c in propuestos],
+        ).update(estado=CertificacionTalento.Estado.CERTIFICADA)
+        for certificacion in propuestos:
+            gamificacion.evaluar_insignias(certificacion.miembro)
         self.message_user(request, f"{count} talentos certificados.")
 
     @admin.action(description="Rechazar talentos propuestos", permissions=["review"])

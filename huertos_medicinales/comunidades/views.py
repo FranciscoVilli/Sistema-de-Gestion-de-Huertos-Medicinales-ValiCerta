@@ -37,6 +37,12 @@ def _mapa_comunidades():
     ]
 
 
+def ranking(request):
+    comunidades = list(Comunidad.objects.filter(estado=Comunidad.Estado.PUBLICADA))
+    comunidades.sort(key=lambda c: c.puntos, reverse=True)
+    return render(request, "comunidades/ranking.html", {"comunidades": comunidades})
+
+
 def listado(request):
     comunidades = Comunidad.objects.filter(estado=Comunidad.Estado.PUBLICADA)
     provincia = request.GET.get("provincia", "").strip()[:80]
