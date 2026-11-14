@@ -8,6 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from .educational_models import VISIBLE
+from .educational_models import CapituloEducativo
 from .educational_models import CompetenciaAdquirida
 from .educational_models import DesbloqueoRuta
 from .educational_models import IntentoCapitulo
@@ -17,6 +18,63 @@ from .educational_models import RutaEducativa
 
 def visible_lessons(chapter):
     return chapter.lecciones.filter(estado__in=VISIBLE)
+
+
+def ordered_chapters():
+    return list(
+        CapituloEducativo.objects.filter(estado__in=VISIBLE)
+        .select_related("bloque")
+        .order_by("numero"),
+    )
+
+
+def chapter_approved(user, chapter):
+    return IntentoCapitulo.objects.filter(
+        user=user, evaluacion__capitulo=chapter, aprobado=True,
+    ).exists()
+
+
+def chapter_progress(user):
+    """Avance secuencial por todo el temario: cada capítulo requiere el anterior aprobado."""
+    rows = []
+    unlocked = True
+    for chapter in ordered_chapters():
+        approved = chapter_approved(user, chapter)
+        rows.append({"chapter": chapter, "approved": approved, "unlocked": unlocked})
+        unlocked = unlocked and approved
+    return rows
+
+
+def chapter_unlocked(user, chapter):
+    return next(
+        (row["unlocked"] for row in chapter_progress(user) if row["chapter"].pk == chapter.pk),
+        False,
+    )
+
+
+def lesson_progress(user, chapter):
+    """Avance secuencial dentro de un capítulo: cada lección requiere la anterior completada."""
+    rows = []
+    unlocked = True
+    for lesson in visible_lessons(chapter).order_by("orden"):
+        progress = ProgresoLeccion.objects.filter(
+            user=user, leccion=lesson, revision=lesson.revision,
+        ).first()
+        completed = bool(progress and progress.completada)
+        rows.append(
+            {"lesson": lesson, "progress": progress, "completed": completed, "unlocked": unlocked},
+        )
+        unlocked = unlocked and completed
+    return rows
+
+
+def lesson_unlocked(user, lesson):
+    if not chapter_unlocked(user, lesson.capitulo):
+        return False
+    return next(
+        (row["unlocked"] for row in lesson_progress(user, lesson.capitulo) if row["lesson"].pk == lesson.pk),
+        False,
+    )
 
 
 def lessons_ready(user, chapter):

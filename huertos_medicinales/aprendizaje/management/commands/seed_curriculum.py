@@ -50,9 +50,6 @@ class Command(BaseCommand):
                 caption = "Esquema didáctico original. Representa conceptos, no medidas ni un diagnóstico."
             sections[0].update(imagen=image_path, imagen_alt=f"Esquema de {chapter.titulo}", pie=caption)
             sections[1]["explorar"] = [dict(titulo=s["titulo"], texto=s["texto"]) for s in sections[:3]]
-            sections[2]["caso"] = dict(titulo=entry["caso"], opciones=[
-                dict(texto=choice, respuesta=("Buena decisión. " if i == 0 else "Revisa esta decisión. ")+entry["explicacion"])
-                for i,choice in enumerate(entry["opciones"])])
             sections[3]["practica"] = entry["practica"]
             if chapter.numero == 11:
                 sections[3]["calculadora"] = True

@@ -130,17 +130,18 @@ def test_intentos_conservan_resultado_y_contenido_sin_duplicar_xp(student):
     assert estado(student)["xp"] == EXPECTED_LESSON_XP
 
 
-def test_learning_dashboard_sections_and_search(client, student):
+def test_learning_dashboard_only_shows_general_modules(client, student):
     client.force_login(student)
     for section in ["ruta", "lecciones", "plantas", "guias", "avances"]:
-        response = client.get(reverse("learning"), {"seccion": section})
-        assert response.status_code == 200
-        assert response.context["section"] == section
-    response = client.get(reverse("learning"), {"q": "calendula"})
-    assert [p["slug"] for p in response.context["results_plants"]] == ["calendula"]
-    assert client.get(reverse("learning_plant", args=["calendula"])).status_code == 200
+        assert client.get(reverse("learning"), {"seccion": section}).context["section"] == "ruta"
+    source = client.get(reverse("learning")).content.decode()
+    assert ">Lecciones disponibles<" not in source
+    assert ">Por planta<" not in source
+    assert ">Guías y fuentes<" not in source
+    assert "species-grid" not in source
     response = client.get(reverse("learning"), {"q": "zzzznotfound"})
-    assert not response.context["results_plants"] and not response.context["results_lessons"]
+    assert not response.context["blocks"]
+    assert client.get(reverse("learning_plant", args=["calendula"])).status_code == 200
     finish(student, 2)
     response = client.get(reverse("learning"))
     assert response.context["progress"] == 0

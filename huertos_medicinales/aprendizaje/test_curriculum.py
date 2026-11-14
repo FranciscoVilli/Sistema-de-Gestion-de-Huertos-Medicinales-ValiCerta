@@ -10,6 +10,7 @@ from huertos_medicinales.aprendizaje.educational_models import EvaluacionEducati
 from huertos_medicinales.aprendizaje.educational_models import IntentoCapitulo
 from huertos_medicinales.aprendizaje.educational_models import LeccionEducativa
 from huertos_medicinales.aprendizaje.educational_models import ProgresoLeccion
+from huertos_medicinales.aprendizaje.test_pilot import complete_lesson
 from huertos_medicinales.aprendizaje.test_pilot import finish_reading
 from huertos_medicinales.aprendizaje.test_pilot import start
 from huertos_medicinales.aprendizaje.test_pilot import submit
@@ -37,7 +38,7 @@ def test_all_chapters_have_valid_content_assets_and_assessments(curriculum):
         assert lesson.fuentes.count() >= 1
         assert (static / lesson.secciones[0]["imagen"]).is_file()
         assert len(lesson.secciones[1]["explorar"]) == 3
-        assert len(lesson.secciones[2]["caso"]["opciones"]) == 3
+        assert "caso" not in lesson.secciones[2]
         assert lesson.secciones[3]["practica"]
         exam = lesson.capitulo.evaluacion
         exam.full_clean()
@@ -63,13 +64,18 @@ def test_seed_is_idempotent_and_preserves_editor_changes_and_progress(curriculum
 def test_every_chapter_reader_and_assessment_end_to_end(client, curriculum):
     for chapter in CapituloEducativo.objects.all():
         assert client.get(reverse("lms_block", args=[chapter.bloque_id])).status_code == 200
-        assert client.get(reverse("lms_chapter", args=[chapter.slug])).status_code == 200
+        assert (
+            client.get(reverse("lms_chapter", args=[chapter.slug]), follow=True).status_code
+            == 200
+        )
         lesson = chapter.lecciones.get(slug=f"capitulo-{chapter.numero}-contenido")
+        for prior in chapter.lecciones.filter(orden__lt=lesson.orden):
+            complete_lesson(client, prior)
         response = client.get(reverse("lms_lesson", args=[lesson.slug]))
         assert response.status_code == 200
         assert "edu-visual" in response.content.decode()
         finish_reading(client, chapter)
-        for section, expected in [(1, "Explora las ideas"), (2, "PRÁCTICA SIN NOTA"), (3, "Tu pequeña investigación")]:
+        for section, expected in [(1, "Explora las ideas"), (3, "Tu pequeña investigación")]:
             response = client.get(reverse("lms_lesson", args=[lesson.slug]), {"seccion": section})
             assert response.status_code == 200
             assert expected in response.content.decode()
@@ -86,3 +92,19 @@ def test_every_chapter_reader_and_assessment_end_to_end(client, curriculum):
     assert dashboard.context["total_count"] == 27
     assert "Los demás capítulos están en preparación" not in dashboard.content.decode()
 
+
+def test_module_displays_real_xp_without_duplicate_awards(client, curriculum):
+    from .context_processors import XP_POR_LECCION, XP_POR_CAPITULO
+    chapter = CapituloEducativo.objects.order_by('numero').first()
+    url = reverse('lms_block', args=[chapter.bloque_id])
+    initial = client.get(url)
+    assert initial.context['earned_xp'] == 0
+    assert initial.context['total_xp'] > 0
+    finish_reading(client, chapter)
+    attempt = start(client, chapter)
+    assert submit(client, attempt).status_code == 302
+    expected = chapter.lecciones.filter(estado__in=['piloto', 'publicado']).count() * XP_POR_LECCION + XP_POR_CAPITULO
+    response = client.get(url)
+    assert response.context['earned_xp'] == expected
+    assert client.get(url).context['earned_xp'] == expected
+    assert f'{expected} XP' in response.content.decode()

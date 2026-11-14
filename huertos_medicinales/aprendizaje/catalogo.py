@@ -31,6 +31,14 @@ def ciclo(planta):
     return "corto" if planta["dias_madurez"] <= UMBRAL_CICLO_CORTO_DIAS else "largo"
 
 
+# Recomendación de suelo/agua de riego para el huerto real de una comunidad,
+# derivada directamente del texto ya citado en "cultivo" (misma fuente, sin
+# dato nuevo). Solo se asigna cuando esa fuente describe explícitamente el
+# drenaje o la tolerancia a la sequía/humedad; si no lo dice, el campo queda
+# vacío en vez de asumirse. No hay fuente de abono para ninguna especie, así
+# que "abono_recomendado" queda vacío en las cuatro.
+
+
 PLANTAS = (
     {
         "slug": "manzanilla",
@@ -38,6 +46,7 @@ PLANTAS = (
         "nombre_cientifico": "Matricaria chamomilla",
         "otros_nombres": (),
         "familia_botanica": "Asteraceae",
+        "altitud": "",
         "provincias": PROVINCIAS_SIERRA,
         "fuente_distribucion_nombre": FUENTE_SIERRA_NOMBRE,
         "fuente_distribucion_url": FUENTE_SIERRA_URL,
@@ -69,6 +78,9 @@ PLANTAS = (
         ),
         "luz": "sol",
         "sustrato": "equilibrado",
+        "suelo_recomendado": "",
+        "agua_recomendada": "",
+        "abono_recomendado": "",
         "ilustracion_flor": True,
         "ilustracion_hoja_rx": 16,
         "ilustracion_hoja_ry": 8,
@@ -83,6 +95,7 @@ PLANTAS = (
         "nombre_cientifico": "Mentha spicata",
         "otros_nombres": ("Hierbabuena",),
         "familia_botanica": "Lamiaceae",
+        "altitud": "",
         "provincias": PROVINCIAS_SIERRA,
         "fuente_distribucion_nombre": FUENTE_SIERRA_NOMBRE,
         "fuente_distribucion_url": FUENTE_SIERRA_URL,
@@ -110,6 +123,9 @@ PLANTAS = (
         "fuente_url": "https://plants.ces.ncsu.edu/plants/mentha-spicata/",
         "luz": "sombra",
         "sustrato": "compacto",
+        "suelo_recomendado": "",
+        "agua_recomendada": "",
+        "abono_recomendado": "",
         "ilustracion_flor": False,
         "ilustracion_hoja_rx": 18,
         "ilustracion_hoja_ry": 9,
@@ -124,6 +140,7 @@ PLANTAS = (
         "nombre_cientifico": "Calendula officinalis",
         "otros_nombres": (),
         "familia_botanica": "Asteraceae",
+        "altitud": "",
         "provincias": (),
         "fuente_distribucion_nombre": "",
         "fuente_distribucion_url": "",
@@ -148,6 +165,9 @@ PLANTAS = (
         "fuente_url": "https://plants.ces.ncsu.edu/plants/calendula-officinalis/",
         "luz": "sol",
         "sustrato": "ligero",
+        "suelo_recomendado": "arenoso",
+        "agua_recomendada": "",
+        "abono_recomendado": "",
         "ilustracion_flor": True,
         "ilustracion_hoja_rx": 16,
         "ilustracion_hoja_ry": 8,
@@ -162,6 +182,7 @@ PLANTAS = (
         "nombre_cientifico": "Salvia rosmarinus",
         "otros_nombres": (),
         "familia_botanica": "Lamiaceae",
+        "altitud": "",
         "provincias": PROVINCIAS_SIERRA,
         "fuente_distribucion_nombre": FUENTE_SIERRA_NOMBRE,
         "fuente_distribucion_url": FUENTE_SIERRA_URL,
@@ -190,6 +211,9 @@ PLANTAS = (
         ),
         "luz": "sol",
         "sustrato": "ligero",
+        "suelo_recomendado": "arenoso",
+        "agua_recomendada": "goteo",
+        "abono_recomendado": "",
         "ilustracion_flor": False,
         "ilustracion_hoja_rx": 6,
         "ilustracion_hoja_ry": 16,

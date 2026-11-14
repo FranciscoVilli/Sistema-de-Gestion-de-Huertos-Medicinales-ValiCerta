@@ -22,23 +22,27 @@ def pilot(client, django_user_model):
     return user, other, chapter
 
 
-def finish_reading(client, chapter):
-    for lesson in chapter.lecciones.all():
-        url = reverse("lms_lesson", args=[lesson.slug])
-        for i in range(len(lesson.secciones)):
-            assert (
-                client.post(
-                    url, {"action": "next", "section": i, "revision": lesson.revision},
-                ).status_code
-                == 302
-            )
-        answer = [str(i) for i in lesson.comprension["correctas"]]
+def complete_lesson(client, lesson):
+    url = reverse("lms_lesson", args=[lesson.slug])
+    for i in range(len(lesson.secciones)):
         assert (
             client.post(
-                url, {"action": "answer", "revision": lesson.revision, "answer": answer},
+                url, {"action": "next", "section": i, "revision": lesson.revision},
             ).status_code
             == 302
         )
+    answer = [str(i) for i in lesson.comprension["correctas"]]
+    assert (
+        client.post(
+            url, {"action": "answer", "revision": lesson.revision, "answer": answer},
+        ).status_code
+        == 302
+    )
+
+
+def finish_reading(client, chapter):
+    for lesson in chapter.lecciones.all():
+        complete_lesson(client, lesson)
 
 
 def start(client, chapter):
@@ -79,7 +83,55 @@ def test_structure_idempotence_and_draft_visibility(client, pilot):
     draft = CapituloEducativo.objects.get(numero=1)
     assert client.get(reverse("lms_chapter", args=[draft.slug])).status_code == 404
     assert client.get(reverse("lms_catalog")).status_code == 200
-    assert client.get(reverse("lms_chapter", args=[chapter.slug])).status_code == 200
+    assert (
+        client.get(reverse("lms_chapter", args=[chapter.slug]), follow=True).status_code
+        == 200
+    )
+
+
+def test_chapter_entry_and_lesson_completion_flow_straight_into_content(client, pilot):
+    user, other, chapter = pilot
+    lessons = list(chapter.lecciones.order_by("orden"))
+    assert len(lessons) == 3
+    first, second, third = lessons
+
+    response = client.get(reverse("lms_chapter", args=[chapter.slug]))
+    assert response.status_code == 302
+    assert response.url == reverse("lms_lesson", args=[first.slug])
+
+    complete_lesson(client, first)
+    response = client.get(reverse("lms_chapter", args=[chapter.slug]))
+    assert response.status_code == 302
+    assert response.url == reverse("lms_lesson", args=[second.slug])
+
+    url = reverse("lms_lesson", args=[second.slug])
+    for i in range(len(second.secciones)):
+        client.post(url, {"action": "next", "section": i, "revision": second.revision})
+    answer = [str(i) for i in second.comprension["correctas"]]
+    response = client.post(
+        url, {"action": "answer", "revision": second.revision, "answer": answer},
+    )
+    assert response.status_code == 302
+    assert response.url == reverse("lms_lesson", args=[third.slug])
+
+    url = reverse("lms_lesson", args=[third.slug])
+    for i in range(len(third.secciones)):
+        client.post(url, {"action": "next", "section": i, "revision": third.revision})
+    answer = [str(i) for i in third.comprension["correctas"]]
+    response = client.post(
+        url, {"action": "answer", "revision": third.revision, "answer": answer},
+    )
+    assert response.status_code == 302
+    assert response.url == reverse("lms_assessment", args=[chapter.slug])
+
+    attempt = start(client, chapter)
+    assert submit(client, attempt).status_code == 302
+    attempt.refresh_from_db()
+    assert attempt.aprobado
+
+    response = client.get(reverse("lms_chapter", args=[chapter.slug]))
+    assert response.status_code == 302
+    assert response.url == reverse("lms_lesson", args=[first.slug])
 
 
 def test_progress_requires_server_steps_and_comprehension(client, pilot):
