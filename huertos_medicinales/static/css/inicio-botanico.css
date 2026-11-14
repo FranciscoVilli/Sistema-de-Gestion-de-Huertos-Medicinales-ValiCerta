@@ -4,7 +4,7 @@ body.home-botanical{--home-ink:#17351e;--home-line:#e6dcc7;background:#fbf6ed;co
 .home-botanical main{position:relative;margin-left:245px;padding:20px 30px 24px;max-width:none;background:radial-gradient(ellipse at 70% 5%,#fffaf2,transparent 65%)}
 .home-botanical main:before{content:"";position:absolute;top:-45px;right:26%;width:260px;height:170px;background:url('../images/huertos/ramas-inicio.svg') center/contain no-repeat;transform:rotate(110deg);opacity:.57;pointer-events:none}
 .home-botanical .sidebar{width:245px;padding:26px 20px;background:radial-gradient(ellipse at 0 0,#355730,transparent 70%),linear-gradient(110deg,#193820,#132d1c);overflow-x:hidden}
-.home-botanical .sidebar:after{content:"";position:absolute;bottom:0;left:-24px;width:230px;height:270px;background:url('../images/huertos/ramas-inicio.svg') bottom/contain no-repeat;opacity:.66;pointer-events:none}
+.home-botanical .sidebar:after{content:"";position:absolute;bottom:0;left:-24px;width:230px;height:270px;background:url('../images/huertos/ramas-inicio.svg') bottom/contain no-repeat;opacity:.12;pointer-events:none}
 .home-botanical .sidebar-leaf{display:none}
 .home-botanical .brand{font:700 28px/1.08 Georgia,serif;text-align:center;margin-bottom:38px;position:relative;z-index:1}
 .home-botanical .brand svg{width:58px;height:54px;color:#d4dfa0;margin-bottom:4px}
@@ -67,7 +67,7 @@ body.home-botanical{--home-ink:#17351e;--home-line:#e6dcc7;background:#fbf6ed;co
 .home-botanical .terrace-header{padding-right:335px;min-height:88px}
 .home-botanical .account-menu summary{background:#fffdf9;border-color:#e6dcc7;min-height:52px}
 .home-botanical .account-avatar{width:39px;height:39px;font-size:18px;background:linear-gradient(#396138,#123019)}
-.home-botanical .account-dropdown a,.home-botanical .notif-empty{font-size:14px}
+.home-botanical .account-dropdown a,.home-botanical .account-dropdown button,.home-botanical .notif-empty{font-size:14px}
 .home-botanical .home-stats article:last-child strong{font-size:clamp(22px,1.85vw,31px)}
 .home-botanical .terrace-layout .terrace-scene{height:auto;aspect-ratio:2/1;align-self:start}
 .home-botanical .map-world{height:600px}

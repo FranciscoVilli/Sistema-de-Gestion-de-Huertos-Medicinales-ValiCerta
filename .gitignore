@@ -276,3 +276,6 @@ huertos_medicinales/media/
 .env
 .envs/
 .venv/
+
+# Permission-checked forum uploads
+/private_forum/

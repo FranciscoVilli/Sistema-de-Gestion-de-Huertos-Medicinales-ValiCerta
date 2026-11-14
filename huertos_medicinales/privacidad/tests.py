@@ -2,7 +2,6 @@ from http import HTTPStatus
 
 import pytest
 from django.conf import settings
-from django.contrib.auth.models import Permission
 from django.core import signing
 from django.http import HttpResponse
 from django.test import Client
@@ -16,8 +15,6 @@ from huertos_medicinales.users.forms import UserSignupForm
 from .checks import legal_production_check
 from .models import AceptacionCondiciones
 from .models import PreferenciaCookies
-from .models import RespuestaDerecho
-from .models import SolicitudDerecho
 from .preferences import COOKIE_MAX_AGE
 from .preferences import COOKIE_NAME
 from .preferences import SALT
@@ -124,48 +121,6 @@ def test_preferencias_no_permiten_redireccion_externa_y_requieren_csrf(client):
     )
 
 
-def test_derechos_son_privados_y_solo_gestor_responde(
-    client,
-    usuario,
-    django_user_model,
-):
-    client.force_login(usuario)
-    response = client.post(
-        reverse("privacidad:derechos"),
-        {"tipo": "acceso", "detalle": "Solicito consultar mis registros."},
-    )
-    assert response.status_code == HTTPStatus.FOUND
-    item = SolicitudDerecho.objects.get()
-    otro = django_user_model.objects.create_user(email="ajeno-privacidad@example.com")
-    client.force_login(otro)
-    assert (
-        client.get(reverse("privacidad:solicitud", args=[item.pk])).status_code
-        == HTTPStatus.NOT_FOUND
-    )
-    assert (
-        client.post(
-            reverse("privacidad:responder", args=[item.pk]),
-            {"estado": "respondida", "texto": "Texto"},
-        ).status_code
-        == HTTPStatus.FORBIDDEN
-    )
-    otro.user_permissions.add(Permission.objects.get(codename="gestionar_derechos"))
-    client.force_login(otro)
-    assert (
-        client.post(
-            reverse("privacidad:responder", args=[item.pk]),
-            {"estado": "en_gestion", "texto": "Tu solicitud está en revisión."},
-        ).status_code
-        == HTTPStatus.FOUND
-    )
-    assert RespuestaDerecho.objects.get().gestor == otro
-    client.force_login(usuario)
-    assert (
-        "Tu solicitud está en revisión."
-        in client.get(reverse("privacidad:solicitud", args=[item.pk])).content.decode()
-    )
-
-
 def test_condiciones_no_aceptadas_impiden_registro():
     form = UserSignupForm(
         data={
@@ -207,6 +162,7 @@ def test_identidad_y_avisos_son_publicos(client):
         assert response.status_code == HTTPStatus.OK
         assert "Huertos Medicinales" in response.content.decode()
         assert "site-footer" not in response.content.decode()
+        assert 'class="sidebar"' not in response.content.decode()
         assert "cookies-ui.css" in response.content.decode()
         assert "Proyecto académico" not in response.content.decode()
         assert (

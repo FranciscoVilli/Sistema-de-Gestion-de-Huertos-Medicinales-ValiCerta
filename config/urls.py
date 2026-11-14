@@ -59,13 +59,8 @@ urlpatterns = [
     ),
     path(
         "vista-previa/primera-siembra/",
-        RedirectView.as_view(pattern_name="seguimiento:listado", permanent=False),
+        RedirectView.as_view(pattern_name="workspace", permanent=False),
         name="challenge_preview",
-    ),
-    path(
-        "guias/primeros-pasos/",
-        TemplateView.as_view(template_name="pages/first_steps.html"),
-        name="first_steps",
     ),
     path(
         "mi-aprendizaje/",

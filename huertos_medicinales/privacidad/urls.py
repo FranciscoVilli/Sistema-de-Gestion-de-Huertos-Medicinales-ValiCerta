@@ -21,8 +21,4 @@ urlpatterns = [
         name="condiciones",
     ),
     path("cookies/guardar/", views.guardar_cookies, name="guardar_cookies"),
-    path("derechos/", views.derechos, name="derechos"),
-    path("derechos/gestion/", views.gestion, name="gestion"),
-    path("derechos/<uuid:pk>/", views.solicitud, name="solicitud"),
-    path("derechos/<uuid:pk>/responder/", views.responder, name="responder"),
 ]

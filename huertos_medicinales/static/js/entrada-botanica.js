@@ -12,4 +12,12 @@
    button.setAttribute('aria-pressed', String(visible));
   });
  });
+ document.querySelectorAll('input[type=password]').forEach(input => {
+  const scope = input.closest('div');
+  const hint = scope && scope.querySelector('.form-text ul, .helptext ul')?.parentElement;
+  if (!hint) return;
+  hint.hidden = true;
+  input.addEventListener('focus', () => { hint.hidden = false; });
+  input.addEventListener('blur', () => { hint.hidden = true; });
+ });
 })();
