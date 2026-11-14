@@ -1,7 +1,7 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import permission_required
-from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
@@ -10,7 +10,6 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
-from .forms import DevolucionForm
 from .forms import EmpaquetadoForm
 from .forms import ObservacionForm
 from .forms import PracticaForm
@@ -30,39 +29,22 @@ def snapshot(practica):
     }
 
 
-@login_required
-def listado(request):
-    from django.db.models import Q
-
-    from .models import Observacion
-    owned = Practica.objects.filter(participante=request.user)
-    query = request.GET.get("q", "").strip()[:120]
-    status = request.GET.get("estado", "")
-    mode = "lista" if request.GET.get("vista") == "lista" else "tarjetas"
-    filtered = owned
-    if query:
-        filtered = filtered.filter(Q(titulo__icontains=query) | Q(planta__icontains=query) | Q(espacio__icontains=query))
-    if status in ("activa", "finalizada"):
-        filtered = filtered.filter(estado=status)
-    else:
-        status = ""
-    page = Paginator(filtered.prefetch_related("observaciones"), 9).get_page(request.GET.get("page"))
-    for p in page:
-        p.reciente = next(iter(p.observaciones.all()), None)
-        p.imagen = next((o.foto for o in p.observaciones.all() if o.foto), None)
-        p.progreso = min(100, round(p.dias_transcurridos * 100 / p.info_planta["dias_madurez"])) if p.info_planta else 0
-    selected = next((p for p in page if str(p.pk) == request.GET.get("cultivo")), None)
-    selected = selected or next(iter(page), None)
-    params = request.GET.copy()
-    for key in ("page", "cultivo"):
-        params.pop(key, None)
-    return render(request, "seguimiento/listado.html", {
-        "page": page, "seleccionada": selected, "q": query, "filtro_estado": status, "vista": mode,
-        "total": owned.count(), "activas": owned.filter(estado="activa").count(),
-        "finalizadas": owned.filter(estado="finalizada").count(), "params": params.urlencode(),
-        "puede_sembrar": bool(plantas_disponibles(request.user)),
-        "recientes": Observacion.objects.filter(practica__participante=request.user).select_related("practica")[:4],
-    })
+def tipo_de_observacion(accion):
+    """Deriva un tipo/ícono a partir de cómo empieza la acción registrada por
+    el participante (los botones de 'cuidado rápido' siempre la redactan
+    empezando por 'Riego', 'Poda', etc.). Lo que escribas a mano cae en
+    'observacion' por defecto; no se inventa una categoría que el texto no
+    confirme."""
+    texto = (accion or "").strip().lower()
+    if texto.startswith("riego"):
+        return "riego", "riego"
+    if texto.startswith("poda"):
+        return "poda", "poda"
+    if texto.startswith("limpieza"):
+        return "limpieza", "observaciones"
+    if texto.startswith("revisi"):
+        return "revision", "observaciones"
+    return "observacion", "observaciones"
 
 
 @login_required
@@ -156,6 +138,34 @@ def detalle(request, pk):
         request,
         "seguimiento/detalle.html",
         {"practica": practica, "form": form},
+    )
+
+
+@login_required
+@require_http_methods(["GET"])
+def bitacora(request, pk):
+    practica = get_object_or_404(Practica, pk=pk, participante=request.user)
+    observaciones = practica.observaciones.all()
+    if request.GET.get("orden") == "antiguos":
+        observaciones = observaciones.order_by("fecha", "creada")
+    filas = []
+    for item in observaciones:
+        tipo, grupo = tipo_de_observacion(item.accion)
+        filas.append({"item": item, "tipo": tipo, "grupo": grupo})
+    inicio_semana = timezone.localdate() - timedelta(days=7)
+    total_esta_semana = sum(1 for f in filas if f["item"].fecha >= inicio_semana)
+    total_con_foto = sum(1 for f in filas if f["item"].foto)
+    return render(
+        request,
+        "seguimiento/bitacora.html",
+        {
+            "practica": practica,
+            "filas": filas,
+            "total_registros": len(filas),
+            "total_esta_semana": total_esta_semana,
+            "total_con_foto": total_con_foto,
+            "orden": request.GET.get("orden", "recientes"),
+        },
     )
 
 
@@ -261,42 +271,3 @@ def cambiar_estado(request, pk):
             )
             messages.success(request, "Estado actualizado.")
     return redirect("seguimiento:detalle", pk=pk)
-
-
-@login_required
-@permission_required("seguimiento.revisar_practica", raise_exception=True)
-def acompanamiento(request):
-    page = Paginator(
-        Practica.objects.select_related("participante").filter(
-            estado=Practica.Estado.ACTIVA,
-        ),
-        12,
-    ).get_page(request.GET.get("page"))
-    return render(request, "seguimiento/acompanamiento.html", {"page": page})
-
-
-@login_required
-@permission_required("seguimiento.revisar_practica", raise_exception=True)
-@require_http_methods(["GET", "POST"])
-def revisar(request, pk):
-    practica = get_object_or_404(Practica.objects.select_related("participante"), pk=pk)
-    form = DevolucionForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        with transaction.atomic():
-            revision = form.save(commit=False)
-            revision.practica = practica
-            revision.facilitador = request.user
-            revision.save()
-            EventoPractica.objects.create(
-                practica=practica,
-                actor=request.user,
-                accion="orientacion",
-                detalle={"id": revision.pk, "texto": revision.texto},
-            )
-        messages.success(request, "Orientación enviada a la práctica del participante.")
-        return redirect("seguimiento:revisar", pk=pk)
-    return render(
-        request,
-        "seguimiento/revisar.html",
-        {"practica": practica, "form": form},
-    )

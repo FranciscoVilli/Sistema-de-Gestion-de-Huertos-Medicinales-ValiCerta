@@ -12,16 +12,15 @@ pytestmark=pytest.mark.django_db
 
 def unlock(user, species):
  from django.core.management import call_command
- from huertos_medicinales.aprendizaje.educational_models import RutaEducativa, CompetenciaAdquirida, IntentoCapitulo, EvaluacionEducativa
- call_command("seed_education_pilot",verbosity=0)
- route=RutaEducativa.objects.get(slug="manzanilla-observar-recipiente")
- exam=EvaluacionEducativa.objects.get(capitulo__numero=5)
- attempt=IntentoCapitulo.objects.create(user=user,evaluacion=exam,version="test",contenido={},aprobado=True,finalizado=timezone.now())
+ from huertos_medicinales.aprendizaje.educational_models import RutaEducativa, CompetenciaAdquirida, IntentoCapitulo
+ call_command("seed_plant_routes",verbosity=0)
+ route=RutaEducativa.objects.filter(especie=species,estado__in=["piloto","publicado"]).first()
+ if route is None:
+  route=RutaEducativa.objects.create(slug="test-"+species,nombre=species,especie=species,estado="publicado")
  for competency in route.requisitos.all():
+  exam=competency.evaluacioneducativa_set.first()
+  attempt=IntentoCapitulo.objects.create(user=user,evaluacion=exam,version="test",contenido={},aprobado=True,finalizado=timezone.now())
   CompetenciaAdquirida.objects.get_or_create(user=user,competencia=competency,defaults={"intento":attempt})
- if species!="manzanilla":
-  other=RutaEducativa.objects.create(slug="test-"+species,nombre=species,especie=species,estado="publicado")
-  other.requisitos.set(route.requisitos.all())
 
 @pytest.fixture
 def setup(client,django_user_model):

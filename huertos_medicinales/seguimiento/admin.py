@@ -3,7 +3,6 @@ from django.db import transaction
 
 from huertos_medicinales.common.admin import SoloLectura
 
-from .models import Devolucion
 from .models import EventoPractica
 from .models import Observacion
 from .models import Practica
@@ -51,4 +50,3 @@ class EventoAdmin(SoloLectura):
 
 
 admin.site.register(Observacion, SoloLectura)
-admin.site.register(Devolucion, SoloLectura)

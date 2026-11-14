@@ -34,23 +34,28 @@
           result.append(element('p','Usa tu ubicación para ver el clima de este jardín, sin escribir una ciudad.'));
           return;
         }
-        widget.querySelector('[data-place]').textContent = `📍 ${data.name} · ${data.exposure_label}`;
-        save.elements.exposure.value = data.exposure;
+        const placeEl = widget.querySelector('[data-place]');
+        if (placeEl) placeEl.textContent = `📍 ${data.name} · ${data.exposure_label}`;
+        if (save) save.elements.exposure.value = data.exposure;
         if (!data.available) { result.append(element('p',data.message)); return; }
         const headline = element('div','', 'weather-now');
         headline.append(element('span',data.icon,'weather-icon'),element('strong',data.current ? display(data.temperature,' °C') : `${display(data.minimum,'°')} – ${display(data.maximum,'°')}`),element('span',data.label));
         const metrics = element('div','','weather-metrics');
         const values = [['🌧️ Probabilidad de lluvia',display(data.rain,' %')],['🌡️ Mín. / máx.',`${display(data.minimum,'°')} / ${display(data.maximum,'°')}`]];
         if (data.current) values.push(['💧 Humedad ambiental',display(data.humidity,' %')]);
+        if (widget.dataset.lunarName) values.push([`${widget.dataset.lunarIcon || '🌙'} Ciclo lunar`,widget.dataset.lunarName]);
         for (const [label,value] of values) { const metric = element('div',''); metric.append(element('span',label),element('strong',value));metrics.append(metric); }
-        result.append(headline, metrics, element('p',data.advice,'weather-advice'));
-        const updated = new Date(data.updated).toLocaleString('es-EC',{timeZone:data.timezone,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-        result.append(element('small',`${data.current ? 'Condiciones actuales estimadas' : 'Pronóstico para '+data.date} · Consultado ${updated} · Hora local de la localidad. Se actualiza cada 15 minutos.`,'weather-update'));
+        result.append(headline, metrics);
+        if (!widget.hasAttribute('data-compact')) {
+          result.append(element('p',data.advice,'weather-advice'));
+          const updated = new Date(data.updated).toLocaleString('es-EC',{timeZone:data.timezone,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+          result.append(element('small',`${data.current ? 'Condiciones actuales estimadas' : 'Pronóstico para '+data.date} · Consultado ${updated} · Hora local de la localidad. Se actualiza cada 15 minutos.`,'weather-update'));
+        }
       } catch (error) { result.replaceChildren(element('p','No se pudo consultar el clima. Revisa tu conexión y pulsa Actualizar.')); }
       finally { loading = false; refresh.disabled = false; }
     }
     const locate = widget.querySelector('[data-geolocate]');
-    locate.addEventListener('click', async () => {
+    locate?.addEventListener('click', async () => {
       const status = widget.querySelector('[data-location-status]');
       if (!window.isSecureContext || !navigator.geolocation) {
         status.textContent = 'La ubicación necesita HTTPS o localhost. Puedes elegir tu localidad manualmente.';
@@ -79,7 +84,7 @@
     widget.querySelector('[data-weather-garden]')?.addEventListener('change', event => {
       const url = new URL(location.href);url.searchParams.set('jardin',event.target.value);location.assign(url);
     });
-    search.addEventListener('submit', async event => {
+    search?.addEventListener('submit', async event => {
       event.preventDefault();const button=search.querySelector('button');button.disabled=true;
       const status=widget.querySelector('[data-search-status]');status.textContent='Buscando localidades…';
       select.replaceChildren(new Option('Selecciona una localidad',''));
@@ -91,7 +96,7 @@
       } catch(error) {status.textContent=error.name==='AbortError' ? 'La búsqueda tardó demasiado. Intenta nuevamente.' : error.message;}
       finally {button.disabled=false;}
     });
-    save.addEventListener('submit',async event=>{
+    save?.addEventListener('submit',async event=>{
       event.preventDefault();const button=save.querySelector('button');button.disabled=true;
       const status=widget.querySelector('[data-save-status]');status.textContent='Guardando…';
       try {await request(endpoint,{method:'POST',body:new FormData(save)});status.textContent='Localidad guardada.';settings.open=false;select.value='';await load();}

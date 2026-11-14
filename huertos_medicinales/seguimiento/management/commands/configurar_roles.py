@@ -8,8 +8,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for name, app, codes in [
-            ("Gestores de privacidad", "privacidad", ["gestionar_derechos"]),
-            ("Facilitadores", "seguimiento", ["revisar_practica"]),
             (
                 "Gestores de comunidades",
                 "comunidades",

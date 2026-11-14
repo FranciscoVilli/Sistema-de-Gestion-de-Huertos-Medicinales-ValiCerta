@@ -21,7 +21,7 @@ def test_shared_shell_and_crop_navigation(client,django_user_model):
     user=django_user_model.objects.create_user(email="navigation@example.invalid")
     client.force_login(user)
     crop=Practica.objects.create(participante=user,titulo="Cultivo de prueba",planta="manzanilla",inicio=date.today(),espacio="Ventana",objetivo="Observar")
-    for route,args in [("workspace",[]),("seguimiento:listado",[]),("seguimiento:crear",[]),("seguimiento:detalle",[crop.pk]),("seguimiento:editar",[crop.pk]),("calendar",[]),("learning",[]),("comunidades:listado",[]),("users:detail",[user.pk]),("privacidad:cookies",[])]:
+    for route,args in [("workspace",[]),("seguimiento:crear",[]),("seguimiento:detalle",[crop.pk]),("seguimiento:editar",[crop.pk]),("calendar",[]),("learning",[]),("comunidades:listado",[]),("users:detail",[user.pk]),("privacidad:cookies",[])]:
         response=client.get(reverse(route,args=args));assert response.status_code==200
         source=response.content.decode(); page=Page();page.feed(source)
         assert page.main==1
@@ -31,16 +31,15 @@ def test_shared_shell_and_crop_navigation(client,django_user_model):
         assert "Gestión y acompañamiento" not in source
     source=client.get(reverse("seguimiento:detalle",args=[crop.pk])).content.decode()
     page=Page();page.feed(source)
-    assert {"bitacora","registrar-observacion","datos-cultivo"} <= set(page.ids)
-    source=client.get(reverse("seguimiento:listado")).content.decode()
+    assert {"registrar-observacion","datos-cultivo"} <= set(page.ids)
+    source=client.get(reverse("workspace")).content.decode()
     assert f'{reverse("seguimiento:detalle",args=[crop.pk])}#registrar-observacion' in source
 
-def test_authorized_management_links_remain_accessible(client,django_user_model):
+def test_admin_link_remains_accessible_to_staff(client,django_user_model):
     user=django_user_model.objects.create_user(email="manager-style@example.invalid",is_staff=True,is_superuser=True)
     client.force_login(user)
     source=client.get(reverse("workspace")).content.decode()
-    for route in ["seguimiento:acompanamiento","privacidad:gestion","admin:index"]:
-        assert reverse(route) in source
+    assert reverse("admin:index") in source
 
 def test_account_recovery_uses_current_login_design(client):
     for route in ["account_login","account_signup","account_reset_password"]:

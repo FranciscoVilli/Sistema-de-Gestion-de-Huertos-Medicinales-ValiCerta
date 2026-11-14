@@ -57,7 +57,6 @@ class Practica(models.Model):
         ]
         ordering = ["-creada"]
         permissions = [
-            ("revisar_practica", "Acompañar prácticas y escribir devoluciones"),
             (
                 "avanzar_tiempo_practica",
                 "Adelantar el tiempo de una práctica (demostraciones)",
@@ -135,23 +134,6 @@ class Observacion(models.Model):
 
     def __str__(self):
         return f"{self.practica}: {self.fecha}"
-
-
-class Devolucion(models.Model):
-    practica = models.ForeignKey(
-        Practica,
-        on_delete=models.PROTECT,
-        related_name="devoluciones",
-    )
-    facilitador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    texto = models.TextField("Orientación para el participante", max_length=2000)
-    creada = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-creada"]
-
-    def __str__(self):
-        return f"Orientación: {self.practica_id}"
 
 
 class EventoPractica(models.Model):

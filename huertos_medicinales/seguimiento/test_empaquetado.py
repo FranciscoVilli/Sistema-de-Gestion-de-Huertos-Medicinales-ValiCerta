@@ -41,8 +41,6 @@ def test_registrar_empaquetado_muestra_caducidad_y_queda_en_bitacora(client, pra
     assert response.status_code == 302
     empaquetado = Empaquetado.objects.get(practica=cultivo)
     assert empaquetado.fecha_caducidad == date(2027, 1, 1)
-    detalle = client.get(reverse("seguimiento:detalle", args=[cultivo.pk]))
-    assert b"Registrar empaquetado" in detalle.content
 
 
 def test_empaquetado_requiere_ser_el_propietario(client, practica):
@@ -63,5 +61,5 @@ def test_video_url_se_muestra_en_la_bitacora(client, practica):
         "video_url": "https://example.com/mi-video",
     })
     assert response.status_code == 302
-    bitacora = client.get(url)
+    bitacora = client.get(reverse("seguimiento:bitacora", args=[cultivo.pk]))
     assert b"example.com/mi-video" in bitacora.content

@@ -125,5 +125,5 @@ def liberar(request, pk):
         practice.posicion = None
         practice.save(update_fields=["jardin", "posicion"])
         EventoPractica.objects.create(practica=practice, actor=request.user, accion="espacio_liberado", detalle=before)
-    messages.success(request, "Espacio libre. El cultivo y su bitácora siguen en Mis cultivos.")
+    messages.success(request, "Espacio libre. El cultivo y su bitácora siguen disponibles en Inicio.")
     return redirect(garden_url(garden) if garden else reverse("workspace"))

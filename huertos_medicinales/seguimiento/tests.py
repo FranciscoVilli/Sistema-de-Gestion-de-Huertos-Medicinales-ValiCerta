@@ -6,6 +6,7 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
+from django.urls import NoReverseMatch
 from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
@@ -14,8 +15,8 @@ from huertos_medicinales.aprendizaje.catalogo import LECCIONES
 from huertos_medicinales.aprendizaje.catalogo import XP_POR_LECCION
 from huertos_medicinales.aprendizaje.models import Logro
 
-from .models import Devolucion
 from .models import EventoPractica
+from .models import Observacion
 from .models import Practica
 
 pytestmark = pytest.mark.django_db
@@ -151,7 +152,55 @@ def test_observaciones_persisten_con_foto_y_no_admiten_fechas_anteriores(
     assert practica.observaciones.count() == 1
     assert practica.observaciones.get().foto
     assert practica.eventos.get().detalle["resultado"] == "Húmedo"
-    assert "Húmedo" in client.get(url).content.decode()
+    bitacora_url = reverse("seguimiento:bitacora", args=[practica.pk])
+    assert "Húmedo" in client.get(bitacora_url).content.decode()
+
+
+def test_registrar_cuidado_exige_llenar_resultado_y_ya_no_se_puede_omitir(
+    client,
+    usuario,
+    practica,
+):
+    client.force_login(usuario)
+    url = reverse("seguimiento:detalle", args=[practica.pk])
+    with pytest.raises(NoReverseMatch):
+        reverse("seguimiento:cuidado_rapido", args=[practica.pk])
+    response = client.post(url, {
+        "fecha": timezone.localdate(),
+        "accion": "Riego realizado",
+        "resultado": "",
+        "pregunta": "",
+    })
+    assert response.status_code == HTTPStatus.OK
+    assert practica.observaciones.count() == 0
+    assert "resultado" in response.context["form"].errors
+
+
+def test_bitacora_agrupa_por_tipo_y_solo_la_ve_el_propietario(
+    client,
+    practica,
+    django_user_model,
+):
+    client.force_login(practica.participante)
+    hoy = timezone.localdate()
+    Observacion.objects.create(
+        practica=practica, fecha=hoy,
+        accion="Riego realizado", resultado="Sustrato húmedo",
+    )
+    Observacion.objects.create(
+        practica=practica, fecha=hoy - timedelta(days=10),
+        accion="Poda realizada", resultado="Más aireada",
+    )
+    url = reverse("seguimiento:bitacora", args=[practica.pk])
+    response = client.get(url)
+    assert response.status_code == HTTPStatus.OK
+    filas = response.context["filas"]
+    assert [f["tipo"] for f in filas] == ["riego", "poda"]
+    assert response.context["total_registros"] == 2
+    assert response.context["total_esta_semana"] == 1
+
+    client.force_login(django_user_model.objects.create_user(email="ajeno-bitacora@example.com"))
+    assert client.get(url).status_code == HTTPStatus.NOT_FOUND
 
 
 def test_etapa_se_calcula_con_dias_reales_y_adelanto(usuario):
@@ -196,36 +245,6 @@ def test_cerrar_reabrir_y_editar_conserva_historial(client, usuario, practica):
     ]
 
 
-def test_solo_facilitador_autorizado_registra_orientacion(
-    client,
-    usuario,
-    practica,
-    django_user_model,
-):
-    url = reverse("seguimiento:revisar", args=[practica.pk])
-    client.force_login(usuario)
-    assert (
-        client.post(url, {"texto": "No autorizada"}).status_code == HTTPStatus.FORBIDDEN
-    )
-    facilitador = django_user_model.objects.create_user(email="facilitador@example.com")
-    facilitador.user_permissions.add(
-        Permission.objects.get(codename="revisar_practica"),
-    )
-    client.force_login(facilitador)
-    assert (
-        client.post(url, {"texto": "Compara una condición a la vez"}).status_code
-        == HTTPStatus.FOUND
-    )
-    assert Devolucion.objects.get().facilitador == facilitador
-    client.force_login(usuario)
-    assert (
-        "Compara una condición"
-        in client.get(
-            reverse("seguimiento:detalle", args=[practica.pk]),
-        ).content.decode()
-    )
-
-
 def test_admin_adelanta_tiempo_con_permiso_y_registra_evento(
     client,
     practica,
@@ -256,7 +275,7 @@ def test_admin_adelanta_tiempo_con_permiso_y_registra_evento(
 
 def test_csrf_y_autenticacion_protegen_escrituras(client, usuario):
 
-    assert client.get(reverse("seguimiento:listado")).status_code == HTTPStatus.FOUND
+    assert client.get(reverse("seguimiento:crear")).status_code == HTTPStatus.FOUND
     protected = Client(enforce_csrf_checks=True)
     protected.force_login(usuario)
     assert (

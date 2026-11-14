@@ -1,7 +1,6 @@
 from django import forms
 from django.utils import timezone
 
-from .models import Devolucion
 from .models import Empaquetado
 from .models import Observacion
 from .models import Practica
@@ -74,10 +73,3 @@ class EmpaquetadoForm(forms.ModelForm):
             "contraindicaciones": forms.Textarea(attrs={"rows": 3}),
             "fecha_empaquetado": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
         }
-
-
-class DevolucionForm(forms.ModelForm):
-    class Meta:
-        model = Devolucion
-        fields = ["texto"]
-        widgets = {"texto": forms.Textarea(attrs={"rows": 4})}
