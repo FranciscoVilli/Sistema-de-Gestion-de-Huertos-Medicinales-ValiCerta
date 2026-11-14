@@ -4,9 +4,16 @@ from . import views, community
 
 app_name = "comunidades"
 urlpatterns = [
+    path('preguntas/<int:pk>/archivo/<str:kind>/', community.attachment, name='archivo'),
+    path('preguntas/<int:pk>/encuesta/', community.poll_vote, name='encuesta'),
+    path("preguntas/<int:pk>/guardar/", community.bookmark, name="guardar_pregunta"),
+    path("grupos/nueva/", community.group_create, name="crear_grupo"),
+    path("grupos/<uuid:pk>/unirme/", community.join_group, name="unirse_grupo"),
+    path("grupos/<uuid:pk>/salir/", community.leave_group, name="salir_grupo"),
+    path("preguntas/<int:pk>/votar/", community.vote, name="votar_pregunta"),
+    path("respuestas/<int:pk>/votar/", community.vote, {"reply":True}, name="votar_respuesta"),
     path("", community.hub, name="listado"),
     path("reglas/", community.reglas, name="reglas"),
-    path("iniciativas/", views.listado, name="iniciativas"),
     path("ranking/", views.ranking, name="ranking"),
     path("mapa/datos/", community.map_data, name="map_data"),
     path("preguntas/nueva/", community.question_edit, name="nueva_pregunta"),
@@ -24,6 +31,7 @@ urlpatterns = [
     path("<uuid:pk>/huerto-real/", views.huerto_real, name="huerto_real"),
     path("<uuid:pk>/unirme/", views.solicitar_membresia, name="solicitar_membresia"),
     path("<uuid:pk>/miembros/", views.gestionar_miembros, name="gestionar_miembros"),
+    path("<uuid:pk>/miembros/agregar-por-codigo/", views.agregar_por_codigo, name="agregar_por_codigo"),
     path("<uuid:pk>/miembros/<int:miembro_pk>/decidir/", views.decidir_miembro, name="decidir_miembro"),
     path("<uuid:pk>/miembros/<int:miembro_pk>/retirar/", views.retirar_miembro, name="retirar_miembro"),
     path("<uuid:pk>/miembros/<int:miembro_pk>/talento/", views.proponer_talento, name="proponer_talento"),

@@ -7,6 +7,7 @@ from django.db import models
 
 
 class Comunidad(models.Model):
+    grupo_virtual = models.BooleanField(default=False)
     class Estado(models.TextChoices):
         PENDIENTE = "pendiente", "Pendiente de revisión"
         PUBLICADA = "publicada", "Publicada"
@@ -36,12 +37,14 @@ class Comunidad(models.Model):
     )
     latitud = models.DecimalField(
         "Latitud aproximada",
+        null=True, blank=True,
         max_digits=4,
         decimal_places=2,
         validators=[MinValueValidator(-90), MaxValueValidator(90)],
     )
     longitud = models.DecimalField(
         "Longitud aproximada",
+        null=True, blank=True,
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(-180), MaxValueValidator(180)],
@@ -111,22 +114,11 @@ class HuertoReal(models.Model):
     comunidad = models.OneToOneField(Comunidad, on_delete=models.CASCADE, related_name="huerto_real")
     provincia = models.CharField("Provincia", max_length=80)
     parroquia = models.CharField("Parroquia", max_length=100)
-    direccion = models.CharField(
-        "Dirección o referencia",
-        max_length=200,
-        help_text="Uso interno del establecimiento de salud; no se publica.",
-    )
-    latitud = models.DecimalField(
-        "Latitud",
-        max_digits=9,
-        decimal_places=6,
-        validators=[MinValueValidator(-90), MaxValueValidator(90)],
-    )
-    longitud = models.DecimalField(
-        "Longitud",
-        max_digits=9,
-        decimal_places=6,
-        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+    plantas = models.JSONField(
+        "Plantas medicinales que cultivan",
+        default=list,
+        blank=True,
+        help_text="Según las plantas elegidas se recomienda el suelo, el agua de riego y el abono.",
     )
     tipo_diseno = models.CharField("Diseño del huerto", max_length=16, choices=Diseno)
     tecnica_diseno = models.CharField(
@@ -144,16 +136,40 @@ class HuertoReal(models.Model):
     )
     area_total = models.DecimalField("Área total", max_digits=8, decimal_places=2)
     unidad_area = models.CharField(max_length=4, choices=UnidadArea, default=UnidadArea.M2)
-    tipo_suelo = models.CharField("Tipo de suelo", max_length=16, choices=Suelo)
-    tipo_agua_riego = models.CharField("Agua de riego", max_length=16, choices=AguaRiego)
+    tipo_suelo = models.CharField(
+        "Tipo de suelo",
+        max_length=16,
+        choices=Suelo,
+        blank=True,
+        help_text="Recomendado automáticamente según las plantas elegidas.",
+    )
+    tipo_agua_riego = models.CharField(
+        "Agua de riego",
+        max_length=16,
+        choices=AguaRiego,
+        blank=True,
+        help_text="Recomendado automáticamente según las plantas elegidas.",
+    )
     detalle_riego = models.CharField("Detalle del riego", max_length=150, blank=True)
-    tipo_abono = models.CharField("Abono natural", max_length=20, choices=Abono)
+    tipo_abono = models.CharField(
+        "Abono natural",
+        max_length=20,
+        choices=Abono,
+        blank=True,
+        help_text="Recomendado automáticamente según las plantas elegidas.",
+    )
     detalle_abono = models.CharField("Detalle del abono", max_length=150, blank=True)
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Huerto real: {self.comunidad}"
+
+    @property
+    def plantas_nombres(self):
+        from huertos_medicinales.aprendizaje.catalogo import PLANTAS
+        nombres = {planta["slug"]: planta["nombre"] for planta in PLANTAS}
+        return [nombres[slug] for slug in self.plantas if slug in nombres]
 
 
 class Bodega(models.Model):
@@ -329,12 +345,24 @@ class JardinCompartido(models.Model):
     longitud = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(-180), MaxValueValidator(180)])
     actualizada = models.DateTimeField(auto_now=True)
 
+from .media_storage import ForumStorage, attachment_path
+
 class Pregunta(models.Model):
+    foto = models.ImageField(upload_to=attachment_path, storage=ForumStorage(), blank=True)
+    video = models.FileField(upload_to=attachment_path, storage=ForumStorage(), blank=True)
+    enlace = models.URLField(blank=True, max_length=600)
+    encuesta = models.JSONField(default=list, blank=True)
+
+    TIPOS=[('pregunta','Pregunta'),('experiencia','Experiencia'),('consejo','Consejo')]
+    tipo=models.CharField('Tipo de publicación',max_length=12,choices=TIPOS,default='pregunta')
+    guardada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='publicaciones_guardadas')
+    comunidad = models.ForeignKey(Comunidad, null=True, blank=True, on_delete=models.PROTECT, related_name="temas")
+    visibilidad = models.CharField("Visibilidad", max_length=8, choices=[("publico","Público: cualquiera puede leer"),("privado","Privado: solo integrantes de la comunidad")], default="publico")
     CATEGORIAS = [("cultivo","Cultivo"),("plagas","Plagas y enfermedades"),("riego","Riego"),("suelo","Suelo y nutrientes"),("experiencias","Experiencias"),("cosecha","Cosecha")]
     autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="preguntas_comunidad")
     titulo = models.CharField("Título de tu pregunta", max_length=180)
     contenido = models.TextField("Describe tu pregunta o experiencia", max_length=5000)
-    categoria = models.CharField("Categoría", max_length=20, choices=CATEGORIAS)
+    categoria = models.CharField("Categoría", max_length=20, choices=CATEGORIAS, blank=True)
     resuelta = models.BooleanField(default=False)
     oculta = models.BooleanField(default=False)
     huella = models.CharField(max_length=64, editable=False)
@@ -342,10 +370,13 @@ class Pregunta(models.Model):
     actualizada = models.DateTimeField(auto_now=True)
     class Meta:
         ordering = ["-creada","-pk"]
-        constraints = [models.UniqueConstraint(fields=["autor","huella"],condition=models.Q(oculta=False),name="community_unique_question")]
+        constraints = [models.CheckConstraint(condition=models.Q(visibilidad="publico") | models.Q(comunidad__isnull=False),name="private_topic_has_community"),models.UniqueConstraint(fields=["autor","huella"],condition=models.Q(oculta=False),name="community_unique_question")]
         indexes = [models.Index(fields=["oculta","categoria","-creada"])]
 
 class Respuesta(models.Model):
+    padre = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT, related_name="hijos")
+    raiz = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT, related_name="descendientes")
+    profundidad = models.PositiveSmallIntegerField(default=0)
     pregunta = models.ForeignKey(Pregunta,on_delete=models.CASCADE,related_name="respuestas")
     autor = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name="respuestas_comunidad")
     contenido = models.TextField("Tu respuesta",max_length=4000)
@@ -356,3 +387,26 @@ class Respuesta(models.Model):
     class Meta:
         ordering = ["creada","pk"]
         constraints = [models.UniqueConstraint(fields=["pregunta","autor","huella"],condition=models.Q(oculta=False),name="community_unique_answer")]
+
+
+class VotoPregunta(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    pregunta = models.ForeignKey(Pregunta,on_delete=models.CASCADE,related_name="votos")
+    valor = models.SmallIntegerField()
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["usuario","pregunta"],name="unique_topic_vote"),models.CheckConstraint(condition=models.Q(valor__in=[-1,1]),name="valid_topic_vote")]
+
+class VotoRespuesta(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    respuesta = models.ForeignKey(Respuesta,on_delete=models.CASCADE,related_name="votos")
+    valor = models.SmallIntegerField()
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["usuario","respuesta"],name="unique_reply_vote"),models.CheckConstraint(condition=models.Q(valor__in=[-1,1]),name="valid_reply_vote")]
+
+
+class VotoEncuesta(models.Model):
+    pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE, related_name='votos_encuesta')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    opcion = models.PositiveSmallIntegerField()
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['pregunta','usuario'], name='one_poll_vote_per_user')]

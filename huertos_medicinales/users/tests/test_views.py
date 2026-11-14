@@ -12,7 +12,6 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
 
 from huertos_medicinales.users.forms import UserAdminChangeForm
 from huertos_medicinales.users.tests.factories import UserFactory
@@ -75,7 +74,7 @@ class TestUserUpdateView:
         view.form_valid(form)
 
         messages_sent = [m.message for m in messages.get_messages(request)]
-        assert messages_sent == [_("Information successfully updated")]
+        assert messages_sent == ["Tu información se guardó correctamente."]
 
 
 class TestUserRedirectView:

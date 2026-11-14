@@ -1,5 +1,7 @@
 from django import forms
 
+from huertos_medicinales.aprendizaje.catalogo import PLANTAS
+
 from .models import Bodega
 from .models import Comunidad
 from .models import HuertoReal
@@ -7,6 +9,11 @@ from .models import Miembro
 
 
 class ComunidadForm(forms.ModelForm):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.fields['latitud'].required=True
+        self.fields['longitud'].required=True
+
     confirmar_publicacion = forms.BooleanField(
         label=(
             "Solicito publicar esta información y confirmo que puedo "
@@ -55,15 +62,43 @@ class SolicitudMiembroForm(forms.ModelForm):
         widgets = {"fecha_nacimiento": forms.DateInput(attrs={"type": "date"})}
 
 
+class AgregarPorCodigoForm(forms.Form):
+    codigo = forms.CharField(
+        label="Código único de la persona",
+        max_length=6,
+        min_length=6,
+        help_text="Pídele a la persona su código de 6 dígitos (está en Mi cuenta).",
+    )
+
+    def clean_codigo(self):
+        code=self.cleaned_data['codigo'].strip()
+        if len(code)!=6 or not code.isascii() or not code.isdigit():
+            raise forms.ValidationError('Escribe un código de seis dígitos.')
+        return code
+
+
 class HuertoRealForm(forms.ModelForm):
+    plantas = forms.MultipleChoiceField(
+        label="Plantas medicinales que cultivan",
+        choices=[(planta["slug"], planta["nombre"]) for planta in PLANTAS],
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="El tipo de suelo, el agua de riego y el abono se recomiendan según lo que elijas aquí.",
+    )
+
     class Meta:
         model = HuertoReal
         fields = [
-            "provincia", "parroquia", "direccion", "latitud", "longitud",
+            "provincia", "parroquia", "plantas",
             "tipo_diseno", "tecnica_diseno", "tipo_cerca", "detalle_cerca",
-            "area_total", "unidad_area", "tipo_suelo", "tipo_agua_riego",
-            "detalle_riego", "tipo_abono", "detalle_abono",
+            "area_total", "unidad_area",
+            "detalle_riego", "detalle_abono",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["plantas"].initial = self.instance.plantas
 
 
 class BodegaForm(forms.ModelForm):

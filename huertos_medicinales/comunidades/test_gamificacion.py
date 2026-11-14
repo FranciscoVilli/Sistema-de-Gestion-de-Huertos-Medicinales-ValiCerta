@@ -71,3 +71,32 @@ def test_ranking_ordena_comunidades_por_puntos(client,miembro_aprobado):
  otra=Comunidad.objects.create(responsable=responsable,nombre='Huerto Sin Puntos',provincia='Imbabura',localidad='Otavalo',descripcion='x'*10,encuentro='x'*10,latitud='0.23',longitud='-78.26',estado=Comunidad.Estado.PUBLICADA)
  r=client.get(reverse('comunidades:ranking'))
  assert list(r.context['comunidades'])==[comunidad,otra]
+
+def test_ranking_uses_real_points_and_shares_tied_positions(client,miembro_aprobado,django_user_model):
+ from .rankings import standings
+ responsable,voluntario,group,member=miembro_aprobado
+ p=practica_de(voluntario)
+ ActividadCalendario.objects.create(practica=p,fecha=date(2026,1,2),tipo='riego',completada=True)
+ other=Comunidad.objects.create(responsable=responsable,nombre='Otra comunidad',estado='publicada')
+ u=django_user_model.objects.create_user(email='ranking-other@example.invalid')
+ m=Miembro.objects.create(usuario=u,comunidad=other,fecha_nacimiento='1990-01-01',estado='aprobada')
+ ActividadCalendario.objects.create(practica=practica_de(u),fecha=date(2026,1,2),tipo='riego',completada=True)
+ Comunidad.objects.create(responsable=responsable,nombre='No publicada',estado='pendiente')
+ rows=standings(voluntario)
+ assert len(rows)==2 and [r['xp'] for r in rows]==[5,5]
+ assert [r['position'] for r in rows]==[1,1]
+ assert all(r['tied'] for r in rows)
+ assert [r['group'] for r in rows if r['mine']]==[group]
+ client.force_login(voluntario)
+ response=client.get(reverse('comunidades:ranking'))
+ assert response.status_code==200 and len(response.context['podium'])==2
+ member.estado='retirada';member.save()
+ rows=standings(voluntario)
+ assert next(r for r in rows if r['group']==group)['xp']==0
+ response=client.get(reverse('comunidades:ranking'))
+ assert len(response.context['podium'])==1
+
+def test_ranking_does_not_award_zero_point_podium(client,miembro_aprobado):
+ response=client.get(reverse('comunidades:ranking'))
+ assert response.status_code==200 and response.context['podium']==[]
+ assert b'El podio' in response.content

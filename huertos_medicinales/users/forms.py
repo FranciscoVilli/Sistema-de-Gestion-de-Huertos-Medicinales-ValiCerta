@@ -65,3 +65,28 @@ class UserSocialSignupForm(SocialSignupForm):
     Default fields will be added automatically.
     See UserSignupForm otherwise.
     """
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            "name",
+            "fecha_nacimiento",
+            "genero",
+            "telefono",
+            "direccion",
+            "talentos",
+        ]
+        widgets = {"fecha_nacimiento": forms.DateInput(attrs={"type": "date"})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for campo in ["name", "fecha_nacimiento", "genero", "telefono", "direccion"]:
+            self.fields[campo].required = True
+
+
+class FotoPerfilForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["foto"]

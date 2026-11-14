@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -11,6 +12,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
+from .access import require_profile, profile_complete
+from .forms import AgregarPorCodigoForm
 from .forms import BodegaForm
 from .forms import ComunidadForm
 from .forms import HuertoRealForm
@@ -19,45 +22,19 @@ from .models import CertificacionTalento
 from .models import Comunidad
 from .models import EventoComunidad
 from .models import Miembro
+from .recomendaciones import recomendar_suelo_agua_abono
 
 
-def _mapa_comunidades():
-    publicadas = Comunidad.objects.filter(estado=Comunidad.Estado.PUBLICADA)
-    return [
-        {
-            "nombre": comunidad.nombre,
-            "provincia": comunidad.provincia,
-            "localidad": comunidad.localidad,
-            "plantas": comunidad.plantas_destacadas,
-            "lat": float(comunidad.latitud),
-            "lon": float(comunidad.longitud),
-            "url": reverse("comunidades:detalle", args=[comunidad.pk]),
-        }
-        for comunidad in publicadas
-    ]
-
-
+@never_cache
 def ranking(request):
-    comunidades = list(Comunidad.objects.filter(estado=Comunidad.Estado.PUBLICADA))
-    comunidades.sort(key=lambda c: c.puntos, reverse=True)
-    return render(request, "comunidades/ranking.html", {"comunidades": comunidades})
-
-
-def listado(request):
-    comunidades = Comunidad.objects.filter(estado=Comunidad.Estado.PUBLICADA)
-    provincia = request.GET.get("provincia", "").strip()[:80]
-    if provincia:
-        comunidades = comunidades.filter(provincia__icontains=provincia)
-    page = Paginator(comunidades, 12).get_page(request.GET.get("page"))
-    return render(
-        request,
-        "comunidades/listado.html",
-        {
-            "page": page,
-            "provincia": provincia,
-            "mapa_comunidades": _mapa_comunidades(),
-        },
-    )
+    from .rankings import standings
+    rows=standings(request.user)
+    podium=[row for row in rows[:3] if row['xp']>0]
+    return render(request,'comunidades/ranking.html',{
+        'section':'ranking','rankings':rows,'podium':podium,'comunidades':[row['group'] for row in rows],
+        'my_rankings':[row for row in rows if row['mine']],
+        'total_xp':sum(row['xp'] for row in rows),
+    })
 
 
 @never_cache
@@ -66,6 +43,8 @@ def detalle(request, pk):
     if request.user.is_authenticated:
         allowed |= Q(responsable=request.user)
     comunidad = get_object_or_404(Comunidad.objects.filter(allowed), pk=pk)
+    if comunidad.grupo_virtual or comunidad.latitud is None or comunidad.longitud is None:
+        return redirect(reverse('comunidades:listado')+'?comunidad='+str(comunidad.pk))
     lon, lat = float(comunidad.longitud), float(comunidad.latitud)
     bbox = ",".join(
         str(value)
@@ -93,6 +72,7 @@ def propias(request):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@require_profile
 def crear(request):
     form = ComunidadForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -153,6 +133,8 @@ def huerto_real(request, pk):
         with transaction.atomic():
             huerto = huerto_form.save(commit=False)
             huerto.comunidad = comunidad
+            for campo, valor in recomendar_suelo_agua_abono(huerto.plantas).items():
+                setattr(huerto, campo, valor)
             huerto.save()
             bodega = bodega_form.save(commit=False)
             bodega.huerto_real = huerto
@@ -173,6 +155,7 @@ def huerto_real(request, pk):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+@require_profile
 def solicitar_membresia(request, pk):
     comunidad = get_object_or_404(Comunidad, pk=pk, estado=Comunidad.Estado.PUBLICADA)
     existente = getattr(request.user, "membresia", None)
@@ -186,6 +169,8 @@ def solicitar_membresia(request, pk):
     if request.method == "POST" and form.is_valid():
         with transaction.atomic():
             miembro = form.save(commit=False)
+            miembro.fecha_nacimiento = request.user.fecha_nacimiento
+            miembro.genero = request.user.genero
             miembro.usuario = request.user
             miembro.comunidad = comunidad
             miembro.estado = Miembro.Estado.SOLICITADA
@@ -218,14 +203,71 @@ def gestionar_miembros(request, pk):
             "comunidad": comunidad,
             "solicitudes": miembros.filter(estado=Miembro.Estado.SOLICITADA),
             "aprobados": miembros.filter(estado=Miembro.Estado.APROBADA),
+            "form_codigo": AgregarPorCodigoForm(),
         },
     )
 
 
 @login_required
 @require_POST
+@require_profile
+def agregar_por_codigo(request, pk):
+    comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
+    form = AgregarPorCodigoForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Ingresa un código válido de 6 dígitos.")
+        return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+    codigo = form.cleaned_data["codigo"]
+    persona = get_user_model().objects.filter(codigo_unico=codigo,is_active=True).first()
+    if persona is None:
+        messages.error(request, "No se encontró a nadie con ese código.")
+        return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+    if not profile_complete(persona):
+        messages.error(
+            request,
+            (
+                "Esa persona aún no completó sus datos personales en Mi cuenta. "
+                "Pídele que complete su perfil antes de agregarla."
+            ),
+        )
+        return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+    with transaction.atomic():
+        persona = get_user_model().objects.select_for_update().get(pk=persona.pk)
+        existente = getattr(persona, "membresia", None)
+        if existente and existente.estado != Miembro.Estado.RETIRADA:
+            if existente.comunidad_id == comunidad.pk:
+                messages.info(request, "Esa persona ya es miembro de esta comunidad.")
+            else:
+                messages.error(
+                    request,
+                    "Esa persona ya pertenece a otra comunidad. Debe retirarse antes de unirse a esta.",
+                )
+            return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+        Miembro.objects.update_or_create(
+            usuario=persona,
+            defaults={
+                "comunidad": comunidad,
+                "fecha_nacimiento": persona.fecha_nacimiento,
+                "genero": persona.genero,
+                "estado": Miembro.Estado.APROBADA,
+            },
+        )
+        EventoComunidad.objects.create(
+            comunidad=comunidad,
+            actor=request.user,
+            accion="miembro_agregado_por_codigo",
+        )
+    messages.success(request, f"{persona.name or "Cultivador"} fue agregado a la comunidad.")
+    return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
+
+
+@login_required
+@require_POST
+@require_profile
 def decidir_miembro(request, pk, miembro_pk):
     accion = request.POST.get("accion")
+    if accion not in ('aprobar','rechazar'):
+        return redirect('comunidades:gestionar_miembros',pk=pk)
     with transaction.atomic():
         comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
         miembro = get_object_or_404(
@@ -234,6 +276,9 @@ def decidir_miembro(request, pk, miembro_pk):
             comunidad=comunidad,
             estado=Miembro.Estado.SOLICITADA,
         )
+        if accion == 'aprobar' and (not miembro.usuario.is_active or not profile_complete(miembro.usuario)):
+            messages.error(request,'La persona debe completar su perfil antes de aprobar su ingreso.')
+            return redirect('comunidades:gestionar_miembros',pk=pk)
         if accion == "aprobar":
             miembro.estado = Miembro.Estado.APROBADA
             registro = "miembro_aprobado"

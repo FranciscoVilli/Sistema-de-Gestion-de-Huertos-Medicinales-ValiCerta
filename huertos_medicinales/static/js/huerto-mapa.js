@@ -11,7 +11,7 @@
   x=w<viewport.clientWidth?(viewport.clientWidth-w)/2:Math.min(0,Math.max(viewport.clientWidth-w,x));
   y=h<viewport.clientHeight?(viewport.clientHeight-h)/2:Math.min(0,Math.max(viewport.clientHeight-h,y));
   world.style.transform=`translate(${x}px,${y}px) scale(${scale})`;
-  output.textContent=`${Math.round(scale*100)}%`;
+  if (output) output.textContent=`${Math.round(scale*100)}%`;
  };
  const reset=()=>{minimum=Math.min(viewport.clientWidth/world.offsetWidth,viewport.clientHeight/world.offsetHeight);scale=minimum;x=0;y=0;paint();};
  const zoom=(value,cx=viewport.clientWidth/2,cy=viewport.clientHeight/2)=>{

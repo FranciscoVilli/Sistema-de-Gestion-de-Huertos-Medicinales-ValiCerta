@@ -42,10 +42,6 @@ def test_invalid_login_keeps_form_and_error(client):
     assert "_auth_user_id" not in client.session
 
 
-def test_public_guide_does_not_require_account(client):
-    assert client.get(reverse("first_steps")).status_code == HTTPStatus.OK
-
-
 def test_home_opens_login(client):
     response = client.get(reverse("home"))
     assert response.status_code == HTTPStatus.FOUND

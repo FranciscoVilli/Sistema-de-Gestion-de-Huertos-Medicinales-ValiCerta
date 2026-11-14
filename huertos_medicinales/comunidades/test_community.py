@@ -47,20 +47,23 @@ def test_search_sort_pagination_and_escape(client,people):
  assert b'<img src=x' not in client.get(reverse('comunidades:pregunta',args=[q.pk])).content
 
 def test_privacy_markers_profiles_and_withdrawal(client,people):
- a,b=people;g=Jardin.objects.create(propietario=a,nombre='Mi terraza',clima={'latitude':-0.18,'longitude':-78.47})
+ a,b=people;g=Jardin.objects.create(propietario=a,nombre='Mi terraza',clima={'name':'Quito','latitude':-0.18,'longitude':-78.47})
  Practica.objects.create(participante=a,jardin=g,posicion=1,titulo='Menta',planta='menta',inicio=date.today(),espacio='Dirección privada',objetivo='Observar')
  api=reverse('comunidades:map_data');assert client.get(api).json()['markers']==[]
- share=reverse('comunidades:compartir',args=[g.pk]);data={'localidad':'Quito','latitud':'-0.18','longitud':'-78.47','visible':'on'}
- assert client.post(share,data).status_code==400
+ share=reverse('comunidades:compartir',args=[g.pk])
+ assert client.post(share,{'visible':'on'}).status_code==302
+ assert client.get(api).json()['markers']==[]
  profile=PerfilComunitario.objects.create(usuario=a,nombre='Ana',visible=True,nivel='inicial')
- assert client.post(share,{**data,'latitud':'-0.1234'}).status_code==400
- assert client.post(share,data).status_code==302
- content=client.get(api).json();assert len(content['markers'])==1 and content['markers'][0]['plants']==['Menta']
+ sin_ubicacion=Jardin.objects.create(propietario=a,nombre='Sin ubicación')
+ assert client.post(reverse('comunidades:compartir',args=[sin_ubicacion.pk]),{'visible':'on'}).status_code==302
+ assert not JardinCompartido.objects.filter(jardin=sin_ubicacion,visible=True).exists()
+ assert client.post(share,{'visible':'on'}).status_code==302
+ content=client.get(api).json();assert len(content['markers'])==1 and content['markers'][0]['plants']==['Menta'] and content['markers'][0]['location']=='Quito'
  assert 'Dirección privada' not in str(content) and a.email not in str(content)
  client.logout()
  public=client.get(reverse('comunidades:perfil',args=[a.pk]));assert public.status_code==200 and a.email.encode() not in public.content
- client.force_login(b);assert client.post(share,data).status_code==404
- client.force_login(a);assert client.post(share,{**data,'visible':''}).status_code==302
+ client.force_login(b);assert client.post(share,{'visible':'on'}).status_code==404
+ client.force_login(a);assert client.post(share,{'visible':''}).status_code==302
  assert client.get(api).json()['markers']==[]
  profile.visible=False;profile.save();assert client.get(reverse('comunidades:perfil',args=[a.pk])).status_code==404
 
@@ -92,3 +95,17 @@ def test_demo_data_is_labeled_idempotent_and_separate(people,settings):
  assert Respuesta.objects.filter(autor__in=demos).count()==24
  assert all(q.titulo.startswith('[DEMO]') for q in Pregunta.objects.filter(autor__in=demos))
  assert not JardinCompartido.objects.filter(jardin=original).exists()
+
+
+def test_publish_without_topic_and_resource_removed(client, people):
+    url = reverse('comunidades:nueva_pregunta')
+    response = client.get(url)
+    assert b'name="categoria"' not in response.content
+    assert b'value="recurso"' not in response.content
+    data = {'titulo': 'Un tema nuevo sin categoria', 'contenido': 'Compartimos nuestras observaciones.', 'tipo': 'experiencia'}
+    assert client.post(url, data).status_code == 302
+    post = Pregunta.objects.get(titulo=data['titulo'])
+    assert post.categoria == ''
+    assert client.post(reverse('comunidades:editar_pregunta', args=[post.pk]), {**data, 'contenido': 'Observaciones actualizadas.'}).status_code == 302
+    assert client.post(url, {**data, 'tipo': 'recurso'}).status_code == 400
+    assert b'tipo=recurso' not in client.get(reverse('comunidades:listado')).content
