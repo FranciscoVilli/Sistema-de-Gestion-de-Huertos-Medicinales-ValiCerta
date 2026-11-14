@@ -5,6 +5,7 @@ from django.contrib.auth import forms as admin_forms
 from django.db import transaction
 from django.forms import EmailField
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
@@ -84,6 +85,15 @@ class UserProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for campo in ["name", "fecha_nacimiento", "genero", "telefono", "direccion"]:
             self.fields[campo].required = True
+
+    def clean_fecha_nacimiento(self):
+        fecha = self.cleaned_data["fecha_nacimiento"]
+        hoy = timezone.localdate()
+        if fecha > hoy:
+            raise forms.ValidationError("La fecha de nacimiento no puede ser futura.")
+        if fecha < hoy.replace(year=hoy.year - 120):
+            raise forms.ValidationError("Ingresa una fecha de nacimiento válida.")
+        return fecha
 
 
 class FotoPerfilForm(forms.ModelForm):
