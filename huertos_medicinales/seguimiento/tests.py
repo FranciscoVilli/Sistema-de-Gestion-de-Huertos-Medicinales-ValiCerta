@@ -51,42 +51,6 @@ def datos():
     }
 
 
-def test_practica_se_guarda_con_propietario_y_evento(
-    client,
-    usuario,
-    django_user_model,
-):
-    otro = django_user_model.objects.create_user(email="otro@example.com")
-    client.force_login(usuario)
-    response = client.post(
-        reverse("seguimiento:crear"),
-        {**datos(), "participante": otro.pk, "estado": "finalizada"},
-    )
-    assert response.status_code == HTTPStatus.FOUND
-    practica = Practica.objects.get()
-    assert practica.participante == usuario
-    assert practica.estado == "activa"
-    assert practica.planta_nombre == "Manzanilla"
-    assert EventoPractica.objects.get().accion == "creada"
-    assert Logro.objects.count() == 1
-
-
-def test_sin_leccion_se_puede_registrar_cultivo_real(client, django_user_model):
-    nuevo = django_user_model.objects.create_user(email="recien-llegado@example.com")
-    client.force_login(nuevo)
-    assert client.get(reverse("seguimiento:crear")).status_code == HTTPStatus.OK
-    assert client.post(reverse("seguimiento:crear"), datos()).status_code == HTTPStatus.FOUND
-    assert Practica.objects.get().participante == nuevo
-    assert not Logro.objects.exists()
-
-
-def test_se_puede_elegir_especie_sin_desbloqueo_educativo(client, usuario):
-    client.force_login(usuario)
-    response = client.post(reverse("seguimiento:crear"), {**datos(), "planta": "menta"})
-    assert response.status_code == HTTPStatus.FOUND
-    assert Practica.objects.get().planta == "menta"
-
-
 def test_otro_usuario_no_puede_leer_editar_ni_cerrar(
     client,
     practica,
@@ -103,14 +67,16 @@ def test_otro_usuario_no_puede_leer_editar_ni_cerrar(
     assert practica.estado == "activa"
 
 
-def test_fechas_futuras_no_crean_practicas(client, usuario):
+def test_fechas_futuras_no_editan_practicas(client, usuario, practica):
     client.force_login(usuario)
+    inicio_original = practica.inicio
     response = client.post(
-        reverse("seguimiento:crear"),
+        reverse("seguimiento:editar", args=[practica.pk]),
         {**datos(), "inicio": timezone.localdate() + timedelta(days=1)},
     )
     assert response.status_code == HTTPStatus.OK
-    assert not Practica.objects.exists()
+    practica.refresh_from_db()
+    assert practica.inicio == inicio_original
 
 
 def test_observaciones_persisten_con_foto_y_no_admiten_fechas_anteriores(
@@ -273,12 +239,9 @@ def test_admin_adelanta_tiempo_con_permiso_y_registra_evento(
     assert practica.eventos.filter(accion="adelanto_tiempo").exists()
 
 
-def test_csrf_y_autenticacion_protegen_escrituras(client, usuario):
-
-    assert client.get(reverse("seguimiento:crear")).status_code == HTTPStatus.FOUND
+def test_csrf_y_autenticacion_protegen_escrituras(client, usuario, practica):
+    url = reverse("seguimiento:editar", args=[practica.pk])
+    assert client.get(url).status_code == HTTPStatus.FOUND
     protected = Client(enforce_csrf_checks=True)
     protected.force_login(usuario)
-    assert (
-        protected.post(reverse("seguimiento:crear"), datos()).status_code
-        == HTTPStatus.FORBIDDEN
-    )
+    assert protected.post(url, datos()).status_code == HTTPStatus.FORBIDDEN

@@ -21,7 +21,7 @@ def test_shared_shell_and_crop_navigation(client,django_user_model):
     user=django_user_model.objects.create_user(email="navigation@example.invalid")
     client.force_login(user)
     crop=Practica.objects.create(participante=user,titulo="Cultivo de prueba",planta="manzanilla",inicio=date.today(),espacio="Ventana",objetivo="Observar")
-    for route,args in [("workspace",[]),("seguimiento:crear",[]),("seguimiento:detalle",[crop.pk]),("seguimiento:editar",[crop.pk]),("calendar",[]),("learning",[]),("comunidades:listado",[]),("users:detail",[user.pk]),("privacidad:cookies",[])]:
+    for route,args in [("workspace",[]),("seguimiento:detalle",[crop.pk]),("seguimiento:editar",[crop.pk]),("calendar",[]),("learning",[]),("comunidades:listado",[]),("users:detail",[user.pk]),("privacidad:cookies",[])]:
         response=client.get(reverse(route,args=args));assert response.status_code==200
         source=response.content.decode(); page=Page();page.feed(source)
         assert page.main==1

@@ -272,23 +272,8 @@ def test_editorial_validation_and_configurable_requirements(client, pilot):
     assert client.post(reverse("lms_route", args=[route.slug])).status_code == 403
 
 
-def test_real_cultivation_and_botanical_info_do_not_require_training(client, pilot):
-    user, other, chapter = pilot
+def test_botanical_info_does_not_require_training(client, pilot):
     assert client.get(reverse("learning_plant", args=["romero"])).status_code == 200
-    assert client.get(reverse("seguimiento:crear")).status_code == 200
-    response = client.post(
-        reverse("seguimiento:crear"),
-        {
-            "titulo": "Mi romero existente",
-            "planta": "romero",
-            "inicio": timezone.localdate(),
-            "espacio": "Maceta",
-            "objetivo": "Registrar lo que observo",
-        },
-    )
-    assert response.status_code == 302
-    assert Practica.objects.get().participante == user
-    assert not CompetenciaAdquirida.objects.exists()
 
 
 def test_admin_create_chapter_lesson_and_audited_publication(

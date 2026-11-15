@@ -53,15 +53,15 @@ def test_tipo_texto_libre_con_sugerencias(client,data):
     b=ActividadCalendario.objects.get(practica=p,fecha=date(2026,10,29))
     assert b.tipo=="Fertilizar con compost" and b.get_tipo_display()=="Fertilizar con compost"
 
-def test_sin_cultivos_activos_invita_a_registrar_uno(client,data):
+def test_sin_cultivos_activos_invita_a_ir_al_jardin(client,data):
     p,foreign=data
     p.estado="finalizada"; p.save()
     response=client.get(reverse("calendar"),{"dia":"2026-02-28"})
     assert response.context["sin_cultivos_activos"] is True
-    assert reverse("seguimiento:crear").encode() in response.content
+    assert reverse("workspace").encode() in response.content
     nuevo=client.get(reverse("calendar_new"))
     assert nuevo.context["sin_cultivos_activos"] is True
-    assert reverse("seguimiento:crear").encode() in nuevo.content
+    assert reverse("workspace").encode() in nuevo.content
 
 def test_create_edit_and_foreign_crop(client,data):
     p,foreign=data

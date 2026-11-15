@@ -24,9 +24,6 @@ class PracticaForm(forms.ModelForm):
         self.fields["planta"] = forms.ChoiceField(
             label="Planta cultivada",
             choices=choices,
-            help_text=(
-                "Puedes registrar tu cultivo real sin requisitos educativos. Las prácticas guiadas tienen su propio recorrido."
-            ),
         )
 
     def clean_inicio(self):

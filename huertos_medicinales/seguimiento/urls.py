@@ -4,7 +4,6 @@ from . import views
 
 app_name = "seguimiento"
 urlpatterns = [
-    path("nueva/", views.crear, name="crear"),
     path("<uuid:pk>/", views.detalle, name="detalle"),
     path("<uuid:pk>/bitacora/", views.bitacora, name="bitacora"),
     path("<uuid:pk>/editar/", views.editar, name="editar"),

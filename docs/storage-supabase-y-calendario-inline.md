@@ -48,5 +48,17 @@ A pedido del usuario, dos iteraciones:
 - `panel/calendar.py`: `calendario()` y `nueva()` calculan `sin_cultivos_activos` a partir de si el queryset de `practica` del formulario tiene resultados.
 - `panel/test_calendar.py`: nuevo test `test_sin_cultivos_activos_invita_a_registrar_uno`.
 
+**Corrección — se elimina el registro de cultivo independiente.** El usuario señaló que ya había pedido eliminar `seguimiento:crear` (formulario aparte para registrar una práctica, sin relación con el jardín): según su diseño, elegir una planta disponible y colocarla en un espacio del jardín visual (`panel/gardens.py` `colocar`, modo "seleccionar") **ya es** el acto de plantar, y no debía existir un segundo camino paralelo sin ese flujo.
+
+- Eliminado: `seguimiento:crear` (URL, vista `crear` en `seguimiento/views.py`). `PracticaForm` y `plantas_disponibles()` se mantienen porque `seguimiento:editar` los sigue usando para modificar una práctica ya existente (ahí sí se permite cambiar de especie libremente, sin bloqueo, porque es edición de datos, no alta de una planta nueva).
+- Único camino para obtener un cultivo activo: `panel/gardens.py` `colocar()` (URL `garden_place`), que exige que la especie esté desbloqueada por lecciones vía `plantas_desbloqueadas()`.
+- Botones que apuntaban a `seguimiento:crear` ahora llevan a `workspace` (la página del jardín), sin preseleccionar la especie — opción elegida por el usuario frente a quitar el botón sin reemplazo:
+  - Ficha de planta (`templates/pages/plant.html`): "Ir a mi jardín para sembrarla".
+  - Página de ruta guiada (`templates/aprendizaje/pilot_route.html`): ahora el enlace solo aparece si la ruta ya es `eligible` (antes decía, incorrectamente, que el registro "no requiere aprobar esta ruta").
+  - Resumen de rutas (`templates/aprendizaje/pilot_progress.html`).
+  - El aviso de "sin cultivos activos" del calendario (este mismo documento, apartado anterior) — mismo cambio de destino.
+- `PracticaForm` perdió el `help_text` que decía "puedes registrar tu cultivo real sin requisitos educativos" (ya no es cierto para el alta; para edición no aplicaba ese mensaje).
+- Tests actualizados/eliminados: `seguimiento/tests.py` (se quitan `test_practica_se_guarda_con_propietario_y_evento`, `test_sin_leccion_se_puede_registrar_cultivo_real`, `test_se_puede_elegir_especie_sin_desbloqueo_educativo`; `test_fechas_futuras_no_crean_practicas` y el test de CSRF/autenticación se reescriben contra `seguimiento:editar`, que ya cubre las mismas invariantes); `aprendizaje/test_pilot.py` (se quita `test_real_cultivation_and_botanical_info_do_not_require_training`, cuyo nombre describía exactamente el comportamiento que se eliminó); `panel/test_design.py` (se quita `seguimiento:crear` de la lista de rutas recorridas); `panel/test_calendar.py` (el test del aviso ahora verifica el enlace a `workspace`). La cobertura de "crear una práctica correctamente" ya existe del lado del jardín en `panel/test_gardens.py` (`test_new_unlocked_crop_and_post_only_release`, `test_visual_selector_checks_learning_and_occupied_slot`).
+
 ## Verificación
 Cambios aplicados directamente a producción a pedido del usuario, sin ejecutar la suite local/Docker (se compiló el Python modificado con `py_compile` como chequeo mínimo de sintaxis).

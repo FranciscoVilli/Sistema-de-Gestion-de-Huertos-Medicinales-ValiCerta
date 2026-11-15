@@ -49,52 +49,6 @@ def tipo_de_observacion(accion):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def crear(request):
-    plantas = plantas_disponibles(request.user)
-    if not plantas:
-        messages.info(
-            request,
-            (
-                "Todavía no tienes ninguna ficha de planta desbloqueada. "
-                "Completa la primera lección de Formación para empezar a sembrar."
-            ),
-        )
-        return redirect("learning")
-    slug_inicial = request.GET.get("planta", "")
-    valido = any(item["slug"] == slug_inicial for item in plantas)
-    form = PracticaForm(
-        request.POST or None,
-        plantas_disponibles=plantas,
-        initial={
-            "inicio": timezone.localdate(),
-            "planta": slug_inicial if valido else None,
-        },
-    )
-    if request.method == "POST" and form.is_valid():
-        with transaction.atomic():
-            practica = form.save(commit=False)
-            practica.participante = request.user
-            practica.save()
-            EventoPractica.objects.create(
-                practica=practica,
-                actor=request.user,
-                accion="creada",
-                detalle=snapshot(practica),
-            )
-        messages.success(
-            request,
-            "Tu práctica se guardó en tu cuenta. Ya puedes añadir observaciones.",
-        )
-        return redirect("seguimiento:detalle", pk=practica.pk)
-    return render(
-        request,
-        "seguimiento/formulario.html",
-        {"form": form, "titulo": "Registrar una práctica"},
-    )
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
 def detalle(request, pk):
     with transaction.atomic():
         practica = get_object_or_404(
