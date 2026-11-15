@@ -39,8 +39,10 @@
  }else openModal(link.href);}
  });
  document.addEventListener('submit',event=>{
-  const form=event.target.closest('[data-community-form]');if(!form||!dialog||!dialog.open)return;
-  event.preventDefault();if(form.dataset.confirm&&!confirm(form.dataset.confirm))return;
+  const form=event.target.closest('[data-community-form]');if(!form)return;
+  if(form.dataset.confirm&&!confirm(form.dataset.confirm)){event.preventDefault();return;}
+  if(!dialog||!dialog.open)return;
+  event.preventDefault();
   const data=new FormData(form);openModal(form.action,{method:'POST',body:data});
  });
  if(dialog){dialog.querySelector('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});dialog.addEventListener('close',()=>{modalRequest++;lastTrigger?.focus();if(changed)location.reload();});}
