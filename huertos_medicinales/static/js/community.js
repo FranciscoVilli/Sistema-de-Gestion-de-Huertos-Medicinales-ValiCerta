@@ -40,7 +40,17 @@
  });
  document.addEventListener('submit',event=>{
   const form=event.target.closest('[data-community-form]');if(!form)return;
-  if(form.dataset.confirm&&!confirm(form.dataset.confirm)){event.preventDefault();return;}
+  if(form.dataset.confirm&&!form.dataset.confirmed){
+   event.preventDefault();
+   (window.appConfirm?window.appConfirm(form.dataset.confirm):Promise.resolve(confirm(form.dataset.confirm))).then(ok=>{
+    if(!ok)return;
+    form.dataset.confirmed='1';
+    if(dialog&&dialog.open){const data=new FormData(form);openModal(form.action,{method:'POST',body:data});}
+    else form.requestSubmit();
+    delete form.dataset.confirmed;
+   });
+   return;
+  }
   if(!dialog||!dialog.open)return;
   event.preventDefault();
   const data=new FormData(form);openModal(form.action,{method:'POST',body:data});
