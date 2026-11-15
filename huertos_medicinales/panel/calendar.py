@@ -17,7 +17,29 @@ from huertos_medicinales.seguimiento.models import ActividadCalendario
 from huertos_medicinales.seguimiento.models import Practica, Jardin
 
 
-class ActividadForm(forms.ModelForm):
+TIPO_POR_ETIQUETA = {etiqueta.lower(): valor for valor, etiqueta in ActividadCalendario.TIPOS}
+
+
+class TipoLibreMixin:
+    """`tipo` como texto libre: si coincide (sin importar mayusculas) con una de las
+    categorias conocidas (riego, siembra...) se guarda como esa categoria -y se
+    mantienen el aviso lunar, la estadistica de riego y los colores del calendario-;
+    si no, se guarda tal cual lo escribio el usuario."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tipo"] = forms.CharField(
+            label="Actividad",
+            max_length=60,
+            widget=forms.TextInput(attrs={"list": "actividad-sugerencias", "placeholder": "Riego, siembra, cosecha..."}),
+        )
+
+    def clean_tipo(self):
+        valor = self.cleaned_data["tipo"].strip()
+        return TIPO_POR_ETIQUETA.get(valor.lower(), valor)
+
+
+class ActividadForm(TipoLibreMixin, forms.ModelForm):
     class Meta:
         model = ActividadCalendario
         fields = ["practica", "tipo", "fecha", "hora", "tecnica", "propagacion", "parte_usada", "notas", "recordatorio_dias_antes"]
@@ -31,7 +53,7 @@ class ActividadForm(forms.ModelForm):
             self.fields["practica"].queryset = Practica.objects.filter(participante=user)
 
 
-class ActividadRapidaForm(forms.ModelForm):
+class ActividadRapidaForm(TipoLibreMixin, forms.ModelForm):
     """Formulario minimo para el modal del calendario: solo lo que hace falta para programar un cuidado. El resto (tecnica, notas, recordatorio...) se completa despues editando la actividad."""
 
     class Meta:
@@ -102,7 +124,7 @@ def calendario(request):
     for phase in lunar_month:
         phase["url"] = link(phase["date"])
     nueva_form = ActividadRapidaForm(user=request.user, initial={"fecha": selected})
-    return render(request, "panel/calendario.html", {"weather_gardens":weather_gardens,"weather_garden":weather_garden,"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count(),"nueva_form":nueva_form})
+    return render(request, "panel/calendario.html", {"weather_gardens":weather_gardens,"weather_garden":weather_garden,"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count(),"nueva_form":nueva_form,"sin_cultivos_activos":not nueva_form.fields["practica"].queryset.exists()})
 
 
 @login_required
@@ -116,7 +138,8 @@ def nueva(request, pk=None):
     data = form.data if form.is_bound else form.initial
     fecha_actual = parse_date(str(data.get("fecha","")), None)
     luna = recomendacion(data.get("tipo",""), fecha_actual, data.get("parte_usada","")) if fecha_actual else None
-    return render(request,"panel/calendario_form.html",{"form":form,"editing":instance is not None,"luna":luna})
+    sin_cultivos_activos = instance is None and not form.fields["practica"].queryset.exists()
+    return render(request,"panel/calendario_form.html",{"form":form,"editing":instance is not None,"luna":luna,"types":ActividadCalendario.TIPOS,"sin_cultivos_activos":sin_cultivos_activos})
 
 
 @login_required

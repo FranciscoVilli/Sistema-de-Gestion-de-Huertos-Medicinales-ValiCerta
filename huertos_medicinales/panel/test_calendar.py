@@ -41,6 +41,28 @@ def test_modal_rapido_solo_tiene_los_campos_minimos(client,data):
     editar=client.get(reverse("calendar_edit",args=[a.pk]))
     assert "notas" in editar.context["form"].fields and "recordatorio_dias_antes" in editar.context["form"].fields
 
+def test_tipo_texto_libre_con_sugerencias(client,data):
+    p,foreign=data
+    payload={"practica":str(p.pk),"fecha":"2026-10-28","hora":"08:00","tipo":"RIEGO"}
+    assert client.post(reverse("calendar_new"),payload).status_code==302
+    a=ActividadCalendario.objects.get(practica=p)
+    assert a.tipo=="riego" and a.get_tipo_display()=="Riego"
+    payload["fecha"]="2026-10-29"
+    payload["tipo"]="Fertilizar con compost"
+    assert client.post(reverse("calendar_new"),payload).status_code==302
+    b=ActividadCalendario.objects.get(practica=p,fecha=date(2026,10,29))
+    assert b.tipo=="Fertilizar con compost" and b.get_tipo_display()=="Fertilizar con compost"
+
+def test_sin_cultivos_activos_invita_a_registrar_uno(client,data):
+    p,foreign=data
+    p.estado="finalizada"; p.save()
+    response=client.get(reverse("calendar"),{"dia":"2026-02-28"})
+    assert response.context["sin_cultivos_activos"] is True
+    assert reverse("seguimiento:crear").encode() in response.content
+    nuevo=client.get(reverse("calendar_new"))
+    assert nuevo.context["sin_cultivos_activos"] is True
+    assert reverse("seguimiento:crear").encode() in nuevo.content
+
 def test_create_edit_and_foreign_crop(client,data):
     p,foreign=data
     payload={"practica":str(p.pk),"fecha":"2026-10-28","hora":"08:00","tipo":"riego","notas":"Revisar humedad"}

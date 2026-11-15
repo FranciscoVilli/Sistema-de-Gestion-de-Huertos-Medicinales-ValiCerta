@@ -175,7 +175,7 @@ class ActividadCalendario(models.Model):
         ("semillas_raices", "Semillas o raíces"),
     ]
     practica = models.ForeignKey(Practica, on_delete=models.PROTECT, related_name="actividades_calendario")
-    tipo = models.CharField("Actividad", max_length=18, choices=TIPOS)
+    tipo = models.CharField("Actividad", max_length=60, choices=TIPOS)
     fecha = models.DateField("Fecha")
     hora = models.TimeField("Hora", blank=True, null=True)
     tecnica = models.CharField(
