@@ -15,12 +15,26 @@ from huertos_medicinales.seguimiento.models import Jardin
 
 logger = logging.getLogger(__name__)
 EXPOSURES = {'unknown': 'Espacio por definir', 'exterior': 'Al aire libre', 'interior': 'Dentro de casa', 'cubierto': 'Balcón o patio cubierto'}
+RATE_LIMIT_KEY = 'open-meteo-rate-limited'
+RATE_LIMIT_MESSAGE = 'El servicio de clima está muy solicitado ahora mismo (límite gratuito compartido con otras apps). Intenta de nuevo en unos minutos.'
+
+class RateLimited(Exception):
+    """Open-Meteo answered 429. Render's free tier shares its outbound IPs across many
+    unrelated apps, so this can happen even without a spike in our own traffic."""
 
 def fetch_json(url):
     # requests ships its own CA bundle (certifi); urllib.request.urlopen relies on the
     # OS trust store, which was failing TLS verification for these calls on Render.
-    response = requests.get(url, timeout=6)
-    response.raise_for_status()
+    if cache.get(RATE_LIMIT_KEY):
+        raise RateLimited
+    try:
+        response = requests.get(url, timeout=6)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 429:
+            cache.set(RATE_LIMIT_KEY, True, 120)
+            raise RateLimited from exc
+        raise
     return response.json()
 
 @login_required
@@ -41,6 +55,8 @@ def places(request):
                 place = {'name': ', '.join(filter(None,[item['name'],item.get('admin1')])), 'latitude':item['latitude'], 'longitude':item['longitude'], 'timezone':item.get('timezone','America/Guayaquil')}
                 results.append({'name':place['name'], 'token':signing.dumps(place,salt='garden-weather')})
             cache.set(key,results,3600)
+        except RateLimited:
+            return JsonResponse({'error':RATE_LIMIT_MESSAGE},status=503)
         except (OSError, ValueError, KeyError, TypeError):
             logger.exception('No se pudo buscar la localidad en Open-Meteo')
             return JsonResponse({'error':'No se pudo buscar la localidad. Intenta nuevamente en unos momentos.'},status=503)
@@ -69,7 +85,9 @@ def advice(exposure, rain):
     return 'Observa la luz y la humedad del sustrato. Ajusta el riego a tu especie; la humedad ambiental no indica cuánta agua tiene la maceta.'
 
 def forecast(config, selected):
-    key = 'garden-forecast:' + str(config['latitude']) + ':' + str(config['longitude'])
+    # Rounded to ~11km (1 decimal degree) so nearby gardens share one Open-Meteo call
+    # instead of each spending its own share of the free, IP-shared daily quota.
+    key = 'garden-forecast:' + str(round(float(config['latitude']),1)) + ':' + str(round(float(config['longitude']),1))
     data = cache.get(key)
     if data is None:
         params = {'latitude':config['latitude'],'longitude':config['longitude'],'timezone':config['timezone'],'forecast_days':7,'current':'temperature_2m,relative_humidity_2m,weather_code','daily':'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'}
@@ -77,7 +95,7 @@ def forecast(config, selected):
         if not data.get('daily',{}).get('time') or not data.get('current',{}).get('time'):
             raise ValueError('Incomplete weather response')
         data['retrieved_at'] = timezone.now().isoformat()
-        cache.set(key,data,900)
+        cache.set(key,data,1800)
     day = selected or data['current']['time'][:10]
     daily = data['daily']
     if day not in daily['time']:
@@ -128,6 +146,8 @@ def garden_weather(request, pk):
     result = {'configured':True,'name':garden.clima['name'],'exposure':garden.clima['exposure'],'exposure_label':EXPOSURES[garden.clima['exposure']],'timezone':garden.clima['timezone'],'source':garden.clima.get('source','manual')}
     try:
         result.update(forecast(garden.clima,selected))
+    except RateLimited:
+        result.update(available=False,message=RATE_LIMIT_MESSAGE)
     except (OSError,ValueError,KeyError,TypeError,IndexError):
         logger.exception('No se pudo obtener el pronostico del clima para el jardin %s', garden.pk)
         result.update(available=False,message='El servicio de clima no está disponible ahora. Puedes reintentar; tus actividades siguen guardadas.')

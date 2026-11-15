@@ -4,6 +4,7 @@ from django.core import signing
 from django.core.cache import cache
 from django.urls import reverse
 from huertos_medicinales.panel.weather import advice
+from huertos_medicinales.panel.weather import RateLimited
 from huertos_medicinales.seguimiento.models import Jardin
 pytestmark=pytest.mark.django_db
 PLACE={'name':'Cuenca, Azuay','latitude':-2.9,'longitude':-79.0,'timezone':'America/Guayaquil'}
@@ -46,6 +47,13 @@ def test_search(client,gardens):
  assert 'interior' in advice('interior',90)
  assert 'cubierto' in advice('cubierto',90)
  assert 'humedad ambiental' in advice('exterior',None)
+
+def test_rate_limited_shows_a_distinct_message(client,gardens):
+ g,_=gardens;g.clima={**PLACE,'exposure':'exterior'};g.save();url=reverse('garden_weather',args=[g.pk])
+ with patch('huertos_medicinales.panel.weather.fetch_json',side_effect=RateLimited):
+  r=client.get(url).json();assert not r['available'] and 'límite gratuito compartido' in r['message']
+ with patch('huertos_medicinales.panel.weather.fetch_json',side_effect=RateLimited):
+  assert 'límite gratuito compartido' in client.get(reverse('weather_places'),{'q':'Cuenca'}).json()['error']
 
 def test_calendar(client,gardens):
  g,_=gardens;r=client.get(reverse('calendar'),{'jardin':g.pk,'dia':'2026-11-24'})
