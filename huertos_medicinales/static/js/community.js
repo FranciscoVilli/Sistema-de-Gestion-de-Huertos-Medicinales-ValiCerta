@@ -32,8 +32,8 @@
  document.addEventListener('click',event=>{
   const link=event.target.closest('a[data-modal]');if(link&&dialog){event.preventDefault();lastTrigger=link;
  const target=new URL(link.href),mode=target.searchParams.get('adjunto');
- if(target.searchParams.get('social')==='1'&&(mode==='foto'||mode==='video')){
-  const picker=document.createElement('input');picker.type='file';picker.accept=mode==='foto'?'image/jpeg,image/png,image/webp':'video/mp4,video/webm';
+ if(target.searchParams.get('social')==='1'&&mode==='foto'){
+  const picker=document.createElement('input');picker.type='file';picker.accept='image/jpeg,image/png,image/webp';
   picker.onchange=async()=>{await openModal(link.href);const input=content.querySelector(`[name=${mode}]`);if(input&&picker.files.length){input.files=picker.files;input.dispatchEvent(new Event('change',{bubbles:true}));}};
   picker.oncancel=()=>openModal(link.href);picker.click();
  }else openModal(link.href);}
@@ -126,7 +126,7 @@ document.addEventListener('change',event=>{
  form.addEventListener('submit',async event=>{
   event.preventDefault();if(form.dataset.busy)return;
   const poll=!form.querySelector('[data-inline-panel="encuesta"]').hidden;
-  form.elements.adjunto.value=poll?'encuesta':form.elements.foto.files.length?'foto':form.elements.video.files.length?'video':!form.elements.enlace.disabled&&form.elements.enlace.value?'enlace':'';
+  form.elements.adjunto.value=poll?'encuesta':form.elements.foto.files.length?'foto':!form.elements.enlace.disabled&&form.elements.enlace.value?'enlace':'';
   form.elements.tipo.value=poll?'pregunta':'experiencia';
   const data=new FormData(form),button=form.querySelector('[type=submit]');form.dataset.busy='1';button.disabled=true;status.hidden=false;status.textContent='Publicando…';
   try{const response=await fetch(form.action,{method:'POST',body:data,credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest'}});

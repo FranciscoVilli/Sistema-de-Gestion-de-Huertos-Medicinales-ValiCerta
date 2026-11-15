@@ -6,7 +6,6 @@
 <fieldset class="composer-types"><legend>¿Qué quieres compartir?</legend>{% for radio in form.tipo %}<label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}{{ form.tipo.errors }}</fieldset>
 <div class="social-attachments">
 <details {% if media_mode == 'foto' or form.foto.errors %}open{% endif %}><summary>▧ Foto</summary><label>Foto · JPG, PNG o WebP · máximo 8 MB {{ form.foto }}</label>{{ form.foto.errors }}{% if form.instance.foto %}<small>Ya hay una foto. Selecciona otra para reemplazarla.</small>{% endif %}</details>
-<details {% if media_mode == 'video' or form.video.errors %}open{% endif %}><summary>▷ Video</summary><label>Video · MP4 o WebM · máximo 40 MB {{ form.video }}</label>{{ form.video.errors }}</details>
 <details {% if media_mode == 'enlace' or form.enlace.value or form.enlace.errors %}open{% endif %}><summary>↗ Enlace</summary><label>Dirección del enlace {{ form.enlace }}</label>{{ form.enlace.errors }}</details>
 <details {% if media_mode == 'encuesta' or form.opciones_encuesta.value or form.opciones_encuesta.errors %}open{% endif %}><summary>▥ Encuesta</summary><p>Usa el título como pregunta y escribe una opción por línea.</p>{{ form.opciones_encuesta }}{{ form.opciones_encuesta.errors }}</details></div>
 <p class="composer-privacy-note"><svg aria-hidden="true"><use href="#i-lock"/></svg>Los temas privados solo pueden publicarse dentro de una comunidad a la que perteneces.</p>
