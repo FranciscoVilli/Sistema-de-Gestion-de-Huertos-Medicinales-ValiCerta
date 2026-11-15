@@ -7,6 +7,7 @@
     const search = widget.querySelector('[data-weather-search]');
     const save = widget.querySelector('[data-weather-save]');
     const select = widget.querySelector('[data-place-results]');
+    const locationSetup = widget.querySelector('[data-location-setup]');
     let loading = false;
     const element = (tag, text, className) => { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; };
     const display = (value, suffix) => value === null || value === undefined ? 'No disponible' : `${value}${suffix}`;
@@ -32,8 +33,10 @@
         result.replaceChildren();
         if (!data.configured) {
           result.append(element('p','Usa tu ubicación para ver el clima de este jardín, sin escribir una ciudad.'));
+          if (locationSetup) locationSetup.hidden = false;
           return;
         }
+        if (locationSetup) locationSetup.hidden = true;
         const placeEl = widget.querySelector('[data-place]');
         if (placeEl) placeEl.textContent = `📍 ${data.name} · ${data.exposure_label}`;
         if (save) save.elements.exposure.value = data.exposure;
