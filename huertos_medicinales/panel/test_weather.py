@@ -55,12 +55,6 @@ def test_rate_limited_shows_a_distinct_message(client,gardens):
  with patch('huertos_medicinales.panel.weather.fetch_json',side_effect=RateLimited):
   assert 'límite gratuito compartido' in client.get(reverse('weather_places'),{'q':'Cuenca'}).json()['error']
 
-def test_calendar(client,gardens):
- g,_=gardens;r=client.get(reverse('calendar'),{'jardin':g.pk,'dia':'2026-11-24'})
- assert r.status_code==200 and r.context['weather_garden']==g
- assert 'jardin='+str(g.pk) in r.context['next']
- assert b'data-weather' in r.content
-
 def test_geolocation(client,gardens):
  g,f=gardens;url=reverse('garden_weather',args=[g.pk])
  payload={'mode':'geolocation','latitude':'-2.901234','longitude':'-79.001234','exposure':'unknown'}

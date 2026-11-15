@@ -43,3 +43,12 @@ Es un límite conocido de Open-Meteo: su nivel gratuito limita por dirección IP
 - `panel/test_weather.py`: nuevo test `test_rate_limited_shows_a_distinct_message`.
 
 **Lo que esto no arregla:** si Open-Meteo ya está bloqueando la IP compartida de Render por el tráfico de *otras* apps, estos cambios no lo evitan — solo hacen que la app se recupere más rápido y no empeore la situación. Una solución completa requeriría pagar (API key propia de Open-Meteo, o IP de salida dedicada en Render), que el usuario decidió no perseguir por ahora.
+
+## Actualización 2026-11-15 (misma tarde, otra vez): clima eliminado del módulo de calendario
+En el mensaje donde pegó el error, el usuario también pidió (en una frase fácil de pasar por alto entre el pegado de pantalla) quitar el widget de clima del **calendario** por completo — no solo arreglar el error ahí. El clima en **inicio** (Mi rincón verde) se mantiene, solo se corrigió el error de arriba.
+
+- `templates/panel/calendario.html`: se quitó el `{% include 'panel/weather_widget.html' %}` del aside del día seleccionado.
+- `templates/panel/calendar_base.html`: se quitaron los `<link>`/`<script>` de `garden-weather.css`/`.js`, ya sin uso en esta página.
+- `panel/calendar.py`: la vista `calendario()` ya no calcula `weather_gardens`/`weather_garden` (import de `Jardin` también eliminado), ni agrega `jardin` a las URLs que arma `link()` ni al formulario de filtros — ese parámetro solo existía para la selección de jardín del widget de clima.
+- `panel/test_weather.py`: se quitó `test_calendar`, que validaba que el widget apareciera en esa página.
+- Nada de esto afecta el módulo de calendario en sí (actividades, luna, modal de registrar) ni el clima de Inicio, que siguen igual.

@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from huertos_medicinales.seguimiento.models import ActividadCalendario
-from huertos_medicinales.seguimiento.models import Practica, Jardin
+from huertos_medicinales.seguimiento.models import Practica
 
 
 TIPO_POR_ETIQUETA = {etiqueta.lower(): valor for valor, etiqueta in ActividadCalendario.TIPOS}
@@ -99,18 +99,13 @@ def calendario(request):
         tipo = ""
     crop_id = request.GET.get("cultivo", "")
     crop = next((p for p in crops if str(p.pk) == crop_id), None)
-    weather_gardens = Jardin.objects.filter(propietario=request.user)
-    garden_id = request.GET.get("jardin", "")
-    weather_garden = next((g for g in weather_gardens if str(g.pk) == garden_id), None)
-    if weather_garden is None:
-        weather_garden = next((g for g in weather_gardens if crop and g.pk == crop.jardin_id), None) or weather_gardens.first()
     filtered = activities
     if tipo:
         filtered = filtered.filter(tipo=tipo)
     if crop:
         filtered = filtered.filter(practica=crop)
     def link(day):
-        return "?" + urlencode({"dia": day.isoformat(), "mes": day.strftime("%Y-%m"), "jardin":str(weather_garden.pk) if weather_garden else "", "tipo": tipo, "cultivo": str(crop.pk) if crop else ""})
+        return "?" + urlencode({"dia": day.isoformat(), "mes": day.strftime("%Y-%m"), "tipo": tipo, "cultivo": str(crop.pk) if crop else ""})
     weeks = calendar.Calendar(firstweekday=0).monthdatescalendar(month.year, month.month)
     events = list(filtered.filter(fecha__range=(weeks[0][0], weeks[-1][-1])))
     cells = []
@@ -124,7 +119,7 @@ def calendario(request):
     for phase in lunar_month:
         phase["url"] = link(phase["date"])
     nueva_form = ActividadRapidaForm(user=request.user, initial={"fecha": selected})
-    return render(request, "panel/calendario.html", {"weather_gardens":weather_gardens,"weather_garden":weather_garden,"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count(),"nueva_form":nueva_form,"sin_cultivos_activos":not nueva_form.fields["practica"].queryset.exists()})
+    return render(request, "panel/calendario.html", {"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count(),"nueva_form":nueva_form,"sin_cultivos_activos":not nueva_form.fields["practica"].queryset.exists()})
 
 
 @login_required
