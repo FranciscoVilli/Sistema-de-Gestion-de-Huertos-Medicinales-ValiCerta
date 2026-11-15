@@ -31,6 +31,16 @@ def test_month_dates_and_filters(client,data):
     assert client.get(reverse("calendar"),{"dia":"2026-02-28","tipo":"foto"}).context["agenda"].count()==0
     assert client.get(reverse("calendar"),{"dia":"invalid","mes":"99999-99","cultivo":"bad"}).status_code==200
 
+def test_modal_rapido_solo_tiene_los_campos_minimos(client,data):
+    p,foreign=data
+    response=client.get(reverse("calendar"),{"dia":"2026-02-28"})
+    assert list(response.context["nueva_form"].fields)==["practica","tipo","fecha","hora"]
+    nuevo=client.get(reverse("calendar_new"),{"dia":"2026-02-28"})
+    assert list(nuevo.context["form"].fields)==["practica","tipo","fecha","hora"]
+    a=ActividadCalendario.objects.create(practica=p,fecha=date(2026,2,28),tipo="riego")
+    editar=client.get(reverse("calendar_edit",args=[a.pk]))
+    assert "notas" in editar.context["form"].fields and "recordatorio_dias_antes" in editar.context["form"].fields
+
 def test_create_edit_and_foreign_crop(client,data):
     p,foreign=data
     payload={"practica":str(p.pk),"fecha":"2026-10-28","hora":"08:00","tipo":"riego","notas":"Revisar humedad"}
@@ -65,9 +75,13 @@ def test_siembra_con_tecnica_propagacion_y_aviso_lunar(client,data):
     p,foreign=data
     from .lunar import events
     llena=next(e for e in events() if e['phase']=='Full Moon')
-    payload={"practica":str(p.pk),"fecha":llena['date'].isoformat(),"tipo":"siembra","tecnica":"surcos","propagacion":"semilla"}
+    payload={"practica":str(p.pk),"fecha":llena['date'].isoformat(),"tipo":"siembra"}
     assert client.post(reverse("calendar_new"),payload).status_code==302
     a=ActividadCalendario.objects.get(practica=p)
+    payload["tecnica"]="surcos"
+    payload["propagacion"]="semilla"
+    assert client.post(reverse("calendar_edit",args=[a.pk]),payload).status_code==302
+    a.refresh_from_db()
     assert a.tecnica=="surcos" and a.propagacion=="semilla"
     response=client.get(reverse("calendar_new"),{"dia":llena['date'].isoformat()})
     assert response.context["luna"] is None  # formulario nuevo y vacio: "tipo" todavia no tiene valor

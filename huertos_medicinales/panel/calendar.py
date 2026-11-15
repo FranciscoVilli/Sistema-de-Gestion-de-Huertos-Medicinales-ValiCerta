@@ -31,6 +31,20 @@ class ActividadForm(forms.ModelForm):
             self.fields["practica"].queryset = Practica.objects.filter(participante=user)
 
 
+class ActividadRapidaForm(forms.ModelForm):
+    """Formulario minimo para el modal del calendario: solo lo que hace falta para programar un cuidado. El resto (tecnica, notas, recordatorio...) se completa despues editando la actividad."""
+
+    class Meta:
+        model = ActividadCalendario
+        fields = ["practica", "tipo", "fecha", "hora"]
+        labels = {"practica": "Cultivo"}
+        widgets = {"fecha": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}), "hora": forms.TimeInput(attrs={"type": "time"})}
+
+    def __init__(self, *args, user, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["practica"].queryset = Practica.objects.filter(participante=user, estado="activa")
+
+
 def parse_date(value, default):
     try:
         parsed = date.fromisoformat(value)
@@ -87,14 +101,15 @@ def calendario(request):
     lunar_month = month_phases(month)
     for phase in lunar_month:
         phase["url"] = link(phase["date"])
-    nueva_form = ActividadForm(user=request.user, initial={"fecha": selected})
+    nueva_form = ActividadRapidaForm(user=request.user, initial={"fecha": selected})
     return render(request, "panel/calendario.html", {"weather_gardens":weather_gardens,"weather_garden":weather_garden,"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count(),"nueva_form":nueva_form})
 
 
 @login_required
 def nueva(request, pk=None):
     instance = get_object_or_404(ActividadCalendario, pk=pk, practica__participante=request.user) if pk else None
-    form = ActividadForm(request.POST or None, instance=instance, user=request.user, initial={"fecha":parse_date(request.GET.get("dia"), timezone.localdate())})
+    form_class = ActividadForm if instance else ActividadRapidaForm
+    form = form_class(request.POST or None, instance=instance, user=request.user, initial={"fecha":parse_date(request.GET.get("dia"), timezone.localdate())})
     if request.method == "POST" and form.is_valid():
         activity=form.save()
         return redirect(reverse("calendar")+"?dia="+activity.fecha.isoformat())

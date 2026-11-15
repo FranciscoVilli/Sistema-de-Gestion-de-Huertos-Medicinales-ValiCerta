@@ -24,13 +24,17 @@ Sin esas variables, el sistema sigue funcionando igual que antes (disco local, m
 ## Nota de seguridad aparte (no se tocó)
 El advisor de Supabase marcó que las tablas de este proyecto no tienen Row Level Security habilitado. No aplica el riesgo real que advierte (exposición vía `anon key`/PostgREST) porque Django se conecta directamente con credenciales completas de base de datos, no a través del cliente público de Supabase. Se deja anotado por transparencia, sin cambios.
 
-## Calendario: sin botón "Programar actividad"
-A pedido del usuario, para que el calendario se entienda como "selecciono un día y registro algo ahí", igual que Google Calendar:
-- Se quitaron los dos enlaces "＋ Programar actividad" / "＋ Programar" (encabezado y agenda).
-- `panel/calendar.py`: la vista `calendario()` ahora también construye un `ActividadForm` vacío (con `fecha` precargada al día seleccionado) y lo pasa como `nueva_form`.
-- `templates/panel/calendario.html`: ese formulario se renderiza directamente dentro de la tarjeta del día seleccionado (sección `.quick-add`), debajo de las actividades ya agendadas. Al guardar, redirige de vuelta al mismo día.
-- La vista/página dedicada (`calendar_new`/`calendario_form.html`) sigue existiendo para **editar** una actividad existente ("Editar fecha o indicaciones"); solo se eliminó el paso extra para **crear** una nueva.
-- CSS nuevo en `calendario.css` y `calendario-botanico.css` para la sección `.quick-add`.
+## Calendario: modal al seleccionar un día (no un formulario a un costado)
+A pedido del usuario, dos iteraciones:
+
+**Primero** se quitó el botón "＋ Programar actividad" y el formulario se puso embebido en la barra lateral del día seleccionado. El usuario pidió un segundo ajuste: no le gustó verlo "a un costado" con demasiados campos — pidió una ventana modal centrada, con solo día, hora y actividad.
+
+**Diseño final:**
+- `templates/panel/calendario.html`: el formulario vive ahora en un `<dialog id="quick-add-dialog">` (mismo patrón nativo que el diálogo de confirmación de `base.html`), centrado con fondo oscurecido. Se abre solo automáticamente cuando la URL trae `?dia=` explícito (click en una celda del calendario o redirección tras guardar) — **no** en la primera carga de `/calendario/` sin parámetros, para no ser intrusivo. También hay un botón pequeño "＋ Registrar actividad" en la agenda por si el usuario cierra el modal y quiere reabrirlo.
+- `panel/calendar.py`: nuevo `ActividadRapidaForm` (`practica`, `tipo`, `fecha`, `hora` — nada más) usado para **crear** actividades nuevas, tanto en el modal del calendario como en `calendar_new`. El `ActividadForm` completo (técnica, propagación, parte usada, notas, recordatorio) se sigue usando únicamente para **editar** una actividad existente ("Editar fecha o indicaciones"), así el detalle no se pierde, solo se pospone.
+- Se preguntó al usuario qué hacer con el campo Cultivo (obligatorio en el modelo): eligió mantenerlo como un cuarto campo siempre visible, en vez de autoseleccionarlo.
+- `panel/test_calendar.py`: `test_siembra_con_tecnica_propagacion_y_aviso_lunar` actualizado (técnica/propagación ahora se agregan editando, no al crear); nuevo test `test_modal_rapido_solo_tiene_los_campos_minimos`.
+- CSS: `.quick-add-dialog` en `calendario.css` y `calendario-botanico.css` (reemplaza el `.quick-add` inline de la primera iteración, ya no existe en el HTML).
 
 ## Verificación
 Cambios aplicados directamente a producción a pedido del usuario, sin ejecutar la suite local/Docker (se compiló el Python modificado con `py_compile` como chequeo mínimo de sintaxis).
