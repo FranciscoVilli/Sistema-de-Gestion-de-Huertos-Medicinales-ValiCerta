@@ -66,6 +66,17 @@ STORAGES = {
     },
 }
 
+# Supabase Storage: moves uploaded media (fotos de perfil, observaciones,
+# publicaciones del foro) off the web service's disk, which Render wipes on
+# every deploy/restart. Only switches on once both variables are set on
+# Render; until then this keeps behaving exactly as before.
+SUPABASE_URL = env("SUPABASE_URL", default="")
+SUPABASE_SERVICE_ROLE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", default="")
+SUPABASE_STORAGE_BUCKET = env("SUPABASE_STORAGE_BUCKET", default="media")
+SUPABASE_STORAGE_BUCKET_FORUM = env("SUPABASE_STORAGE_BUCKET_FORUM", default="private-forum")
+if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+    STORAGES["default"] = {"BACKEND": "huertos_medicinales.storage.SupabaseStorage"}
+
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email

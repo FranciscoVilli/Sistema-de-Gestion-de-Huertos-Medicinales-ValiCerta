@@ -345,11 +345,11 @@ class JardinCompartido(models.Model):
     longitud = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(-180), MaxValueValidator(180)])
     actualizada = models.DateTimeField(auto_now=True)
 
-from .media_storage import ForumStorage, attachment_path
+from .media_storage import forum_storage, attachment_path
 
 class Pregunta(models.Model):
-    foto = models.ImageField(upload_to=attachment_path, storage=ForumStorage(), blank=True)
-    video = models.FileField(upload_to=attachment_path, storage=ForumStorage(), blank=True)
+    foto = models.ImageField(upload_to=attachment_path, storage=forum_storage, blank=True)
+    video = models.FileField(upload_to=attachment_path, storage=forum_storage, blank=True)
     enlace = models.URLField(blank=True, max_length=600)
     encuesta = models.JSONField(default=list, blank=True)
 

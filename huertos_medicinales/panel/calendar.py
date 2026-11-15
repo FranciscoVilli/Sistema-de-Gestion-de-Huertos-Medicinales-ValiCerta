@@ -87,7 +87,8 @@ def calendario(request):
     lunar_month = month_phases(month)
     for phase in lunar_month:
         phase["url"] = link(phase["date"])
-    return render(request, "panel/calendario.html", {"weather_gardens":weather_gardens,"weather_garden":weather_garden,"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count()})
+    nueva_form = ActividadForm(user=request.user, initial={"fecha": selected})
+    return render(request, "panel/calendario.html", {"weather_gardens":weather_gardens,"weather_garden":weather_garden,"lunar_selected":phase_on(selected),"lunar_month":lunar_month,"weeks":cells,"month":month,"selected":selected,"prev":link(month-timedelta(days=1)),"next":link((month+timedelta(days=32)).replace(day=1)),"today_url":link(today),"crops":crops,"crop_id":str(crop.pk) if crop else "","tipo":tipo,"types":ActividadCalendario.TIPOS,"agenda":filtered.filter(fecha=selected),"upcoming":filtered.filter(fecha__gte=today,completada=False)[:5],"today_count":activities.filter(fecha=today,completada=False).count(),"overdue":activities.filter(fecha__lt=today,completada=False).count(),"next_water":activities.filter(tipo="riego",fecha__gte=today,completada=False).first(),"active_count":crops.filter(estado="activa").count(),"nueva_form":nueva_form})
 
 
 @login_required
