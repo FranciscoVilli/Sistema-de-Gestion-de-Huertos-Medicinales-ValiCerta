@@ -1,7 +1,9 @@
 from datetime import date
+from datetime import timedelta
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from huertos_medicinales.seguimiento.models import ActividadCalendario
 from huertos_medicinales.seguimiento.models import Practica
@@ -133,6 +135,27 @@ def test_notificaciones_de_incluye_aviso_lunar_cuando_hoy_es_favorable(client,da
     assert resultado["actividades"]==[]
     assert resultado["luna"]["hoy"] is True
     assert resultado["total"]==1
+
+def test_notificaciones_de_vistas_oculta_lo_ya_visto(client,data):
+    p,foreign=data
+    hoy=date(2026,10,28)
+    a=ActividadCalendario.objects.create(practica=p,fecha=date(2026,10,30),tipo="riego")
+    primero=notificaciones_de(p.participante,today=hoy)
+    assert [item.pk for item in primero["actividades"]]==[a.pk]
+    otra_vez=notificaciones_de(p.participante,today=hoy,vistas=set(primero["claves"]))
+    assert otra_vez["actividades"]==[] and otra_vez["total"]==0
+    a.recordatorio_dias_antes=5
+    a.save()
+    reaparece=notificaciones_de(p.participante,today=hoy,vistas=set(primero["claves"]))
+    assert [item.pk for item in reaparece["actividades"]]==[a.pk]
+
+def test_endpoint_marcar_notificaciones_vistas(client,data):
+    p,foreign=data
+    manana=timezone.localdate()+timedelta(days=1)
+    ActividadCalendario.objects.create(practica=p,fecha=manana,tipo="riego")
+    assert client.get(reverse("calendar")).context["notificaciones"]["total"]>=1
+    assert client.post(reverse("notificaciones_vistas")).status_code==200
+    assert client.get(reverse("calendar")).context["notificaciones"]["total"]==0
 
 def test_empaquetado_hereda_fecha_de_caducidad_por_region(client,data):
     from huertos_medicinales.seguimiento.models import Empaquetado

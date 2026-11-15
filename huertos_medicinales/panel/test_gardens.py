@@ -40,6 +40,11 @@ def test_empty_garden_and_creation(client,setup):
  assert response.context["seleccionada"] is None
  assert response.content.count(b"empty-ring")==6
  response=client.post(reverse("garden_new"),{"nombre":"Segundo jardín"})
+ assert response.status_code==302 and response.url==reverse("workspace")+f"?jardin={g.pk}"
+ assert Jardin.objects.filter(propietario=u).count()==1
+ for posicion in range(1,7):
+  Practica.objects.create(participante=u,jardin=g,posicion=posicion,titulo=f"Cultivo {posicion}",planta="menta",inicio=timezone.localdate(),espacio="Ventana",objetivo="Observar")
+ response=client.post(reverse("garden_new"),{"nombre":"Segundo jardín"})
  assert response.status_code==302
  assert Jardin.objects.filter(propietario=u).count()==2
 

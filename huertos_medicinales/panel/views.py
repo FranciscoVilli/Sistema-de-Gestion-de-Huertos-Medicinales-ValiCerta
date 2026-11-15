@@ -17,7 +17,7 @@ from huertos_medicinales.seguimiento.views import plantas_disponibles
 @login_required
 def inicio(request):
     learning = estado(request.user)
-    practices = list(Practica.objects.filter(participante=request.user).prefetch_related("observaciones"))
+    practices = list(Practica.objects.filter(participante=request.user).select_related("jardin").prefetch_related("observaciones"))
     for p in practices:
         p.foto_reciente = next((o.foto for o in p.observaciones.all() if o.foto), None)
         p.reciente = next(iter(p.observaciones.all()), None)

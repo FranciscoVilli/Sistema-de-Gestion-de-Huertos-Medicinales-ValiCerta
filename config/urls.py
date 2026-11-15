@@ -34,6 +34,7 @@ urlpatterns = [
     path("calendario/", calendar_views.calendario, name="calendar"),
     path("calendario/nueva/", calendar_views.nueva, name="calendar_new"),
     path("calendario/<int:pk>/completar/", calendar_views.completar, name="calendar_complete"),
+    path("notificaciones/vistas/", calendar_views.marcar_notificaciones_vistas, name="notificaciones_vistas"),
     path("legal/", include("huertos_medicinales.privacidad.urls")),
     path("mi-espacio/", panel_views.inicio, name="workspace"),
     path("mi-espacio/jardines/nuevo/", gardens.nuevo, name="garden_new"),

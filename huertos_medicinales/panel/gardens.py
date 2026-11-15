@@ -42,9 +42,20 @@ def garden_url(jardin):
     return reverse("workspace") + f"?jardin={jardin.pk}"
 
 
+def primer_jardin_incompleto(user):
+    for jardin in Jardin.objects.filter(propietario=user):
+        if jardin.cultivos.count() < 6:
+            return jardin
+    return None
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def nuevo(request):
+    incompleto = primer_jardin_incompleto(request.user)
+    if incompleto:
+        messages.info(request, f'Completa los seis espacios de "{incompleto.nombre}" antes de crear otro jardín.')
+        return redirect(garden_url(incompleto))
     form = JardinForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         jardin = form.save(commit=False)

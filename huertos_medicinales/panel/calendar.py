@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 from django import forms
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -75,14 +76,24 @@ def parse_date(value, default):
         return default
 
 
-def notificaciones_de(user, today=None):
+def notificaciones_de(user, today=None, vistas=frozenset()):
+    """`vistas` son las claves que el usuario ya marco como leidas (al abrir la
+    campanita). Una actividad vuelve a aparecer si cambia su estado de
+    recordatorio (p.ej. ya se puso "urgente"); la luna, si cambia la fecha
+    recomendada. No se vuelve a mostrar algo identico a lo ya visto."""
     today = today or timezone.localdate()
     luna = proxima_buena_para_sembrar(today)
     actividades = list(ActividadCalendario.objects.filter(practica__participante=user, completada=False, fecha__gte=today).select_related("practica").order_by("fecha", "hora")[:8])
     for item in actividades:
         item.recordatorio_activo = item.recordatorio_dias_antes is not None and today >= item.fecha - timedelta(days=item.recordatorio_dias_antes)
+        item.clave = f"actividad:{item.pk}:{int(item.recordatorio_activo)}"
+    luna_clave = f"luna:{luna['fecha'].isoformat()}:{int(luna['hoy'])}" if luna else None
+    claves_actuales = [item.clave for item in actividades] + ([luna_clave] if luna_clave else [])
+    actividades = [item for item in actividades if item.clave not in vistas]
+    if luna_clave in vistas:
+        luna = None
     total = len(actividades) + (1 if luna and luna["hoy"] else 0)
-    return {"luna": luna, "actividades": actividades, "total": total}
+    return {"luna": luna, "actividades": actividades, "total": total, "claves": claves_actuales}
 
 
 @login_required
@@ -150,3 +161,12 @@ def completar(request, pk):
             from huertos_medicinales.comunidades.gamificacion import evaluar_insignias
             evaluar_insignias(miembro)
     return redirect(reverse("calendar")+"?dia="+activity.fecha.isoformat())
+
+
+@login_required
+@require_POST
+def marcar_notificaciones_vistas(request):
+    vistas = set(request.session.get("notificaciones_vistas", []))
+    vistas.update(notificaciones_de(request.user)["claves"])
+    request.session["notificaciones_vistas"] = list(vistas)
+    return JsonResponse({"ok": True})
