@@ -52,3 +52,10 @@ En el mensaje donde pegó el error, el usuario también pidió (en una frase fá
 - `panel/calendar.py`: la vista `calendario()` ya no calcula `weather_gardens`/`weather_garden` (import de `Jardin` también eliminado), ni agrega `jardin` a las URLs que arma `link()` ni al formulario de filtros — ese parámetro solo existía para la selección de jardín del widget de clima.
 - `panel/test_weather.py`: se quitó `test_calendar`, que validaba que el widget apareciera en esa página.
 - Nada de esto afecta el módulo de calendario en sí (actividades, luna, modal de registrar) ni el clima de Inicio, que siguen igual.
+
+## Actualización 2026-11-15 (misma tarde, última vez): también fuera "Próximos cuidados" y "Cada planta tiene su ritmo"
+A pedido del usuario, con captura de pantalla señalando ambas tarjetas al fondo del calendario.
+
+- `templates/panel/calendario.html`: se quitó toda la `<section class="calendar-bottom">` — la tarjeta "Próximos cuidados" (lista duplicada con la campanita de notificaciones) y la tarjeta promocional "Cada planta tiene su ritmo" con el enlace a Aprender.
+- `panel/calendar.py`: la vista `calendario()` ya no calcula `upcoming` (solo se usaba ahí). También se quitó `{% load static %}` de la plantilla, sin uso ya que esa era la única imagen (`menta.png`) que requería el tag `{% static %}` en esta página.
+- Las clases CSS `.calendar-bottom`, `.upcoming`, `.date-badge`, `.learning-card` quedan sin usar en `calendario.css` pero no se tocaron (no se confirmó que no se vayan a reutilizar, y no afecta nada dejarlas).
