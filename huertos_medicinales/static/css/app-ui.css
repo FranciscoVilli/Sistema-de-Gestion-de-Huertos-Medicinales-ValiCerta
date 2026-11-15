@@ -49,8 +49,13 @@
 .account-dropdown a:hover,.account-dropdown button:hover{background:#f0f4e8}
 .account-dropdown a[aria-current]{background:#e7efd8;color:#416132;font-weight:600}
 .account-dropdown svg{width:20px;height:20px}
-.notif-dropdown{min-width:260px}
+.notif-dropdown{min-width:260px;max-height:360px;overflow-y:auto}
 .notif-empty{margin:4px;padding:12px;color:var(--muted);font-size:10px}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#c0462e;color:#fff;font:700 10px var(--sans);display:grid;place-items:center;line-height:1}
+.notif-item{display:flex;align-items:flex-start;gap:10px;white-space:normal!important;line-height:1.4}
+.notif-item strong{font-weight:600}
+.notif-luna{background:#eef3e4}
+.notif-due{background:#fff3da}
 .account-login{display:inline-flex;align-items:center;min-height:44px;padding:11px 18px;border-radius:24px;border:1px solid var(--green);color:var(--green);font:600 16px var(--sans)}
 .account-login:hover{background:#eef3e6}
 @media(max-width:600px){.account-email{display:none}.account-menu summary{padding:6px}}

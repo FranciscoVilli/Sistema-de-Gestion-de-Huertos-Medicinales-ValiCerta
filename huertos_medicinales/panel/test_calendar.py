@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from huertos_medicinales.seguimiento.models import ActividadCalendario
 from huertos_medicinales.seguimiento.models import Practica
+from .calendar import notificaciones_de
 
 pytestmark = pytest.mark.django_db
 
@@ -72,6 +73,30 @@ def test_siembra_con_tecnica_propagacion_y_aviso_lunar(client,data):
     assert response.context["luna"] is None  # formulario nuevo y vacio: "tipo" todavia no tiene valor
     editar=client.get(reverse("calendar_edit",args=[a.pk]),{"dia":llena['date'].isoformat()})
     assert editar.context["luna"]["ideal"] is True and editar.context["luna"]["fase"]=="Luna llena"
+
+def test_notificaciones_de_proximas_actividades_y_recordatorio_activo(client,data):
+    p,foreign=data
+    hoy=date(2026,10,28)
+    pendiente=ActividadCalendario.objects.create(practica=p,fecha=date(2026,10,30),tipo="riego",recordatorio_dias_antes=3)
+    lejana=ActividadCalendario.objects.create(practica=p,fecha=date(2026,11,2),tipo="riego",recordatorio_dias_antes=3)
+    ActividadCalendario.objects.create(practica=p,fecha=date(2026,10,29),tipo="riego",completada=True)
+    ActividadCalendario.objects.create(practica=foreign,fecha=date(2026,10,29),tipo="riego")
+    resultado=notificaciones_de(p.participante,today=hoy)
+    actividades=resultado["actividades"]
+    assert [a.pk for a in actividades]==[pendiente.pk,lejana.pk]
+    assert actividades[0].recordatorio_activo is True
+    assert actividades[1].recordatorio_activo is False
+    esperado_luna=1 if resultado["luna"] and resultado["luna"]["hoy"] else 0
+    assert resultado["total"]==len(actividades)+esperado_luna
+
+def test_notificaciones_de_incluye_aviso_lunar_cuando_hoy_es_favorable(client,data):
+    p,foreign=data
+    from .lunar import events
+    llena=next(e for e in events() if e['phase']=='Full Moon')
+    resultado=notificaciones_de(p.participante,today=llena['date'])
+    assert resultado["actividades"]==[]
+    assert resultado["luna"]["hoy"] is True
+    assert resultado["total"]==1
 
 def test_empaquetado_hereda_fecha_de_caducidad_por_region(client,data):
     from huertos_medicinales.seguimiento.models import Empaquetado

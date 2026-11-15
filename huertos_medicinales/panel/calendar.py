@@ -1,5 +1,5 @@
 import calendar
-from .lunar import phase_on, month_phases, recomendacion
+from .lunar import phase_on, month_phases, recomendacion, proxima_buena_para_sembrar
 from datetime import date
 from datetime import timedelta
 from urllib.parse import urlencode
@@ -20,7 +20,7 @@ from huertos_medicinales.seguimiento.models import Practica, Jardin
 class ActividadForm(forms.ModelForm):
     class Meta:
         model = ActividadCalendario
-        fields = ["practica", "tipo", "fecha", "hora", "tecnica", "propagacion", "parte_usada", "notas"]
+        fields = ["practica", "tipo", "fecha", "hora", "tecnica", "propagacion", "parte_usada", "notas", "recordatorio_dias_antes"]
         labels = {"practica": "Cultivo"}
         widgets = {"fecha": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}), "hora": forms.TimeInput(attrs={"type": "time"}), "notas": forms.Textarea(attrs={"rows": 3})}
 
@@ -37,6 +37,16 @@ def parse_date(value, default):
         return parsed if 1900 <= parsed.year <= 2100 else default
     except (ValueError, TypeError):
         return default
+
+
+def notificaciones_de(user, today=None):
+    today = today or timezone.localdate()
+    luna = proxima_buena_para_sembrar(today)
+    actividades = list(ActividadCalendario.objects.filter(practica__participante=user, completada=False, fecha__gte=today).select_related("practica").order_by("fecha", "hora")[:8])
+    for item in actividades:
+        item.recordatorio_activo = item.recordatorio_dias_antes is not None and today >= item.fecha - timedelta(days=item.recordatorio_dias_antes)
+    total = len(actividades) + (1 if luna and luna["hoy"] else 0)
+    return {"luna": luna, "actividades": actividades, "total": total}
 
 
 @login_required

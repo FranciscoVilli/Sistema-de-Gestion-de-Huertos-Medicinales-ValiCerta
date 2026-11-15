@@ -69,3 +69,13 @@ def recomendacion(tipo, fecha, parte_usada=""):
     else:
         return None
     return dict(ideal=ideal, fase=nombre, icono=fase["icon"], detalle=detalle)
+
+def proxima_buena_para_sembrar(desde, limite_dias=30):
+    """Hoy si ya es buena luna para sembrar, o la próxima fecha que lo sea dentro de `limite_dias`."""
+    from datetime import timedelta
+    for offset in range(limite_dias + 1):
+        dia = desde + timedelta(days=offset)
+        fase = phase_on(dia)
+        if fase and fase["name"] in CRECIENTE_O_LLENA:
+            return dict(fecha=dia, hoy=offset == 0, fase=fase["name"], icono=fase["icon"])
+    return None

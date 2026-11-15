@@ -202,6 +202,21 @@ class ActividadCalendario(models.Model):
     notas = models.TextField("Indicaciones", max_length=1500, blank=True)
     completada = models.BooleanField(default=False)
     completada_en = models.DateTimeField(null=True, blank=True)
+    RECORDATORIOS = [
+        (0, "El mismo día"),
+        (1, "1 día antes"),
+        (2, "2 días antes"),
+        (3, "3 días antes"),
+        (7, "1 semana antes"),
+    ]
+    recordatorio_dias_antes = models.PositiveSmallIntegerField(
+        "Avisarme",
+        choices=RECORDATORIOS,
+        null=True,
+        blank=True,
+        default=1,
+        help_text="Cuándo quieres verla en tus notificaciones. Déjalo vacío para no recibir aviso.",
+    )
 
     def __str__(self):
         return f"{self.get_tipo_display()} · {self.practica} · {self.fecha}"

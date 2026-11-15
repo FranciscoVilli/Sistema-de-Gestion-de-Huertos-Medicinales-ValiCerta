@@ -206,6 +206,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "huertos_medicinales.users.context_processors.allauth_settings",
                 "huertos_medicinales.aprendizaje.context_processors.nivel_actual",
+                "huertos_medicinales.panel.context_processors.notificaciones",
             ],
         },
     },

@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, timedelta
 from django.test import SimpleTestCase
-from .lunar import events, phase_on, month_phases, recomendacion
+from .lunar import events, phase_on, month_phases, recomendacion, proxima_buena_para_sembrar
 
 class LunarTests(SimpleTestCase):
     def test_ecuador_date_rollover(self):
@@ -36,3 +36,18 @@ class RecomendacionLunarTests(SimpleTestCase):
         self.assertIsNone(recomendacion('riego', llena['date']))
         self.assertIsNone(recomendacion('cosecha', llena['date'], ''))
         self.assertIsNone(recomendacion('siembra', date(2031, 1, 1)))
+
+class ProximaBuenaParaSembrarTests(SimpleTestCase):
+    def test_hoy_cuando_la_fecha_ya_es_favorable(self):
+        llena = next(e for e in events() if e['phase'] == 'Full Moon')
+        resultado = proxima_buena_para_sembrar(llena['date'])
+        self.assertEqual(resultado, {'fecha': llena['date'], 'hoy': True, 'fase': 'Luna llena', 'icono': '🌕'})
+
+    def test_busca_hacia_adelante_cuando_hoy_no_es_favorable(self):
+        nueva = next(e for e in events() if e['phase'] == 'New Moon')
+        resultado = proxima_buena_para_sembrar(nueva['date'])
+        self.assertFalse(resultado['hoy'])
+        self.assertEqual(resultado['fecha'], nueva['date'] + timedelta(days=1))
+
+    def test_sin_resultado_fuera_del_rango_de_datos_lunares(self):
+        self.assertIsNone(proxima_buena_para_sembrar(date(2031, 1, 1)))
