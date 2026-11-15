@@ -58,8 +58,9 @@
     locate?.addEventListener('click', async () => {
       const status = widget.querySelector('[data-location-status]');
       if (!window.isSecureContext || !navigator.geolocation) {
-        status.textContent = 'La ubicación necesita HTTPS o localhost. Puedes elegir tu localidad manualmente.';
-        settings.open = true; return;
+        status.textContent = settings ? 'La ubicación necesita HTTPS o localhost. Puedes elegir tu localidad manualmente.' : 'La ubicación necesita HTTPS o localhost.';
+        if (settings) settings.open = true;
+        return;
       }
       locate.disabled = true;
       status.textContent = 'Acepta el permiso de ubicación del navegador para consultar el clima.';
@@ -72,12 +73,13 @@
         body.delete('place');
         await request(endpoint,{method:'POST',body});
         status.textContent = 'Ubicación aproximada guardada para este jardín.';
-        settings.open = false; select.value = '';
+        if (settings) settings.open = false;
+        if (select) select.value = '';
         await load();
       } catch (error) {
         const messages = {1:'No se autorizó la ubicación. Puedes habilitarla en los permisos del navegador o elegir tu localidad manualmente.',2:'No pudimos obtener tu ubicación. Intenta nuevamente o elige tu localidad manualmente.',3:'La ubicación tardó demasiado. Intenta nuevamente o elige tu localidad manualmente.'};
         status.textContent = messages[error.code] || 'No se pudo guardar la ubicación. Intenta nuevamente o elige tu localidad manualmente.';
-        settings.open = true;
+        if (settings) settings.open = true;
       } finally { locate.disabled = false; }
     });
     widget.querySelector('[data-refresh]').addEventListener('click',load);
