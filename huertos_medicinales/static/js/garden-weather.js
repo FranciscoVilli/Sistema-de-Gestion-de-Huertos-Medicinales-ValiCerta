@@ -9,6 +9,7 @@
     const select = widget.querySelector('[data-place-results]');
     const locationSetup = widget.querySelector('[data-location-setup]');
     let loading = false;
+    let source = null;
     const element = (tag, text, className) => { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; };
     const display = (value, suffix) => value === null || value === undefined ? 'No disponible' : `${value}${suffix}`;
     async function request(url, options = {}) {
@@ -32,10 +33,12 @@
         const data = await request(url);
         result.replaceChildren();
         if (!data.configured) {
+          source = null;
           result.append(element('p','Usa tu ubicación para ver el clima de este jardín, sin escribir una ciudad.'));
           if (locationSetup) locationSetup.hidden = false;
           return;
         }
+        source = data.source || 'manual';
         if (locationSetup) locationSetup.hidden = true;
         const placeEl = widget.querySelector('[data-place]');
         if (placeEl) placeEl.textContent = `📍 ${data.name} · ${data.exposure_label}`;
@@ -57,6 +60,16 @@
       } catch (error) { result.replaceChildren(element('p','No se pudo consultar el clima. Revisa tu conexión y pulsa Actualizar.')); }
       finally { loading = false; refresh.disabled = false; }
     }
+    async function geolocateAndSave() {
+      if (!window.isSecureContext || !navigator.geolocation) throw new Error('unsupported');
+      const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, {enableHighAccuracy:false, timeout:15000, maximumAge:60000}));
+      const body = new FormData(save);
+      body.set('mode','geolocation');
+      body.set('latitude',position.coords.latitude.toFixed(2));
+      body.set('longitude',position.coords.longitude.toFixed(2));
+      body.delete('place');
+      await request(endpoint,{method:'POST',body});
+    }
     const locate = widget.querySelector('[data-geolocate]');
     locate?.addEventListener('click', async () => {
       const status = widget.querySelector('[data-location-status]');
@@ -68,13 +81,7 @@
       locate.disabled = true;
       status.textContent = 'Acepta el permiso de ubicación del navegador para consultar el clima.';
       try {
-        const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, {enableHighAccuracy:false, timeout:15000, maximumAge:60000}));
-        const body = new FormData(save);
-        body.set('mode','geolocation');
-        body.set('latitude',position.coords.latitude.toFixed(2));
-        body.set('longitude',position.coords.longitude.toFixed(2));
-        body.delete('place');
-        await request(endpoint,{method:'POST',body});
+        await geolocateAndSave();
         status.textContent = 'Ubicación aproximada guardada para este jardín.';
         if (settings) settings.open = false;
         if (select) select.value = '';
@@ -85,7 +92,15 @@
         if (settings) settings.open = true;
       } finally { locate.disabled = false; }
     });
-    widget.querySelector('[data-refresh]').addEventListener('click',load);
+    const refresh = widget.querySelector('[data-refresh]');
+    refresh.addEventListener('click', async () => {
+      if (source === 'browser') {
+        refresh.disabled = true;
+        try { await geolocateAndSave(); } catch (error) { /* keep the last known location if this fails */ }
+        refresh.disabled = false;
+      }
+      await load();
+    });
     widget.querySelector('[data-weather-garden]')?.addEventListener('change', event => {
       const url = new URL(location.href);url.searchParams.set('jardin',event.target.value);location.assign(url);
     });
@@ -104,7 +119,7 @@
     save?.addEventListener('submit',async event=>{
       event.preventDefault();const button=save.querySelector('button');button.disabled=true;
       const status=widget.querySelector('[data-save-status]');status.textContent='Guardando…';
-      try {await request(endpoint,{method:'POST',body:new FormData(save)});status.textContent='Localidad guardada.';settings.open=false;select.value='';await load();}
+      try {await request(endpoint,{method:'POST',body:new FormData(save)});status.textContent='Localidad guardada.';if(settings)settings.open=false;if(select)select.value='';await load();}
       catch(error) {status.textContent=error.name==='AbortError' ? 'No se pudo guardar. Intenta nuevamente.' : error.message;}
       finally {button.disabled=false;}
     });

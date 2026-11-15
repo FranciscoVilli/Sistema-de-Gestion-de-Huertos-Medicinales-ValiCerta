@@ -120,7 +120,7 @@ def garden_weather(request, pk):
     if selected:
         try: date.fromisoformat(selected)
         except ValueError: return JsonResponse({'error':'Fecha no válida.'},status=400)
-    result = {'configured':True,'name':garden.clima['name'],'exposure':garden.clima['exposure'],'exposure_label':EXPOSURES[garden.clima['exposure']],'timezone':garden.clima['timezone']}
+    result = {'configured':True,'name':garden.clima['name'],'exposure':garden.clima['exposure'],'exposure_label':EXPOSURES[garden.clima['exposure']],'timezone':garden.clima['timezone'],'source':garden.clima.get('source','manual')}
     try:
         result.update(forecast(garden.clima,selected))
     except (OSError,ValueError,KeyError,TypeError,IndexError):

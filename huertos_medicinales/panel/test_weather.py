@@ -21,6 +21,8 @@ def test_config(client,gardens):
  assert client.post(url,{'place':'forged','exposure':'interior'}).status_code==400
  assert client.post(url,{'place':signing.dumps(PLACE,salt='garden-weather'),'exposure':'interior'}).status_code==200
  g.refresh_from_db();assert g.clima['name']=='Cuenca, Azuay'
+ with patch('huertos_medicinales.panel.weather.fetch_json',side_effect=OSError('offline')):
+  assert client.get(url).json()['source']=='manual'
  assert client.post(url,{'exposure':'cubierto'}).status_code==200
  g.refresh_from_db();assert g.clima['exposure']=='cubierto'
  client.logout();assert client.get(url).status_code==302
@@ -57,6 +59,8 @@ def test_geolocation(client,gardens):
  assert client.post(url,payload).status_code==200
  g.refresh_from_db();assert g.clima['latitude']==-2.9 and g.clima['longitude']==-79.0
  assert g.clima['timezone']=='auto'
+ with patch('huertos_medicinales.panel.weather.fetch_json',side_effect=OSError('offline')):
+  assert client.get(url).json()['source']=='browser'
  assert client.post(reverse('garden_weather',args=[f.pk]),payload).status_code==404
  for bad in ['NaN','inf','91','bad','']:
   assert client.post(url,{**payload,'latitude':bad}).status_code==400
