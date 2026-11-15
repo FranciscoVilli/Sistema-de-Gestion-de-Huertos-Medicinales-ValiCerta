@@ -22,7 +22,9 @@ def reglas(request):
 
 def public_name(user):
     profile=getattr(user,'perfil_comunitario',None)
-    return profile.nombre if profile and profile.visible else f'Cultivador {user.pk}'
+    if profile:
+        return profile.nombre if profile.visible else f'Cultivador {user.pk}'
+    return user.name or f'Cultivador {user.pk}'
 
 def allowed(user,item):
     return user.is_authenticated and (user.pk==item.autor_id or user.has_perm('comunidades.change_'+item._meta.model_name))
@@ -307,7 +309,7 @@ def answer_edit(request,pk):
 @never_cache
 def profile_edit(request):
     item=PerfilComunitario.objects.filter(usuario=request.user).first()
-    form=PerfilForm(request.POST or None,instance=item,initial={'nombre':f'Cultivador {request.user.pk}'})
+    form=PerfilForm(request.POST or None,instance=item,initial={'nombre':request.user.name or f'Cultivador {request.user.pk}'})
     if request.method=='POST' and form.is_valid():
         obj=form.save(commit=False);obj.usuario=request.user;obj.save();return success(request,reverse('comunidades:listado'))
     return modal(request,'Mi perfil comunitario','comunidades/form_content.html',{'form':form,'submit_label':'Guardar perfil','notice':'Tu nombre, experiencia y jardines compartidos serán visibles solo si activas tu perfil. No incluyas correo, teléfono ni dirección. El nivel es declarado por ti.'},400 if request.method=='POST' else 200)

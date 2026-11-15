@@ -5,8 +5,10 @@ from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
 
 from .admin import ComunidadAdmin
+from .community import public_name
 from .models import Comunidad
 from .models import EventoComunidad
+from .models import PerfilComunitario
 
 pytestmark = pytest.mark.django_db
 
@@ -124,3 +126,17 @@ def test_publicacion_requiere_permiso_explicito(usuario, rf):
     request = rf.get("/")
     request.user = usuario
     assert not ComunidadAdmin(Comunidad, AdminSite()).has_publish_permission(request)
+
+
+def test_public_name_usa_el_nombre_de_cuenta_por_defecto(usuario, django_user_model):
+    assert public_name(usuario) == "Cultivadora"
+    sin_nombre = django_user_model.objects.create_user(email="sinnombre@example.com")
+    assert public_name(sin_nombre) == f"Cultivador {sin_nombre.pk}"
+
+
+def test_public_name_respeta_perfil_comunitario_visible_u_oculto(usuario):
+    PerfilComunitario.objects.create(usuario=usuario, nombre="Jardinera Q", visible=True)
+    assert public_name(usuario) == "Jardinera Q"
+    usuario.perfil_comunitario.visible = False
+    usuario.perfil_comunitario.save()
+    assert public_name(usuario) == f"Cultivador {usuario.pk}"
