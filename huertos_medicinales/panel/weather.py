@@ -1,9 +1,9 @@
 """Locality weather: no precise address or browser geolocation required."""
-import json
+import logging
 import math
 from datetime import date
 from urllib.parse import urlencode
-from urllib.request import urlopen
+import requests
 from django.core import signing
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
@@ -13,11 +13,15 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 from huertos_medicinales.seguimiento.models import Jardin
 
+logger = logging.getLogger(__name__)
 EXPOSURES = {'unknown': 'Espacio por definir', 'exterior': 'Al aire libre', 'interior': 'Dentro de casa', 'cubierto': 'Balcón o patio cubierto'}
 
 def fetch_json(url):
-    with urlopen(url, timeout=6) as response:
-        return json.load(response)
+    # requests ships its own CA bundle (certifi); urllib.request.urlopen relies on the
+    # OS trust store, which was failing TLS verification for these calls on Render.
+    response = requests.get(url, timeout=6)
+    response.raise_for_status()
+    return response.json()
 
 @login_required
 @require_GET
@@ -38,6 +42,7 @@ def places(request):
                 results.append({'name':place['name'], 'token':signing.dumps(place,salt='garden-weather')})
             cache.set(key,results,3600)
         except (OSError, ValueError, KeyError, TypeError):
+            logger.exception('No se pudo buscar la localidad en Open-Meteo')
             return JsonResponse({'error':'No se pudo buscar la localidad. Intenta nuevamente en unos momentos.'},status=503)
     return JsonResponse({'results':results})
 
@@ -124,5 +129,6 @@ def garden_weather(request, pk):
     try:
         result.update(forecast(garden.clima,selected))
     except (OSError,ValueError,KeyError,TypeError,IndexError):
+        logger.exception('No se pudo obtener el pronostico del clima para el jardin %s', garden.pk)
         result.update(available=False,message='El servicio de clima no está disponible ahora. Puedes reintentar; tus actividades siguen guardadas.')
     return JsonResponse(result)

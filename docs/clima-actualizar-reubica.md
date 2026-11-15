@@ -18,3 +18,11 @@ Se reprodujo en local (cuenta y jardín de prueba, borrados al terminar) que el 
 
 ## Verificación
 Probado en local con un jardín de prueba: se simuló `navigator.geolocation.getCurrentPosition` para evitar el permiso real del navegador durante la prueba automatizada, se confirmó que un clic en "Actualizar" con `source=browser` actualiza `Jardin.clima` a las nuevas coordenadas. No se ejecutó la suite completa de pytest (se agregaron aserciones nuevas a `test_weather.py` pero no se corrieron en Docker).
+
+## Actualización 2026-11-15 (misma tarde): "El servicio de clima no está disponible ahora"
+El usuario reportó ver este mensaje en producción. `panel/weather.py` usaba `urllib.request.urlopen` para llamar a Open-Meteo/GeoNames, y las excepciones se tragaban en silencio (`except (OSError,ValueError,KeyError,TypeError,IndexError)` sin loguear nada) — no había manera de saber la causa real desde los logs de Render.
+
+- La API de Open-Meteo responde bien desde fuera (probado con `curl` y con `fetch_json` directo en local); el problema más probable es que `urlopen` depende del almacén de certificados del sistema operativo del contenedor de Render, que puede no tener un bundle de CAs actualizado — un problema común en imágenes mínimas. `requests` (ya es dependencia del proyecto, agregada para Supabase Storage) trae su propio bundle vía `certifi` y evita ese problema.
+- Cambio: `fetch_json()` ahora usa `requests.get(...).raise_for_status()` en vez de `urlopen`. `requests.exceptions.RequestException` hereda de `OSError`, así que lo sigue capturando el mismo `except` existente, sin tocar esa lista.
+- Se agregó `logger.exception(...)` en los dos `except` (`places()` y `garden_weather()`) para que la próxima vez que esto falle, el traceback real quede en los logs de Render en vez de perderse.
+- Verificado localmente con `fetch_json` real contra la API (sin mocks) después del cambio; los tests existentes en `test_weather.py` no necesitaron cambios porque mockean `fetch_json` directamente, no su implementación interna.
