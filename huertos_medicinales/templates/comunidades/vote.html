@@ -1,1 +1,9 @@
-<form method="post" action="{{ item.vote_url }}" class="forum-votes helpful-reaction" data-vote-form>{% csrf_token %}<button type="submit" name="valor" value="{% if item.my_vote == 1 %}0{% else %}1{% endif %}" data-direction="1" aria-pressed="{% if item.my_vote == 1 %}true{% else %}false{% endif %}" title="Pulsa de nuevo para retirar tu reacción"><span aria-hidden="true">🌱</span><span>Me resulta útil</span><strong data-score aria-live="polite">{{ item.score }}</strong></button></form>
+<form method="post"
+      action="{{ item.vote_url }}"
+      class="forum-votes helpful-reaction"
+      data-vote-form>{% csrf_token %}<button type="submit"
+        name="valor"
+        value="{% if item.my_vote == 1 %}0{% else %}1{% endif %}"
+        data-direction="1"
+        aria-pressed="{% if item.my_vote == 1 %}true{% else %}false{% endif %}"
+        title="Pulsa de nuevo para retirar tu reacción"><span aria-hidden="true">🌱</span><span>Me resulta útil</span><strong data-score aria-live="polite">{{ item.score }}</strong></button></form>

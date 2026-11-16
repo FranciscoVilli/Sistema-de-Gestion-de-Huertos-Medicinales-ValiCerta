@@ -15,7 +15,7 @@ TITULOS_NIVEL = {
 
 
 def nivel_actual(request):
-    """Refleja el avance real del módulo de Aprender (lecciones y capítulos aprobados)."""
+    """Refleja el avance real de Aprender (lecciones y capítulos aprobados)."""
     if not request.user.is_authenticated:
         return {}
     user = request.user
@@ -23,21 +23,36 @@ def nivel_actual(request):
     total_capitulos = EvaluacionEducativa.objects.filter(estado__in=VISIBLE).count()
     lecciones_hechas = (
         ProgresoLeccion.objects.filter(user=user, completada=True)
-        .values("leccion_id").distinct().count()
+        .values("leccion_id")
+        .distinct()
+        .count()
     )
     capitulos_aprobados = (
         IntentoCapitulo.objects.filter(user=user, aprobado=True)
-        .values("evaluacion_id").distinct().count()
+        .values("evaluacion_id")
+        .distinct()
+        .count()
     )
     xp = lecciones_hechas * XP_POR_LECCION + capitulos_aprobados * XP_POR_CAPITULO
     max_xp = total_lecciones * XP_POR_LECCION + total_capitulos * XP_POR_CAPITULO
-    niveles = [(round(max_xp * fraccion), nombre) for fraccion, nombre in FRACCIONES_NIVEL] if max_xp else [(0, "Aprendiz")]
+    niveles = (
+        [(round(max_xp * fraccion), nombre) for fraccion, nombre in FRACCIONES_NIVEL]
+        if max_xp
+        else [(0, "Aprendiz")]
+    )
     nivel = next(nombre for umbral, nombre in reversed(niveles) if xp >= umbral)
-    numero = next(i for i, (umbral, nombre) in enumerate(niveles, start=1) if nombre == nivel)
+    numero = next(
+        i for i, (umbral, nombre) in enumerate(niveles, start=1) if nombre == nivel
+    )
     umbral_actual = next(umbral for umbral, nombre in niveles if nombre == nivel)
-    siguiente = next(((umbral, nombre) for umbral, nombre in niveles if umbral > xp), None)
+    siguiente = next(
+        ((umbral, nombre) for umbral, nombre in niveles if umbral > xp),
+        None,
+    )
     porcentaje = (
-        round((xp - umbral_actual) * 100 / (siguiente[0] - umbral_actual)) if siguiente else 100
+        round((xp - umbral_actual) * 100 / (siguiente[0] - umbral_actual))
+        if siguiente
+        else 100
     )
     progress = {
         "xp": xp,
@@ -52,5 +67,7 @@ def nivel_actual(request):
         "capitulos_aprobados": capitulos_aprobados,
         "capitulos_totales": total_capitulos,
     }
-    display_name = user.name.strip() or ("Administrador" if user.is_superuser else "Cultivador")
+    display_name = user.name.strip() or (
+        "Administrador" if user.is_superuser else "Cultivador"
+    )
     return {"estado_aprendizaje": progress, "nombre_cabecera": display_name}

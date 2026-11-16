@@ -17,10 +17,14 @@ def test_learning_requires_login(client):
 def test_verified_login_opens_learning(client, django_user_model):
     password = token_urlsafe(24)
     user = django_user_model.objects.create_user(
-        email="entrada@example.com", password=password,
+        email="entrada@example.com",
+        password=password,
     )
     EmailAddress.objects.create(
-        user=user, email=user.email, verified=True, primary=True,
+        user=user,
+        email=user.email,
+        verified=True,
+        primary=True,
     )
     response = client.post(
         reverse("account_login"),

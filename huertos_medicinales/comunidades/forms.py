@@ -7,12 +7,15 @@ from .models import Comunidad
 from .models import HuertoReal
 from .models import Miembro
 
+# Largo del codigo unico de cada persona.
+LARGO_CODIGO = 6
+
 
 class ComunidadForm(forms.ModelForm):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        self.fields['latitud'].required=True
-        self.fields['longitud'].required=True
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["latitud"].required = True
+        self.fields["longitud"].required = True
 
     confirmar_publicacion = forms.BooleanField(
         label=(
@@ -71,9 +74,10 @@ class AgregarPorCodigoForm(forms.Form):
     )
 
     def clean_codigo(self):
-        code=self.cleaned_data['codigo'].strip()
-        if len(code)!=6 or not code.isascii() or not code.isdigit():
-            raise forms.ValidationError('Escribe un código de seis dígitos.')
+        code = self.cleaned_data["codigo"].strip()
+        if len(code) != LARGO_CODIGO or not code.isascii() or not code.isdigit():
+            msg = "Escribe un código de seis dígitos."
+            raise forms.ValidationError(msg)
         return code
 
 
@@ -83,16 +87,26 @@ class HuertoRealForm(forms.ModelForm):
         choices=[(planta["slug"], planta["nombre"]) for planta in PLANTAS],
         required=False,
         widget=forms.CheckboxSelectMultiple,
-        help_text="El tipo de suelo, el agua de riego y el abono se recomiendan según lo que elijas aquí.",
+        help_text=(
+            "El tipo de suelo, el agua de riego y el abono se recomiendan "
+            "según lo que elijas aquí."
+        ),
     )
 
     class Meta:
         model = HuertoReal
         fields = [
-            "provincia", "parroquia", "plantas",
-            "tipo_diseno", "tecnica_diseno", "tipo_cerca", "detalle_cerca",
-            "area_total", "unidad_area",
-            "detalle_riego", "detalle_abono",
+            "provincia",
+            "parroquia",
+            "plantas",
+            "tipo_diseno",
+            "tecnica_diseno",
+            "tipo_cerca",
+            "detalle_cerca",
+            "area_total",
+            "unidad_area",
+            "detalle_riego",
+            "detalle_abono",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -105,7 +119,10 @@ class BodegaForm(forms.ModelForm):
     class Meta:
         model = Bodega
         fields = [
-            "tiene_espacio_herramientas", "detalle_herramientas",
-            "tiene_espacio_semillas", "detalle_semillas",
-            "tiene_espacio_abonos", "detalle_abonos",
+            "tiene_espacio_herramientas",
+            "detalle_herramientas",
+            "tiene_espacio_semillas",
+            "detalle_semillas",
+            "tiene_espacio_abonos",
+            "detalle_abonos",
         ]

@@ -37,4 +37,5 @@ class IntentoEvaluacion(models.Model):
     def __str__(self):
         return f"{self.leccion}: {self.resultado}"
 
+
 # Database-backed curriculum; legacy achievements remain intact.

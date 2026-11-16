@@ -22,13 +22,29 @@ from .educational_models import RutaEducativa
 class LessonAdminForm(forms.ModelForm):
     class Meta:
         model = LeccionEducativa
-        fields = "__all__"
+        fields = [
+            "capitulo",
+            "slug",
+            "orden",
+            "titulo",
+            "objetivos",
+            "minutos",
+            "secciones",
+            "comprension",
+            "resumen",
+            "fuentes",
+            "evidencia",
+            "estado",
+            "revisada",
+            "nota_editorial",
+        ]
 
     def clean(self):
         data = super().clean()
         if data.get("estado") in VISIBLE and not data.get("fuentes"):
+            msg = "Asocia al menos una fuente antes de publicar o habilitar el piloto."
             raise ValidationError(
-                "Asocia al menos una fuente antes de publicar o habilitar el piloto.",
+                msg,
             )
         return data
 

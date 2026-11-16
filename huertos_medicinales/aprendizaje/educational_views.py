@@ -10,6 +10,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
+from .catalogo import PLANTAS
+from .context_processors import XP_POR_CAPITULO
+from .context_processors import XP_POR_LECCION
 from .educational_models import VISIBLE
 from .educational_models import BloqueEducativo
 from .educational_models import CapituloEducativo
@@ -33,6 +36,8 @@ from .educational_services import route_status
 from .educational_services import start_attempt
 from .educational_services import submit_attempt
 from .educational_services import visible_lessons
+from .module_visuals import chapter_cover
+from .module_visuals import module_cover
 
 
 @login_required
@@ -53,23 +58,35 @@ def chapter(request, slug):
     if not chapter_unlocked(request.user, chapter):
         messages.info(
             request,
-            "Primero debes aprobar la evaluación del capítulo anterior para abrir este.",
+            (
+                "Primero debes aprobar la evaluación del capítulo anterior "
+                "para abrir este."
+            ),
         )
         return redirect("lms_catalog")
     rows = []
     next_lesson = None
     for item in lesson_progress(request.user, chapter):
         rows.append(
-            {"lesson": item["lesson"], "progress": item["progress"], "locked": not item["unlocked"]},
+            {
+                "lesson": item["lesson"],
+                "progress": item["progress"],
+                "locked": not item["unlocked"],
+            },
         )
         if next_lesson is None and item["unlocked"] and not item["completed"]:
             next_lesson = item["lesson"]
     if next_lesson:
         return redirect("lms_lesson", slug=next_lesson.slug)
     exam = EvaluacionEducativa.objects.filter(
-        capitulo=chapter, estado__in=VISIBLE,
+        capitulo=chapter,
+        estado__in=VISIBLE,
     ).first()
-    if exam and not chapter_approved(request.user, chapter) and lessons_ready(request.user, chapter):
+    if (
+        exam
+        and not chapter_approved(request.user, chapter)
+        and lessons_ready(request.user, chapter)
+    ):
         return redirect("lms_assessment", slug=chapter.slug)
     first_lesson = visible_lessons(chapter).order_by("orden").first()
     if first_lesson:
@@ -91,48 +108,79 @@ def block_detail(request, pk):
     block = get_object_or_404(BloqueEducativo, pk=pk)
     chapters = list(block.capitulos.exclude(estado="archivado"))
     progress_by_id = {row["chapter"].pk: row for row in chapter_progress(request.user)}
-    from .module_visuals import module_cover, chapter_cover
-    from .context_processors import XP_POR_LECCION, XP_POR_CAPITULO
-    completed_lessons = set(ProgresoLeccion.objects.filter(
-        user=request.user, completada=True,
-    ).values_list("leccion_id", flat=True))
+
+    completed_lessons = set(
+        ProgresoLeccion.objects.filter(
+            user=request.user,
+            completada=True,
+        ).values_list("leccion_id", flat=True),
+    )
     for item in chapters:
         row = progress_by_id.get(item.pk, {})
         item.locked = not row.get("unlocked", False)
         item.approved = row.get("approved", False)
         item.cover = chapter_cover(item)
-        lesson_ids = list(item.lecciones.filter(estado__in=VISIBLE).values_list("pk", flat=True))
-        has_exam = EvaluacionEducativa.objects.filter(capitulo=item, estado__in=VISIBLE).exists()
+        lesson_ids = list(
+            item.lecciones.filter(estado__in=VISIBLE).values_list("pk", flat=True),
+        )
+        has_exam = EvaluacionEducativa.objects.filter(
+            capitulo=item,
+            estado__in=VISIBLE,
+        ).exists()
         item.lesson_xp = len(lesson_ids) * XP_POR_LECCION
         item.exam_xp = XP_POR_CAPITULO if has_exam else 0
         item.total_xp = item.lesson_xp + item.exam_xp
-        item.earned_xp = len(set(lesson_ids) & completed_lessons) * XP_POR_LECCION + (item.exam_xp if item.approved else 0)
+        item.earned_xp = len(set(lesson_ids) & completed_lessons) * XP_POR_LECCION + (
+            item.exam_xp if item.approved else 0
+        )
     completed = sum(item.approved for item in chapters)
-    related_routes = RutaEducativa.objects.filter(
-        estado__in=VISIBLE, requisitos__evaluacioneducativa__capitulo__bloque=block,
-    ).distinct().prefetch_related("requisitos")
+    related_routes = (
+        RutaEducativa.objects.filter(
+            estado__in=VISIBLE,
+            requisitos__evaluacioneducativa__capitulo__bloque=block,
+        )
+        .distinct()
+        .prefetch_related("requisitos")
+    )
     plants = []
-    from .catalogo import PLANTAS
-    names = {p['slug']:p['nombre'] for p in PLANTAS}
-    for route in related_routes:
-        plants.append({"name": names.get(route.especie, route.nombre), "slug": route.especie,
-                       "image": f"images/huertos/plantas/{route.especie}.png",
-                       "available": route_status(request.user, route)["eligible"]})
-    return render(request, "aprendizaje/block_detail.html", {
-        "block": block, "module": block, "chapters": chapters, "cover": module_cover(block.numero),
-        "completed": completed, "total": len(chapters),
-        "percent": round(completed * 100 / len(chapters)) if chapters else 0,
-        "plants": plants,
-        "total_xp": sum(item.total_xp for item in chapters),
-        "earned_xp": sum(item.earned_xp for item in chapters),
-    })
+
+    names = {p["slug"]: p["nombre"] for p in PLANTAS}
+    plants.extend(
+        {
+            "name": names.get(route.especie, route.nombre),
+            "slug": route.especie,
+            "image": f"images/huertos/plantas/{route.especie}.png",
+            "available": route_status(request.user, route)["eligible"],
+        }
+        for route in related_routes
+    )
+    return render(
+        request,
+        "aprendizaje/block_detail.html",
+        {
+            "block": block,
+            "module": block,
+            "chapters": chapters,
+            "cover": module_cover(block.numero),
+            "completed": completed,
+            "total": len(chapters),
+            "percent": round(completed * 100 / len(chapters)) if chapters else 0,
+            "plants": plants,
+            "total_xp": sum(item.total_xp for item in chapters),
+            "earned_xp": sum(item.earned_xp for item in chapters),
+        },
+    )
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def lesson(request, slug):
+# Funcion extensa heredada; dividirla queda registrado como deuda tecnica (V2).
+def lesson(request, slug):  # noqa: C901
     item = get_object_or_404(
-        LeccionEducativa, slug=slug, estado__in=VISIBLE, capitulo__estado__in=VISIBLE,
+        LeccionEducativa,
+        slug=slug,
+        estado__in=VISIBLE,
+        capitulo__estado__in=VISIBLE,
     )
     if not lesson_unlocked(request.user, item):
         messages.info(
@@ -142,14 +190,18 @@ def lesson(request, slug):
         return redirect("lms_chapter", slug=item.capitulo.slug)
     item.full_clean()
     progress = ProgresoLeccion.objects.filter(
-        user=request.user, leccion=item, revision=item.revision,
+        user=request.user,
+        leccion=item,
+        revision=item.revision,
     ).first()
     feedback = ""
     if request.method == "POST":
         with transaction.atomic():
             get_user_model().objects.select_for_update().get(pk=request.user.pk)
             progress, _ = ProgresoLeccion.objects.get_or_create(
-                user=request.user, leccion=item, revision=item.revision,
+                user=request.user,
+                leccion=item,
+                revision=item.revision,
             )
             if request.POST.get("revision") != str(item.revision):
                 feedback = (
@@ -170,7 +222,10 @@ def lesson(request, slug):
                     progress.save()
                     messages.success(
                         request,
-                        "Actividad de comprensión completada. Tu progreso quedó guardado.",
+                        (
+                            "Actividad de comprensión completada. Tu progreso quedó "
+                            "guardado."
+                        ),
                     )
                     next_lesson = (
                         visible_lessons(item.capitulo)
@@ -181,7 +236,8 @@ def lesson(request, slug):
                     if next_lesson:
                         return redirect("lms_lesson", slug=next_lesson.slug)
                     if EvaluacionEducativa.objects.filter(
-                        capitulo=item.capitulo, estado__in=VISIBLE,
+                        capitulo=item.capitulo,
+                        estado__in=VISIBLE,
                     ).exists() and not chapter_approved(request.user, item.capitulo):
                         return redirect("lms_assessment", slug=item.capitulo.slug)
                     return redirect("lms_chapter", slug=item.capitulo.slug)
@@ -190,7 +246,7 @@ def lesson(request, slug):
     # Review previously read sections without advancing or losing the saved position.
     try:
         display = int(request.GET.get("seccion", position))
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         display = position
     display = max(0, min(display, position, len(item.secciones)))
     section = item.secciones[display] if display < len(item.secciones) else None
@@ -219,7 +275,10 @@ def assessment(request, slug):
     if not chapter_unlocked(request.user, chapter):
         messages.info(
             request,
-            "Primero debes aprobar la evaluación del capítulo anterior para abrir esta.",
+            (
+                "Primero debes aprobar la evaluación del capítulo anterior "
+                "para abrir esta."
+            ),
         )
         return redirect("lms_catalog")
     error = ""
@@ -277,7 +336,10 @@ def assessment(request, slug):
 @login_required
 def result(request, pk):
     attempt = get_object_or_404(
-        IntentoCapitulo, pk=pk, user=request.user, finalizado__isnull=False,
+        IntentoCapitulo,
+        pk=pk,
+        user=request.user,
+        finalizado__isnull=False,
     )
     feedback = []
     for i, q in enumerate(attempt.contenido["preguntas"]):
@@ -305,7 +367,8 @@ def achievements(request):
                 user=request.user,
             ).select_related("competencia", "intento"),
             "attempts": IntentoCapitulo.objects.filter(
-                user=request.user, finalizado__isnull=False,
+                user=request.user,
+                finalizado__isnull=False,
             ).select_related("evaluacion")[:20],
             "routes": [
                 route_status(request.user, r)
@@ -326,7 +389,10 @@ def route(request, slug):
             state = route_status(request.user, route)
             if not state["eligible"]:
                 return render(
-                    request, "aprendizaje/pilot_route.html", state, status=403,
+                    request,
+                    "aprendizaje/pilot_route.html",
+                    state,
+                    status=403,
                 )
             record_unlocks(request.user)
             record = DesbloqueoRuta.objects.get(user=request.user, ruta=route)

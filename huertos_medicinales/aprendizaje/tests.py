@@ -133,7 +133,10 @@ def test_intentos_conservan_resultado_y_contenido_sin_duplicar_xp(student):
 def test_learning_dashboard_only_shows_general_modules(client, student):
     client.force_login(student)
     for section in ["ruta", "lecciones", "plantas", "guias", "avances"]:
-        assert client.get(reverse("learning"), {"seccion": section}).context["section"] == "ruta"
+        assert (
+            client.get(reverse("learning"), {"seccion": section}).context["section"]
+            == "ruta"
+        )
     source = client.get(reverse("learning")).content.decode()
     assert ">Lecciones disponibles<" not in source
     assert ">Por planta<" not in source
@@ -147,6 +150,9 @@ def test_learning_dashboard_only_shows_general_modules(client, student):
     assert response.context["progress"] == 0
     assert response.context["next_lesson"] is None
     assert Logro.objects.filter(user=student).count() == 2
-    assert client.get(reverse("learning_lesson",args=[LECCIONES[3]["slug"]])).status_code == 302
+    assert (
+        client.get(reverse("learning_lesson", args=[LECCIONES[3]["slug"]])).status_code
+        == 302
+    )
     client.logout()
     assert client.get(reverse("learning_preview")).status_code == 200

@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
+from huertos_medicinales.aprendizaje.catalogo import PLANTAS
+
 from .forms import EmpaquetadoForm
 from .forms import ObservacionForm
 from .forms import PracticaForm
@@ -18,7 +20,7 @@ from .models import Practica
 
 
 def plantas_disponibles(user):
-    from huertos_medicinales.aprendizaje.catalogo import PLANTAS
+
     return list(PLANTAS)
 
 

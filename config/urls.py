@@ -11,8 +11,8 @@ from huertos_medicinales.aprendizaje import educational_views as edu
 from huertos_medicinales.aprendizaje import views as learning_views
 from huertos_medicinales.panel import calendar as calendar_views
 from huertos_medicinales.panel import gardens
-from huertos_medicinales.panel import weather
 from huertos_medicinales.panel import views as panel_views
+from huertos_medicinales.panel import weather
 from huertos_medicinales.users.views import entry
 
 admin.site.site_header = "Huertos Medicinales Comunitarios"
@@ -24,7 +24,11 @@ urlpatterns = [
     path("mi-aprendizaje/fundamentos/", edu.catalog, name="lms_catalog"),
     path("mi-aprendizaje/capitulo/<slug:slug>/", edu.chapter, name="lms_chapter"),
     path("mi-aprendizaje/contenido/<slug:slug>/", edu.lesson, name="lms_lesson"),
-    path("mi-aprendizaje/evaluacion/<slug:slug>/", edu.assessment, name="lms_assessment"),
+    path(
+        "mi-aprendizaje/evaluacion/<slug:slug>/",
+        edu.assessment,
+        name="lms_assessment",
+    ),
     path("mi-aprendizaje/resultado/<int:pk>/", edu.result, name="lms_result"),
     path("mi-aprendizaje/competencias/", edu.achievements, name="lms_progress"),
     path("mi-aprendizaje/ruta/<slug:slug>/", edu.route, name="lms_route"),
@@ -33,13 +37,29 @@ urlpatterns = [
     path("clima/jardin/<int:pk>/", weather.garden_weather, name="garden_weather"),
     path("calendario/", calendar_views.calendario, name="calendar"),
     path("calendario/nueva/", calendar_views.nueva, name="calendar_new"),
-    path("calendario/<int:pk>/completar/", calendar_views.completar, name="calendar_complete"),
-    path("notificaciones/vistas/", calendar_views.marcar_notificaciones_vistas, name="notificaciones_vistas"),
+    path(
+        "calendario/<int:pk>/completar/",
+        calendar_views.completar,
+        name="calendar_complete",
+    ),
+    path(
+        "notificaciones/vistas/",
+        calendar_views.marcar_notificaciones_vistas,
+        name="notificaciones_vistas",
+    ),
     path("legal/", include("huertos_medicinales.privacidad.urls")),
     path("mi-espacio/", panel_views.inicio, name="workspace"),
     path("mi-espacio/jardines/nuevo/", gardens.nuevo, name="garden_new"),
-    path("mi-espacio/jardines/<int:pk>/espacio/<int:posicion>/", gardens.colocar, name="garden_place"),
-    path("mi-espacio/cultivo/<uuid:pk>/liberar/", gardens.liberar, name="garden_release"),
+    path(
+        "mi-espacio/jardines/<int:pk>/espacio/<int:posicion>/",
+        gardens.colocar,
+        name="garden_place",
+    ),
+    path(
+        "mi-espacio/cultivo/<uuid:pk>/liberar/",
+        gardens.liberar,
+        name="garden_release",
+    ),
     path("mis-practicas/", include("huertos_medicinales.seguimiento.urls")),
     path("comunidades/", include("huertos_medicinales.comunidades.urls")),
     path("", entry, name="home"),

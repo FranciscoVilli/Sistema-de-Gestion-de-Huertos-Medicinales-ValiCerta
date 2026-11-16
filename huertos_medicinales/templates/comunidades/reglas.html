@@ -1,11 +1,69 @@
-{% extends 'comunidades/community_base.html' %}{% block title %}Reglas de participación · Huertos{% endblock %}{% block main %}
-<header class="community-header green-header"><div class="community-heading"><span class="community-emblem"><svg aria-hidden="true"><use href="#i-people"/></svg></span><div><h1>Reglas de participación</h1><p>Acuerdos sencillos para aprender y compartir en comunidad.</p></div></div></header>
-<div class="community-rules"><a class="rules-back" href="{% url 'comunidades:listado' %}"><svg aria-hidden="true"><use href="#i-left"/></svg>Regresar al foro</a>
-<section class="rules-welcome"><span aria-hidden="true"><svg><use href="#i-sprout"/></svg></span><div><h2>Cultivemos un espacio de confianza</h2><p>Puedes preguntar, compartir lo que aprendiste y ayudar a otras personas. Estos cinco acuerdos nos permiten hacerlo con respeto.</p></div></section>
-<div class="rules-sections">
-<section class="rules-item"><span class="rules-number">01</span><div><h2>Trata a las personas con respeto</h2><p>Escucha otras experiencias y comenta las ideas sin atacar a quien las comparte. Evita insultos, burlas, discriminación y acoso.</p><p class="rules-example"><strong>Por ejemplo:</strong> «En mi huerto me funcionó de otra manera; te cuento cómo lo hice».</p></div></section>
-<section class="rules-item"><span class="rules-number">02</span><div><h2>Comparte contenido relacionado con el huerto</h2><p>Publica preguntas, experiencias o consejos sobre plantas y su cultivo. Usa un título claro y cuenta qué observaste. Evita publicidad, promociones y publicaciones repetidas.</p><p class="rules-example"><strong>Para pedir ayuda:</strong> indica la planta, las condiciones del espacio y el cambio que notaste.</p></div></section>
-<section class="rules-item"><span class="rules-number">03</span><div><h2>Distingue una experiencia de una recomendación médica</h2><p>Cuenta lo que sabes como experiencia y cita la fuente cuando compartas información de otra persona. No prometas curas ni recomiendes abandonar tratamientos. El foro no sustituye la atención de un profesional de salud.</p></div></section>
-<section class="rules-item"><span class="rules-number">04</span><div><h2>Cuida la privacidad</h2><p>No publiques teléfonos, direcciones exactas ni datos personales de otras personas. Antes de publicar, revisa si tu tema será público o solo para integrantes de tu comunidad. Compartir un jardín en el mapa es opcional y muestra una ubicación aproximada.</p></div></section>
-<section class="rules-item"><span class="rules-number">05</span><div><h2>Ayuda a que la conversación sea útil</h2><p>Usa «🌱 Me resulta útil» para reconocer un aporte y «Responder» para continuar una conversación. Puedes retirar tu reacción pulsando otra vez. Estas reacciones no generan XP.</p><p>Las publicaciones que incumplan estos acuerdos pueden ser retiradas por la moderación. Antes de publicar, revisa que tu mensaje sea claro, respetuoso y no contenga información privada.</p></div></section>
-</div><div class="rules-finish"><p>¿Listo para compartir? Tu experiencia puede ayudar a alguien más.</p><a class="purple-button" href="{% url 'comunidades:listado' %}"><svg aria-hidden="true"><use href="#i-left"/></svg>Regresar al foro</a></div></div>{% endblock %}
+{% extends "comunidades/community_base.html" %}
+
+{% block title %}Reglas de participación · Huertos{% endblock %}{% block main %}
+<header class="community-header green-header">
+  <div class="community-heading">
+    <span class="community-emblem">
+      <svg aria-hidden="true">
+        <use href="#i-people" />
+      </svg>
+    </span>
+    <div>
+      <h1>Reglas de participación</h1>
+      <p>Acuerdos sencillos para aprender y compartir en comunidad.</p>
+    </div>
+  </div>
+</header>
+<div class="community-rules"><a class="rules-back"
+   href="{% url 'comunidades:listado' %}"><svg aria-hidden="true"><use href="#i-left" /></svg>Regresar al foro</a>
+  <section class="rules-welcome">
+    <span aria-hidden="true">
+      <svg>
+        <use href="#i-sprout" />
+      </svg>
+    </span>
+    <div>
+      <h2>Cultivemos un espacio de confianza</h2>
+      <p>Puedes preguntar, compartir lo que aprendiste y ayudar a otras personas. Estos cinco acuerdos nos permiten hacerlo con respeto.</p>
+    </div>
+  </section>
+  <div class="rules-sections">
+    <section class="rules-item">
+      <span class="rules-number">01</span>
+      <div>
+        <h2>Trata a las personas con respeto</h2>
+        <p>Escucha otras experiencias y comenta las ideas sin atacar a quien las comparte. Evita insultos, burlas, discriminación y acoso.</p>
+        <p class="rules-example"><strong>Por ejemplo:</strong> «En mi huerto me funcionó de otra manera; te cuento cómo lo hice».</p>
+      </div>
+    </section>
+    <section class="rules-item">
+      <span class="rules-number">02</span>
+      <div>
+        <h2>Comparte contenido relacionado con el huerto</h2>
+        <p>Publica preguntas, experiencias o consejos sobre plantas y su cultivo. Usa un título claro y cuenta qué observaste. Evita publicidad, promociones y publicaciones repetidas.</p>
+        <p class="rules-example"><strong>Para pedir ayuda:</strong> indica la planta, las condiciones del espacio y el cambio que notaste.</p>
+      </div>
+    </section>
+    <section class="rules-item">
+      <span class="rules-number">03</span>
+      <div>
+        <h2>Distingue una experiencia de una recomendación médica</h2>
+        <p>Cuenta lo que sabes como experiencia y cita la fuente cuando compartas información de otra persona. No prometas curas ni recomiendes abandonar tratamientos. El foro no sustituye la atención de un profesional de salud.</p>
+      </div>
+    </section>
+    <section class="rules-item">
+      <span class="rules-number">04</span>
+      <div>
+        <h2>Cuida la privacidad</h2>
+        <p>No publiques teléfonos, direcciones exactas ni datos personales de otras personas. Antes de publicar, revisa si tu tema será público o solo para integrantes de tu comunidad. Compartir un jardín en el mapa es opcional y muestra una ubicación aproximada.</p>
+      </div>
+    </section>
+    <section class="rules-item">
+      <span class="rules-number">05</span>
+      <div>
+        <h2>Ayuda a que la conversación sea útil</h2>
+        <p>Usa «🌱 Me resulta útil» para reconocer un aporte y «Responder» para continuar una conversación. Puedes retirar tu reacción pulsando otra vez. Estas reacciones no generan XP.</p>
+        <p>Las publicaciones que incumplan estos acuerdos pueden ser retiradas por la moderación. Antes de publicar, revisa que tu mensaje sea claro, respetuoso y no contenga información privada.</p>
+      </div>
+    </section>
+  </div><div class="rules-finish"><p>¿Listo para compartir? Tu experiencia puede ayudar a alguien más.</p><a class="purple-button" href="{% url 'comunidades:listado' %}"><svg aria-hidden="true"><use href="#i-left" /></svg>Regresar al foro</a></div></div>{% endblock %}

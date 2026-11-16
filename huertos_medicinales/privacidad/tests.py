@@ -185,5 +185,6 @@ def test_registro_guarda_condiciones_sin_autorizar_mapas(client, django_user_mod
     assert AceptacionCondiciones.objects.get(usuario=user).version == VERSION
     assert COOKIE_NAME not in response.cookies
     assert not PreferenciaCookies.objects.filter(
-        usuario=user, mapas_externos=True,
+        usuario=user,
+        mapas_externos=True,
     ).exists()

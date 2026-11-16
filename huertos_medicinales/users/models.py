@@ -1,5 +1,4 @@
-
-import random
+import secrets
 from typing import ClassVar
 
 from django.contrib.auth.models import AbstractUser
@@ -51,7 +50,9 @@ class User(AbstractUser):
         "Talentos o habilidades",
         max_length=300,
         blank=True,
-        help_text="Opcional. Sepáralos por coma; una comunidad puede certificarlos luego.",
+        help_text=(
+            "Opcional. Sepáralos por coma; una comunidad puede certificarlos luego."
+        ),
     )
     codigo_unico = models.CharField(
         "Código único de identificación",
@@ -60,7 +61,9 @@ class User(AbstractUser):
         editable=False,
         null=True,
         blank=True,
-        help_text="Código de 6 dígitos para que una comunidad pueda agregarte como miembro.",
+        help_text=(
+            "Código de 6 dígitos para que una comunidad pueda agregarte como miembro."
+        ),
     )
 
     USERNAME_FIELD = "email"
@@ -76,7 +79,7 @@ class User(AbstractUser):
     @classmethod
     def _generar_codigo_unico(cls) -> str:
         while True:
-            codigo = f"{random.randint(0, 999999):06d}"
+            codigo = f"{secrets.randbelow(1_000_000):06d}"
             if not cls.objects.filter(codigo_unico=codigo).exists():
                 return codigo
 

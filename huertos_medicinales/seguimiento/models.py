@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
@@ -8,7 +9,11 @@ from huertos_medicinales.aprendizaje.catalogo import PLANTAS
 
 
 class Jardin(models.Model):
-    clima = models.JSONField(default=dict, blank=True, verbose_name="Localidad y entorno del jardín")
+    clima = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Localidad y entorno del jardín",
+    )
     propietario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     nombre = models.CharField("Nombre del jardín", max_length=80)
     creado = models.DateTimeField(auto_now_add=True)
@@ -45,15 +50,35 @@ class Practica(models.Model):
             "fecha real de inicio ni las observaciones registradas."
         ),
     )
-    jardin = models.ForeignKey(Jardin, on_delete=models.PROTECT, null=True, blank=True, related_name="cultivos")
+    jardin = models.ForeignKey(
+        Jardin,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="cultivos",
+    )
     posicion = models.PositiveSmallIntegerField(null=True, blank=True)
     creada = models.DateTimeField(auto_now_add=True)
     actualizada = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["jardin", "posicion"], name="unique_garden_slot"),
-            models.CheckConstraint(condition=(models.Q(jardin__isnull=True, posicion__isnull=True) | models.Q(jardin__isnull=False, posicion__gte=1, posicion__lte=6, posicion__isnull=False)), name="garden_slot_valid"),
+            models.UniqueConstraint(
+                fields=["jardin", "posicion"],
+                name="unique_garden_slot",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(jardin__isnull=True, posicion__isnull=True)
+                    | models.Q(
+                        jardin__isnull=False,
+                        posicion__gte=1,
+                        posicion__lte=6,
+                        posicion__isnull=False,
+                    )
+                ),
+                name="garden_slot_valid",
+            ),
         ]
         ordering = ["-creada"]
         permissions = [
@@ -125,7 +150,9 @@ class Observacion(models.Model):
     video_url = models.URLField(
         "Enlace a un video",
         blank=True,
-        help_text="Opcional. Enlace a un video que muestre el crecimiento de tu siembra.",
+        help_text=(
+            "Opcional. Enlace a un video que muestre el crecimiento de tu siembra."
+        ),
     )
     creada = models.DateTimeField(auto_now_add=True)
 
@@ -171,19 +198,41 @@ class ActividadCalendario(models.Model):
         ("empaquetado", "Empaquetado"),
         ("otro", "Otro cuidado"),
     ]
+
     ETIQUETAS_TIPO = dict(TIPOS)
-    TECNICAS = [("surcos", "Surcos"), ("andenes", "Andenes o terrazas"), ("camellones", "Camellones")]
-    PROPAGACIONES = [("semilla", "Semilla"), ("estaca", "Estaca"), ("esqueje", "Esqueje"), ("plantula", "Plántula")]
+
+    TECNICAS = [
+        ("surcos", "Surcos"),
+        ("andenes", "Andenes o terrazas"),
+        ("camellones", "Camellones"),
+    ]
+
+    PROPAGACIONES = [
+        ("semilla", "Semilla"),
+        ("estaca", "Estaca"),
+        ("esqueje", "Esqueje"),
+        ("plantula", "Plántula"),
+    ]
+
     PARTES = [
         ("hojas_flores_frutos", "Hojas, flores o frutos"),
         ("semillas_raices", "Semillas o raíces"),
     ]
-    practica = models.ForeignKey(Practica, on_delete=models.PROTECT, related_name="actividades_calendario")
+
+    practica = models.ForeignKey(
+        Practica,
+        on_delete=models.PROTECT,
+        related_name="actividades_calendario",
+    )
+
     # Sin `choices` a proposito (INC-01): la interfaz permite escribir la
     # actividad libremente y sugiere las categorias de TIPOS.
     tipo = models.CharField("Actividad", max_length=60)
+
     fecha = models.DateField("Fecha")
+
     hora = models.TimeField("Hora", blank=True, null=True)
+
     tecnica = models.CharField(
         "Técnica de siembra",
         max_length=16,
@@ -191,6 +240,7 @@ class ActividadCalendario(models.Model):
         blank=True,
         help_text="Solo para siembra.",
     )
+
     propagacion = models.CharField(
         "Tipo de propagación",
         max_length=16,
@@ -198,6 +248,7 @@ class ActividadCalendario(models.Model):
         blank=True,
         help_text="Solo para siembra.",
     )
+
     parte_usada = models.CharField(
         "Parte de la planta a cosechar",
         max_length=20,
@@ -205,9 +256,13 @@ class ActividadCalendario(models.Model):
         blank=True,
         help_text="Solo para cosecha.",
     )
+
     notas = models.TextField("Indicaciones", max_length=1500, blank=True)
+
     completada = models.BooleanField(default=False)
+
     completada_en = models.DateTimeField(null=True, blank=True)
+
     RECORDATORIOS = [
         (0, "El mismo día"),
         (1, "1 día antes"),
@@ -215,14 +270,21 @@ class ActividadCalendario(models.Model):
         (3, "3 días antes"),
         (7, "1 semana antes"),
     ]
+
     recordatorio_dias_antes = models.PositiveSmallIntegerField(
         "Avisarme",
         choices=RECORDATORIOS,
         null=True,
         blank=True,
         default=1,
-        help_text="Cuándo quieres verla en tus notificaciones. Déjalo vacío para no recibir aviso.",
+        help_text=(
+            "Cuándo quieres verla en tus notificaciones. Déjalo vacío "
+            "para no recibir aviso."
+        ),
     )
+
+    class Meta:
+        ordering = ["fecha", "hora", "pk"]
 
     def __str__(self):
         return f"{self.get_tipo_display()} · {self.practica} · {self.fecha}"
@@ -236,9 +298,6 @@ class ActividadCalendario(models.Model):
         """Clave CSS segura: la categoria conocida o "otro" para texto libre."""
         return self.tipo if self.tipo in self.ETIQUETAS_TIPO else "otro"
 
-    class Meta:
-        ordering = ["fecha", "hora", "pk"]
-
 
 class Empaquetado(models.Model):
     class Region(models.TextChoices):
@@ -248,7 +307,11 @@ class Empaquetado(models.Model):
 
     DIAS_CADUCIDAD = {Region.SIERRA: 365, Region.COSTA: 180, Region.AMAZONIA: 180}
 
-    practica = models.ForeignKey(Practica, on_delete=models.PROTECT, related_name="empaquetados")
+    practica = models.ForeignKey(
+        Practica,
+        on_delete=models.PROTECT,
+        related_name="empaquetados",
+    )
     peso_gramos = models.PositiveIntegerField(
         "Peso del contenido (gramos)",
         default=100,
@@ -256,8 +319,17 @@ class Empaquetado(models.Model):
     )
     indicaciones = models.TextField("Indicaciones de uso", max_length=1000)
     dosificacion = models.CharField("Dosificación", max_length=200)
-    contraindicaciones = models.TextField("Contraindicaciones", max_length=1000, blank=True)
-    region = models.CharField("Región de almacenaje", max_length=10, choices=Region, default=Region.SIERRA)
+    contraindicaciones = models.TextField(
+        "Contraindicaciones",
+        max_length=1000,
+        blank=True,
+    )
+    region = models.CharField(
+        "Región de almacenaje",
+        max_length=10,
+        choices=Region,
+        default=Region.SIERRA,
+    )
     fecha_empaquetado = models.DateField("Fecha de empaquetado")
     fecha_caducidad = models.DateField("Fecha de caducidad", editable=False)
     creado = models.DateTimeField(auto_now_add=True)
@@ -269,7 +341,8 @@ class Empaquetado(models.Model):
         return f"Empaquetado: {self.practica} · {self.fecha_empaquetado}"
 
     def save(self, *args, **kwargs):
-        from datetime import timedelta
 
-        self.fecha_caducidad = self.fecha_empaquetado + timedelta(days=self.DIAS_CADUCIDAD[self.region])
+        self.fecha_caducidad = self.fecha_empaquetado + timedelta(
+            days=self.DIAS_CADUCIDAD[self.region],
+        )
         super().save(*args, **kwargs)

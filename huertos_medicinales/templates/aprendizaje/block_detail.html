@@ -1,13 +1,54 @@
-{% extends 'aprendizaje/base.html' %}{% load static %}
-{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/module-detail.css' %}">{% endblock %}
-{% block content %}<div class="module-page">
-<nav class="module-crumb" aria-label="Ruta de navegación"><a href="{% url 'learning' %}">← Aprender</a><span>›</span><span>Todos los módulos</span></nav>
-<header class="module-heading"><h1>{{ module.titulo }} <span aria-hidden="true">♧</span></h1><p>{{ module.descripcion|default:'Explora, practica y comprende cómo acompañar el crecimiento de tus plantas.' }}</p></header>
-<div class="module-layout"><div class="module-primary">
-<section class="module-hero"><img src="{% static cover %}" alt="" class="module-cover"><div class="module-hero-copy"><span class="module-label">MÓDULO DE APRENDIZAJE · {{ module.numero }}</span><h2>{{ module.titulo }}</h2><p>Construye tus conocimientos paso a paso y aplícalos en tu huerto.</p><div class="module-progress-label"><strong>Progreso del módulo</strong><span>{{ percent }} %</span></div><progress max="100" value="{{ percent }}" aria-label="Progreso del módulo">{{ percent }} %</progress><div class="module-meta"><span>▤ {{ total }} capítulos</span><span>✓ {{ completed }} completados</span><span>★ {{ total_xp }} XP disponibles</span>{% if plants %}<span>♧ {{ plants|length }} planta{{ plants|length|pluralize }} relacionada{{ plants|length|pluralize }}</span>{% endif %}</div></div></section>
-<section class="module-outcomes" aria-label="Objetivos"><h2>Lo que aprenderás<br>en este módulo</h2>{% for chapter in chapters %}{% if forloop.counter <= 4 %}<span><svg aria-hidden="true"><use href="#i-sprout"/></svg>{{ chapter.titulo }}</span>{% endif %}{% endfor %}</section>
-<header class="module-chapters-heading"><h2>Capítulos del módulo</h2><p>Avanza en orden. Aprueba cada capítulo para desbloquear el siguiente.</p></header>
-<div class="module-chapters">{% for chapter in chapters %}<article class="module-chapter"><img class="chapter-cover{% if '.svg' in chapter.cover %} diagram{% endif %}" src="{% static chapter.cover %}" alt="Ilustración: {{ chapter.titulo }}" loading="lazy"><div class="chapter-info"><div class="chapter-badges"><span>CAPÍTULO {{ forloop.counter }}</span><span class="{% if chapter.locked %}is-locked{% else %}is-open{% endif %}">{% if chapter.approved %}✓ Completado{% elif chapter.estado != 'piloto' and chapter.estado != 'publicado' %}En preparación{% elif chapter.locked %}♙ Bloqueado{% else %}✓ Disponible{% endif %}</span></div><h3>{{ chapter.titulo }}</h3><p>{{ chapter.descripcion|default:'Explora los conceptos, realiza la actividad y comprueba lo aprendido.'|truncatechars:140 }}</p><div class="chapter-steps"><span>▤ Teoría</span><span>♧ Actividad</span><span>✓ Evaluación</span></div><div class="chapter-xp"><strong>★ {{ chapter.total_xp }} XP</strong><small>{{ chapter.lesson_xp }} por lectura · {{ chapter.exam_xp }} por evaluación</small></div><div class="chapter-action">{% if chapter.estado != 'piloto' and chapter.estado != 'publicado' %}<span>Próximamente</span>{% elif chapter.locked %}<small>Aprueba el capítulo anterior para continuar.</small><button type="button" disabled>Bloqueado</button>{% else %}<a href="{% url 'lms_chapter' chapter.slug %}">{% if chapter.approved %}Repasar capítulo{% else %}Continuar capítulo{% endif %} →</a>{% endif %}</div></div></article>{% empty %}<p>Los capítulos de este módulo están en preparación.</p>{% endfor %}</div></div>
-<aside class="module-sidebar"><section class="module-panel"><h2>Mi progreso del módulo</h2><div class="module-progress-summary"><div class="module-ring" style="--progress:{{ percent }}%"><div><strong>{{ percent }}%</strong><span>Completado</span></div></div><div><strong>{{ completed }} / {{ total }}</strong><p>Capítulos aprobados</p><hr><strong>{{ earned_xp }} / {{ total_xp }} XP</strong><p>Experiencia del módulo</p></div></div></section>
-{% if plants %}<section class="module-panel"><h2>Plantas que podrás desbloquear</h2>{% for plant in plants %}<a class="module-plant" href="{% url 'learning_plant' plant.slug %}"><img src="{% static plant.image %}" alt="{{ plant.name }}"><div><strong>{{ plant.name }}</strong><p>{% if plant.available %}✓ Conocimientos requeridos completados.{% else %}Completa las competencias requeridas para su práctica guiada.{% endif %}</p></div></a>{% endfor %}</section>{% endif %}
-<section class="module-panel module-how"><h2>Cómo avanzar</h2><p>Sigue estos pasos en cada capítulo. Los XP se obtienen una sola vez por lección y capítulo.</p><ol><li><span>▤</span><div><strong>Lee y aprende</strong><p>Explora los conceptos y las imágenes.</p></div></li><li><span>♧</span><div><strong>Realiza la actividad</strong><p>Aplica lo aprendido en la práctica.</p></div></li><li><span>✓</span><div><strong>Completa el cuestionario</strong><p>Comprueba tus conocimientos.</p></div></li><li><span>♙</span><div><strong>Desbloquea contenido</strong><p>Avanza al siguiente capítulo.</p></div></li></ol></section></aside></div></div>{% endblock %}
+{% extends "aprendizaje/base.html" %}
+
+{% load static %}
+
+{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/module-detail.css' %}" />{% endblock %}
+{% block content %}
+  <div class="module-page">
+    <nav class="module-crumb"
+         aria-label="Ruta de navegación"><a href="{% url 'learning' %}">← Aprender</a><span>›</span><span>Todos los módulos</span></nav>
+    <header class="module-heading">
+      <h1>{{ module.titulo }} <span aria-hidden="true">♧</span></h1>
+      <p>{{ module.descripcion|default:'Explora, practica y comprende cómo acompañar el crecimiento de tus plantas.' }}</p>
+    </header>
+    <div class="module-layout">
+      <div class="module-primary">
+        <section class="module-hero"><img src="{% static cover %}" alt="" class="module-cover" /><div class="module-hero-copy"><span class="module-label">MÓDULO DE APRENDIZAJE · {{ module.numero }}</span><h2>{{ module.titulo }}</h2>
+          <p>Construye tus conocimientos paso a paso y aplícalos en tu huerto.</p><div class="module-progress-label"><strong>Progreso del módulo</strong><span>{{ percent }} %</span></div><progress max="100" value="{{ percent }}" aria-label="Progreso del módulo">{{ percent }} %</progress><div class="module-meta"><span>▤ {{ total }} capítulos</span><span>✓ {{ completed }} completados</span><span>★ {{ total_xp }} XP disponibles</span>{% if plants %}<span>♧ {{ plants|length }} planta{{ plants|length|pluralize }} relacionada{{ plants|length|pluralize }}</span>{% endif %}</div></div></section>
+        <section class="module-outcomes" aria-label="Objetivos">
+          <h2>
+            Lo que aprenderás
+            <br />
+            en este módulo
+          </h2>
+        {% for chapter in chapters %}{% if forloop.counter <= 4 %}<span><svg aria-hidden="true"><use href="#i-sprout" /></svg>{{ chapter.titulo }}</span>{% endif %}{% endfor %}</section>
+        <header class="module-chapters-heading">
+          <h2>Capítulos del módulo</h2>
+          <p>Avanza en orden. Aprueba cada capítulo para desbloquear el siguiente.</p>
+        </header>
+        <div class="module-chapters">{% for chapter in chapters %}<article class="module-chapter"><img class="chapter-cover{% if '.svg' in chapter.cover %} diagram{% endif %}"
+     src="{% static chapter.cover %}"
+     alt="Ilustración: {{ chapter.titulo }}"
+     loading="lazy" /><div class="chapter-info"><div class="chapter-badges"><span>CAPÍTULO {{ forloop.counter }}</span><span class="{% if chapter.locked %}is-locked{% else %}is-open{% endif %}">{% if chapter.approved %}✓ Completado{% elif chapter.estado != "piloto" and chapter.estado != "publicado" %}En preparación{% elif chapter.locked %}♙ Bloqueado{% else %}✓ Disponible{% endif %}</span></div><h3>{{ chapter.titulo }}</h3>
+          <p>{{ chapter.descripcion|default:'Explora los conceptos, realiza la actividad y comprueba lo aprendido.'|truncatechars:140 }}</p><div class="chapter-steps"><span>▤ Teoría</span><span>♧ Actividad</span><span>✓ Evaluación</span></div><div class="chapter-xp"><strong>★ {{ chapter.total_xp }} XP</strong><small>{{ chapter.lesson_xp }} por lectura · {{ chapter.exam_xp }} por evaluación</small></div><div class="chapter-action">{% if chapter.estado != "piloto" and chapter.estado != "publicado" %}<span>Próximamente</span>{% elif chapter.locked %}<small>Aprueba el capítulo anterior para continuar.</small><button type="button" disabled>Bloqueado</button>{% else %}<a href="{% url 'lms_chapter' chapter.slug %}">{% if chapter.approved %}Repasar capítulo{% else %}Continuar capítulo{% endif %} →</a>{% endif %}</div></div></article>{% empty %}<p>Los capítulos de este módulo están en preparación.</p>{% endfor %}</div></div>
+    <aside class="module-sidebar">
+      <section class="module-panel">
+        <h2>Mi progreso del módulo</h2>
+        <div class="module-progress-summary">
+          <div class="module-ring" style="--progress:{{ percent }}%">
+            <div><strong>{{ percent }}%</strong><span>Completado</span></div>
+          </div>
+          <div>
+            <strong>{{ completed }} / {{ total }}</strong>
+            <p>Capítulos aprobados</p>
+            <hr />
+            <strong>{{ earned_xp }} / {{ total_xp }} XP</strong>
+            <p>Experiencia del módulo</p>
+          </div>
+        </div>
+      </section>
+      {% if plants %}<section class="module-panel"><h2>Plantas que podrás desbloquear</h2>
+        {% for plant in plants %}<a class="module-plant" href="{% url 'learning_plant' plant.slug %}"><img src="{% static plant.image %}" alt="{{ plant.name }}" /><div><strong>{{ plant.name }}</strong><p>{% if plant.available %}✓ Conocimientos requeridos completados.{% else %}Completa las competencias requeridas para su práctica guiada.{% endif %}</p></div></a>{% endfor %}</section>{% endif %}
+    <section class="module-panel module-how">
+      <h2>Cómo avanzar</h2>
+      <p>Sigue estos pasos en cada capítulo. Los XP se obtienen una sola vez por lección y capítulo.</p><ol><li><span>▤</span><div><strong>Lee y aprende</strong><p>Explora los conceptos y las imágenes.</p></div></li><li><span>♧</span><div><strong>Realiza la actividad</strong><p>Aplica lo aprendido en la práctica.</p></div></li><li><span>✓</span><div><strong>Completa el cuestionario</strong><p>Comprueba tus conocimientos.</p></div></li><li><span>♙</span><div><strong>Desbloquea contenido</strong><p>Avanza al siguiente capítulo.</p></div></li></ol></section></aside></div></div>{% endblock %}

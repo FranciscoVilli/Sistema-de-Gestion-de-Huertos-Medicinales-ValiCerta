@@ -15,7 +15,6 @@ from huertos_medicinales.aprendizaje.catalogo import LECCIONES
 from huertos_medicinales.aprendizaje.catalogo import XP_POR_LECCION
 from huertos_medicinales.aprendizaje.models import Logro
 
-from .models import EventoPractica
 from .models import Observacion
 from .models import Practica
 
@@ -131,12 +130,15 @@ def test_registrar_cuidado_exige_llenar_resultado_y_ya_no_se_puede_omitir(
     url = reverse("seguimiento:detalle", args=[practica.pk])
     with pytest.raises(NoReverseMatch):
         reverse("seguimiento:cuidado_rapido", args=[practica.pk])
-    response = client.post(url, {
-        "fecha": timezone.localdate(),
-        "accion": "Riego realizado",
-        "resultado": "",
-        "pregunta": "",
-    })
+    response = client.post(
+        url,
+        {
+            "fecha": timezone.localdate(),
+            "accion": "Riego realizado",
+            "resultado": "",
+            "pregunta": "",
+        },
+    )
     assert response.status_code == HTTPStatus.OK
     assert practica.observaciones.count() == 0
     assert "resultado" in response.context["form"].errors
@@ -150,12 +152,16 @@ def test_bitacora_agrupa_por_tipo_y_solo_la_ve_el_propietario(
     client.force_login(practica.participante)
     hoy = timezone.localdate()
     Observacion.objects.create(
-        practica=practica, fecha=hoy,
-        accion="Riego realizado", resultado="Sustrato húmedo",
+        practica=practica,
+        fecha=hoy,
+        accion="Riego realizado",
+        resultado="Sustrato húmedo",
     )
     Observacion.objects.create(
-        practica=practica, fecha=hoy - timedelta(days=10),
-        accion="Poda realizada", resultado="Más aireada",
+        practica=practica,
+        fecha=hoy - timedelta(days=10),
+        accion="Poda realizada",
+        resultado="Más aireada",
     )
     url = reverse("seguimiento:bitacora", args=[practica.pk])
     response = client.get(url)
@@ -165,7 +171,9 @@ def test_bitacora_agrupa_por_tipo_y_solo_la_ve_el_propietario(
     assert response.context["total_registros"] == 2
     assert response.context["total_esta_semana"] == 1
 
-    client.force_login(django_user_model.objects.create_user(email="ajeno-bitacora@example.com"))
+    client.force_login(
+        django_user_model.objects.create_user(email="ajeno-bitacora@example.com"),
+    )
     assert client.get(url).status_code == HTTPStatus.NOT_FOUND
 
 

@@ -16,7 +16,9 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture
 def curriculum(client, django_user_model):
     call_command("seed_curriculum", verbosity=0)
-    user = django_user_model.objects.create_user(email="sequential-student@example.invalid")
+    user = django_user_model.objects.create_user(
+        email="sequential-student@example.invalid",
+    )
     client.force_login(user)
     return user
 
@@ -27,7 +29,8 @@ def test_second_chapter_locked_until_first_is_approved(client, curriculum):
     assert chapter_unlocked(curriculum, first)
     assert not chapter_unlocked(curriculum, second)
     response = client.get(reverse("lms_chapter", args=[second.slug]))
-    assert response.status_code == 302 and response.url == reverse("lms_catalog")
+    assert response.status_code == 302
+    assert response.url == reverse("lms_catalog")
     lesson = first.lecciones.get(slug="capitulo-1-contenido")
     complete_lesson(client, lesson)
     attempt = start(client, first)
@@ -36,14 +39,18 @@ def test_second_chapter_locked_until_first_is_approved(client, curriculum):
     response = client.get(reverse("lms_chapter", args=[second.slug]))
     assert response.status_code == 302
     assert response.url == reverse(
-        "lms_lesson", args=[second.lecciones.order_by("orden").first().slug],
+        "lms_lesson",
+        args=[second.lecciones.order_by("orden").first().slug],
     )
 
 
 def test_lesson_order_is_enforced_within_a_chapter(client, curriculum):
     for numero in (1, 2, 3, 4):
         earlier = CapituloEducativo.objects.get(numero=numero)
-        complete_lesson(client, earlier.lecciones.get(slug=f"capitulo-{numero}-contenido"))
+        complete_lesson(
+            client,
+            earlier.lecciones.get(slug=f"capitulo-{numero}-contenido"),
+        )
         submit(client, start(client, earlier))
     chapter = CapituloEducativo.objects.get(numero=5)
     assert chapter_unlocked(curriculum, chapter)
@@ -53,7 +60,11 @@ def test_lesson_order_is_enforced_within_a_chapter(client, curriculum):
     assert lesson_unlocked(curriculum, first)
     assert not lesson_unlocked(curriculum, second)
     response = client.get(reverse("lms_lesson", args=[second.slug]))
-    assert response.status_code == 302 and response.url == reverse("lms_chapter", args=[chapter.slug])
+    assert response.status_code == 302
+    assert response.url == reverse(
+        "lms_chapter",
+        args=[chapter.slug],
+    )
     complete_lesson(client, first)
     assert lesson_unlocked(curriculum, second)
     assert client.get(reverse("lms_lesson", args=[second.slug])).status_code == 200

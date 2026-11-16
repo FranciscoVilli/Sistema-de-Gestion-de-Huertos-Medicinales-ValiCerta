@@ -1,12 +1,25 @@
+import json
+
 import pytest
+from django.contrib.admin.sites import site
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
+from django.test import RequestFactory
 from django.urls import reverse
-from django.utils import timezone
 
+from huertos_medicinales.aprendizaje.catalogo import LECCIONES
 from huertos_medicinales.aprendizaje.educational_admin import LessonAdminForm
-from huertos_medicinales.aprendizaje.educational_models import *
+from huertos_medicinales.aprendizaje.educational_models import BloqueEducativo
+from huertos_medicinales.aprendizaje.educational_models import CapituloEducativo
+from huertos_medicinales.aprendizaje.educational_models import Competencia
+from huertos_medicinales.aprendizaje.educational_models import CompetenciaAdquirida
+from huertos_medicinales.aprendizaje.educational_models import DesbloqueoRuta
+from huertos_medicinales.aprendizaje.educational_models import IntentoCapitulo
+from huertos_medicinales.aprendizaje.educational_models import LeccionEducativa
+from huertos_medicinales.aprendizaje.educational_models import ProgresoLeccion
+from huertos_medicinales.aprendizaje.educational_models import RutaEducativa
 from huertos_medicinales.aprendizaje.educational_services import route_status
+from huertos_medicinales.aprendizaje.models import Logro
 from huertos_medicinales.seguimiento.models import Practica
 
 pytestmark = pytest.mark.django_db
@@ -27,14 +40,16 @@ def complete_lesson(client, lesson):
     for i in range(len(lesson.secciones)):
         assert (
             client.post(
-                url, {"action": "next", "section": i, "revision": lesson.revision},
+                url,
+                {"action": "next", "section": i, "revision": lesson.revision},
             ).status_code
             == 302
         )
     answer = [str(i) for i in lesson.comprension["correctas"]]
     assert (
         client.post(
-            url, {"action": "answer", "revision": lesson.revision, "answer": answer},
+            url,
+            {"action": "answer", "revision": lesson.revision, "answer": answer},
         ).status_code
         == 302
     )
@@ -47,13 +62,14 @@ def finish_reading(client, chapter):
 
 def start(client, chapter):
     response = client.post(
-        reverse("lms_assessment", args=[chapter.slug]), {"action": "start"},
+        reverse("lms_assessment", args=[chapter.slug]),
+        {"action": "start"},
     )
     assert response.status_code == 302
     return IntentoCapitulo.objects.latest("pk")
 
 
-def submit(client, attempt, wrong=False):
+def submit(client, attempt, *, wrong=False):
     payload = {
         "attempt": attempt.pk,
         "aprobado": "true",
@@ -63,15 +79,15 @@ def submit(client, attempt, wrong=False):
     for i, q in enumerate(attempt.contenido["preguntas"]):
         payload[f"q_{i}"] = ["999"] if wrong else [str(x) for x in q["correctas"]]
     return client.post(
-        reverse("lms_assessment", args=[attempt.evaluacion.capitulo.slug]), payload,
+        reverse("lms_assessment", args=[attempt.evaluacion.capitulo.slug]),
+        payload,
     )
 
 
 def test_structure_idempotence_and_draft_visibility(client, pilot):
-    user, other, chapter = pilot
-    assert (
-        BloqueEducativo.objects.count() == 6 and CapituloEducativo.objects.count() == 24
-    )
+    _user, _other, chapter = pilot
+    assert BloqueEducativo.objects.count() == 6
+    assert CapituloEducativo.objects.count() == 24
     assert LeccionEducativa.objects.count() == 3
     lesson = chapter.lecciones.first()
     lesson.titulo = "Edición conservada"
@@ -90,7 +106,7 @@ def test_structure_idempotence_and_draft_visibility(client, pilot):
 
 
 def test_chapter_entry_and_lesson_completion_flow_straight_into_content(client, pilot):
-    user, other, chapter = pilot
+    _user, _other, chapter = pilot
     lessons = list(chapter.lecciones.order_by("orden"))
     assert len(lessons) == 3
     first, second, third = lessons
@@ -109,7 +125,8 @@ def test_chapter_entry_and_lesson_completion_flow_straight_into_content(client, 
         client.post(url, {"action": "next", "section": i, "revision": second.revision})
     answer = [str(i) for i in second.comprension["correctas"]]
     response = client.post(
-        url, {"action": "answer", "revision": second.revision, "answer": answer},
+        url,
+        {"action": "answer", "revision": second.revision, "answer": answer},
     )
     assert response.status_code == 302
     assert response.url == reverse("lms_lesson", args=[third.slug])
@@ -119,7 +136,8 @@ def test_chapter_entry_and_lesson_completion_flow_straight_into_content(client, 
         client.post(url, {"action": "next", "section": i, "revision": third.revision})
     answer = [str(i) for i in third.comprension["correctas"]]
     response = client.post(
-        url, {"action": "answer", "revision": third.revision, "answer": answer},
+        url,
+        {"action": "answer", "revision": third.revision, "answer": answer},
     )
     assert response.status_code == 302
     assert response.url == reverse("lms_assessment", args=[chapter.slug])
@@ -135,7 +153,7 @@ def test_chapter_entry_and_lesson_completion_flow_straight_into_content(client, 
 
 
 def test_progress_requires_server_steps_and_comprehension(client, pilot):
-    user, other, chapter = pilot
+    _user, other, chapter = pilot
     lesson = chapter.lecciones.first()
     url = reverse("lms_lesson", args=[lesson.slug])
     assert client.get(url).status_code == 200
@@ -163,7 +181,8 @@ def test_end_to_end_retry_competence_and_route(client, pilot):
     assert client.post(route_url).status_code == 403
     assert (
         client.post(
-            reverse("lms_assessment", args=[chapter.slug]), {"action": "start"},
+            reverse("lms_assessment", args=[chapter.slug]),
+            {"action": "start"},
         ).status_code
         == 200
     )
@@ -171,17 +190,21 @@ def test_end_to_end_retry_competence_and_route(client, pilot):
     finish_reading(client, chapter)
     attempt = start(client, chapter)
     response = client.get(
-        reverse("lms_assessment", args=[chapter.slug]), {"intento": attempt.pk},
+        reverse("lms_assessment", args=[chapter.slug]),
+        {"intento": attempt.pk},
     )
-    assert response.status_code == 200 and b"correctas" not in response.content
+    assert response.status_code == 200
+    assert b"correctas" not in response.content
     assert submit(client, attempt, wrong=True).status_code == 302
     attempt.refresh_from_db()
-    assert attempt.porcentaje == 0 and not attempt.aprobado
+    assert attempt.porcentaje == 0
+    assert not attempt.aprobado
     assert not CompetenciaAdquirida.objects.exists()
     retry = start(client, chapter)
     assert submit(client, retry).status_code == 302
     retry.refresh_from_db()
-    assert retry.porcentaje == 100 and retry.aprobado
+    assert retry.porcentaje == 100
+    assert retry.aprobado
     assert CompetenciaAdquirida.objects.filter(user=user, intento=retry).count() == 1
     assert DesbloqueoRuta.objects.filter(user=user, ruta=route).count() == 1
     assert route_status(user, route)["eligible"]
@@ -197,7 +220,7 @@ def test_end_to_end_retry_competence_and_route(client, pilot):
 
 
 def test_attempt_privacy_and_immutable_results(client, pilot):
-    user, other, chapter = pilot
+    _user, other, chapter = pilot
     finish_reading(client, chapter)
     attempt = start(client, chapter)
     submit(client, attempt)
@@ -205,7 +228,8 @@ def test_attempt_privacy_and_immutable_results(client, pilot):
     assert client.get(reverse("lms_result", args=[attempt.pk])).status_code == 404
     assert (
         client.get(
-            reverse("lms_assessment", args=[chapter.slug]), {"intento": attempt.pk},
+            reverse("lms_assessment", args=[chapter.slug]),
+            {"intento": attempt.pk},
         ).status_code
         == 404
     )
@@ -217,19 +241,23 @@ def test_attempt_privacy_and_immutable_results(client, pilot):
 
 
 def test_content_changes_invalidate_unfinished_attempt_and_keep_history(client, pilot):
-    user, other, chapter = pilot
+    user, _other, chapter = pilot
     finish_reading(client, chapter)
     attempt = start(client, chapter)
     lesson = chapter.lecciones.first()
     old = lesson.revision
     lesson.resumen = "Resumen revisado"
     lesson.save()
-    assert lesson.revision == old + 1 and lesson.historial.count() >= 2
+    assert lesson.revision == old + 1
+    assert lesson.historial.count() >= 2
     assert submit(client, attempt).status_code == 200
     attempt.refresh_from_db()
     assert attempt.finalizado is None
     assert ProgresoLeccion.objects.filter(
-        user=user, leccion=lesson, revision=old, completada=True,
+        user=user,
+        leccion=lesson,
+        revision=old,
+        completada=True,
     ).exists()
     assert (
         client.get(reverse("lms_lesson", args=[lesson.slug])).context["position"] == 0
@@ -237,7 +265,7 @@ def test_content_changes_invalidate_unfinished_attempt_and_keep_history(client, 
 
 
 def test_editorial_validation_and_configurable_requirements(client, pilot):
-    user, other, chapter = pilot
+    user, _other, chapter = pilot
     lesson = chapter.lecciones.first()
     lesson.comprension = {}
     with pytest.raises(ValidationError):
@@ -265,7 +293,9 @@ def test_editorial_validation_and_configurable_requirements(client, pilot):
     submit(client, attempt)
     route = RutaEducativa.objects.get()
     extra = Competencia.objects.create(
-        slug="otra", nombre="Otra", descripcion="Requisito nuevo",
+        slug="otra",
+        nombre="Otra",
+        descripcion="Requisito nuevo",
     )
     route.requisitos.add(extra)
     assert not route_status(user, route)["eligible"]
@@ -277,14 +307,15 @@ def test_botanical_info_does_not_require_training(client, pilot):
 
 
 def test_admin_create_chapter_lesson_and_audited_publication(
-    client, pilot, django_user_model,
+    client,
+    pilot,
+    django_user_model,
 ):
-    from django.contrib.admin.sites import site
-    from django.test import RequestFactory
 
-    user, other, chapter = pilot
+    _user, _other, chapter = pilot
     admin = django_user_model.objects.create_superuser(
-        email="editor@example.com", password="testing-only",
+        email="editor@example.com",
+        password="testing-only",  # noqa: S106
     )
     client.force_login(admin)
     assert (
@@ -305,7 +336,6 @@ def test_admin_create_chapter_lesson_and_audited_publication(
     )
     assert response.status_code == 302
     created = CapituloEducativo.objects.get(slug="capitulo-editor")
-    import json
 
     template = chapter.lecciones.first()
     response = client.post(
@@ -332,30 +362,30 @@ def test_admin_create_chapter_lesson_and_audited_publication(
     lesson = LeccionEducativa.objects.get(slug="leccion-editor")
     assert lesson.historial.get().actor == admin
     assert lesson.historial.get().contenido["fuentes"]
-    assert not site._registry[IntentoCapitulo].has_change_permission(
+    assert not site._registry[IntentoCapitulo].has_change_permission(  # noqa: SLF001
         RequestFactory().get("/"),
     )
 
 
-def test_home_shows_new_modules_and_preserves_legacy_history(client,pilot):
-    user,other,chapter=pilot
-    from huertos_medicinales.aprendizaje.catalogo import LECCIONES
-    from huertos_medicinales.aprendizaje.models import Logro
-    for item in LECCIONES: Logro.objects.create(user=user,leccion=item["slug"],xp=25)
-    response=client.get(reverse("learning"))
-    assert len(response.context["blocks"])==6
-    assert response.context["progress"]==0
-    assert response.context["total_count"]==3
-    html=response.content.decode()
+def test_home_shows_new_modules_and_preserves_legacy_history(client, pilot):
+    user, other, chapter = pilot
+
+    for item in LECCIONES:
+        Logro.objects.create(user=user, leccion=item["slug"], xp=25)
+    response = client.get(reverse("learning"))
+    assert len(response.context["blocks"]) == 6
+    assert response.context["progress"] == 0
+    assert response.context["total_count"] == 3
+    html = response.content.decode()
     assert "Recorrido inicial anterior" not in html
     assert "Conoce tu espacio" not in html
     for block in response.context["blocks"]:
         assert block.titulo in html
-        detail=client.get(reverse("lms_block",args=[block.pk]))
-        assert detail.status_code==200
+        detail = client.get(reverse("lms_block", args=[block.pk]))
+        assert detail.status_code == 200
         assert all(c.titulo in detail.content.decode() for c in block.capitulos.all())
-    assert Logro.objects.filter(user=user).count()==6
-    finish_reading(client,chapter)
-    assert client.get(reverse("learning")).context["progress"]==100
+    assert Logro.objects.filter(user=user).count() == 6
+    finish_reading(client, chapter)
+    assert client.get(reverse("learning")).context["progress"] == 100
     client.force_login(other)
-    assert client.get(reverse("learning")).context["progress"]==0
+    assert client.get(reverse("learning")).context["progress"] == 0

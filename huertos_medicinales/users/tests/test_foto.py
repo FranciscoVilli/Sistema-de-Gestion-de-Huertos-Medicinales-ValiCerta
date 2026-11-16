@@ -36,7 +36,11 @@ def test_foto_requiere_autenticacion(client):
 
 def test_foto_invalida_no_rompe_y_redirige(client, user: User):
     client.force_login(user)
-    archivo = SimpleUploadedFile("no_es_imagen.txt", b"esto no es una imagen", content_type="text/plain")
+    archivo = SimpleUploadedFile(
+        "no_es_imagen.txt",
+        b"esto no es una imagen",
+        content_type="text/plain",
+    )
     response = client.post(reverse("users:foto"), {"foto": archivo})
     assert response.status_code == 302
     user.refresh_from_db()

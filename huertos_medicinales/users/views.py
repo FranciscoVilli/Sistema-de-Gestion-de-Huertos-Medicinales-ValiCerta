@@ -38,8 +38,12 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_success_url(self) -> str:
         assert self.request.user.is_authenticated  # type guard
-        target=self.request.GET.get('next','')
-        if target and url_has_allowed_host_and_scheme(target,allowed_hosts={self.request.get_host()},require_https=self.request.is_secure()):
+        target = self.request.GET.get("next", "")
+        if target and url_has_allowed_host_and_scheme(
+            target,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
             return target
         return self.request.user.get_absolute_url()
 
@@ -74,6 +78,5 @@ user_redirect_view = UserRedirectView.as_view()
 
 def entry(request):
     """Open the application at login, or the workspace for an active session."""
-    from django.shortcuts import redirect
 
     return redirect("workspace" if request.user.is_authenticated else "account_login")

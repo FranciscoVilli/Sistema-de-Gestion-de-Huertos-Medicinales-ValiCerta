@@ -4,8 +4,19 @@ from django.db.models import Count
 
 from huertos_medicinales.common.admin import SoloLectura
 
+from . import gamificacion
+from .models import Bodega
+from .models import CertificacionTalento
 from .models import Comunidad
 from .models import EventoComunidad
+from .models import HuertoReal
+from .models import InsigniaObtenida
+from .models import JardinCompartido
+from .models import Miembro
+from .models import Mision
+from .models import PerfilComunitario
+from .models import Pregunta
+from .models import Respuesta
 
 
 @admin.register(Comunidad)
@@ -56,32 +67,56 @@ class ComunidadAdmin(SoloLectura):
 class EventoComunidadAdmin(SoloLectura):
     list_display = ["comunidad", "actor", "accion", "creado"]
 
+
 # Forum moderation never rewrites authorship or grants public location consent.
-from .models import Pregunta, Respuesta, PerfilComunitario, JardinCompartido, Miembro, CertificacionTalento, HuertoReal, Bodega, InsigniaObtenida, Mision
+
 
 @admin.register(HuertoReal)
 class HuertoRealAdmin(SoloLectura):
-    list_display = ["comunidad", "tipo_diseno", "tipo_suelo", "area_total", "actualizado"]
+    list_display = [
+        "comunidad",
+        "tipo_diseno",
+        "tipo_suelo",
+        "area_total",
+        "actualizado",
+    ]
     list_filter = ["tipo_diseno", "tipo_suelo"]
+
 
 @admin.register(Bodega)
 class BodegaAdmin(SoloLectura):
-    list_display = ["huerto_real", "tiene_espacio_herramientas", "tiene_espacio_semillas", "tiene_espacio_abonos"]
+    list_display = [
+        "huerto_real",
+        "tiene_espacio_herramientas",
+        "tiene_espacio_semillas",
+        "tiene_espacio_abonos",
+    ]
+
 
 @admin.register(InsigniaObtenida)
 class InsigniaObtenidaAdmin(SoloLectura):
     list_display = ["clave", "miembro", "obtenida"]
     list_filter = ["clave"]
 
+
 @admin.register(Mision)
 class MisionAdmin(admin.ModelAdmin):
-    list_display = ["titulo", "meta_actividades", "puntos_recompensa", "fecha_inicio", "fecha_fin", "activa"]
+    list_display = [
+        "titulo",
+        "meta_actividades",
+        "puntos_recompensa",
+        "fecha_inicio",
+        "fecha_fin",
+        "activa",
+    ]
     list_filter = ["activa"]
+
 
 @admin.register(Miembro)
 class MiembroAdmin(SoloLectura):
     list_display = ["usuario", "comunidad", "estado", "creado"]
     list_filter = ["estado", "comunidad"]
+
 
 @admin.register(CertificacionTalento)
 class CertificacionTalentoAdmin(SoloLectura):
@@ -94,7 +129,7 @@ class CertificacionTalentoAdmin(SoloLectura):
 
     @admin.action(description="Certificar talentos propuestos", permissions=["review"])
     def certificar(self, request, queryset):
-        from . import gamificacion
+
         propuestos = list(queryset.filter(estado=CertificacionTalento.Estado.PROPUESTA))
         count = CertificacionTalento.objects.filter(
             pk__in=[c.pk for c in propuestos],
@@ -110,38 +145,62 @@ class CertificacionTalentoAdmin(SoloLectura):
         )
         self.message_user(request, f"{count} talentos rechazados.")
 
+
 class ModeracionComunitaria(SoloLectura):
-    actions = ['retirar_publicaciones']
+    actions = ["retirar_publicaciones"]
+
     def has_moderate_permission(self, request):
-        return request.user.has_perm('comunidades.change_' + self.model._meta.model_name)
-    @admin.action(description='Retirar de la comunidad', permissions=['moderate'])
+        return request.user.has_perm(
+            "comunidades.change_" + self.model._meta.model_name,  # noqa: SLF001
+        )
+
+    @admin.action(description="Retirar de la comunidad", permissions=["moderate"])
     def retirar_publicaciones(self, request, queryset):
-        count=queryset.update(oculta=True)
-        self.message_user(request,f'{count} publicaciones retiradas.')
-    @admin.display(description='Reportes', ordering='_reportes')
+        count = queryset.update(oculta=True)
+        self.message_user(request, f"{count} publicaciones retiradas.")
+
+    @admin.display(description="Reportes", ordering="total_reportes")
     def reportes(self, obj):
-        return obj._reportes
+        return obj.total_reportes
+
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(_reportes=Count('reportada_por', distinct=True)).order_by('-_reportes','-creada')
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(total_reportes=Count("reportada_por", distinct=True))
+            .order_by("-total_reportes", "-creada")
+        )
+
 
 @admin.register(Pregunta)
 class PreguntaAdmin(ModeracionComunitaria):
-    list_display=['titulo','autor','categoria','resuelta','oculta','reportes','creada']
-    list_filter=['oculta','resuelta','categoria']
-    search_fields=['titulo','contenido']
+    list_display = [
+        "titulo",
+        "autor",
+        "categoria",
+        "resuelta",
+        "oculta",
+        "reportes",
+        "creada",
+    ]
+    list_filter = ["oculta", "resuelta", "categoria"]
+    search_fields = ["titulo", "contenido"]
+
 
 @admin.register(Respuesta)
 class RespuestaAdmin(ModeracionComunitaria):
-    list_display=['pregunta','autor','oculta','reportes','creada']
-    list_filter=['oculta']
-    search_fields=['contenido']
+    list_display = ["pregunta", "autor", "oculta", "reportes", "creada"]
+    list_filter = ["oculta"]
+    search_fields = ["contenido"]
+
 
 @admin.register(PerfilComunitario)
 class PerfilComunitarioAdmin(SoloLectura):
-    list_display=['nombre','nivel','visible']
-    list_filter=['visible','nivel']
+    list_display = ["nombre", "nivel", "visible"]
+    list_filter = ["visible", "nivel"]
+
 
 @admin.register(JardinCompartido)
 class JardinCompartidoAdmin(SoloLectura):
-    list_display=['jardin','localidad','visible','actualizada']
-    list_filter=['visible']
+    list_display = ["jardin", "localidad", "visible", "actualizada"]
+    list_filter = ["visible"]

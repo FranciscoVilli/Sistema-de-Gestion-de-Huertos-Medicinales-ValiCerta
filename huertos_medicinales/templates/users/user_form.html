@@ -1,1 +1,6 @@
-{% extends 'producto/botanical_base.html' %}{% load static %}{% block title %}Editar mi información · Huertos{% endblock %}{% block content %}<article class="container account-page"><a class="back-link" href="{% url 'users:detail' request.user.pk %}">← Volver a mi cuenta</a><p class="eyebrow">GESTIÓN DE LA CUENTA</p><h1>Editar mi información</h1><p>Estos datos quedan en tu perfil personal. El código único no cambia aunque edites esta información.</p><section class="account-card"><form method="post">{% csrf_token %}{% include 'producto/form.html' %}<button class="btn" type="submit">Guardar cambios</button></form></section></article>{% endblock content %}
+{% extends "producto/botanical_base.html" %}
+
+{% load static %}
+
+{% block title %}Editar mi información · Huertos{% endblock %}{% block content %}<article class="container account-page"><a class="back-link" href="{% url 'users:detail' request.user.pk %}">← Volver a mi cuenta</a><p class="eyebrow">GESTIÓN DE LA CUENTA</p><h1>Editar mi información</h1>
+<p>Estos datos quedan en tu perfil personal. El código único no cambia aunque edites esta información.</p><section class="account-card"><form method="post">{% csrf_token %}{% include "producto/form.html" %}<button class="btn" type="submit">Guardar cambios</button></form></section></article>{% endblock content %}

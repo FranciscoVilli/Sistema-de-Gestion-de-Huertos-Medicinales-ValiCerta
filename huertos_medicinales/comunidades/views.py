@@ -12,7 +12,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
-from .access import require_profile, profile_complete
+from .access import profile_complete
+from .access import require_profile
 from .forms import AgregarPorCodigoForm
 from .forms import BodegaForm
 from .forms import ComunidadForm
@@ -22,19 +23,27 @@ from .models import CertificacionTalento
 from .models import Comunidad
 from .models import EventoComunidad
 from .models import Miembro
+from .rankings import standings
 from .recomendaciones import recomendar_suelo_agua_abono
 
 
 @never_cache
 def ranking(request):
-    from .rankings import standings
-    rows=standings(request.user)
-    podium=[row for row in rows[:3] if row['xp']>0]
-    return render(request,'comunidades/ranking.html',{
-        'section':'ranking','rankings':rows,'podium':podium,'comunidades':[row['group'] for row in rows],
-        'my_rankings':[row for row in rows if row['mine']],
-        'total_xp':sum(row['xp'] for row in rows),
-    })
+
+    rows = standings(request.user)
+    podium = [row for row in rows[:3] if row["xp"] > 0]
+    return render(
+        request,
+        "comunidades/ranking.html",
+        {
+            "section": "ranking",
+            "rankings": rows,
+            "podium": podium,
+            "comunidades": [row["group"] for row in rows],
+            "my_rankings": [row for row in rows if row["mine"]],
+            "total_xp": sum(row["xp"] for row in rows),
+        },
+    )
 
 
 @never_cache
@@ -43,8 +52,14 @@ def detalle(request, pk):
     if request.user.is_authenticated:
         allowed |= Q(responsable=request.user)
     comunidad = get_object_or_404(Comunidad.objects.filter(allowed), pk=pk)
-    if comunidad.grupo_virtual or comunidad.latitud is None or comunidad.longitud is None:
-        return redirect(reverse('comunidades:listado')+'?comunidad='+str(comunidad.pk))
+    if (
+        comunidad.grupo_virtual
+        or comunidad.latitud is None
+        or comunidad.longitud is None
+    ):
+        return redirect(
+            reverse("comunidades:listado") + "?comunidad=" + str(comunidad.pk),
+        )
     lon, lat = float(comunidad.longitud), float(comunidad.latitud)
     bbox = ",".join(
         str(value)
@@ -149,7 +164,11 @@ def huerto_real(request, pk):
     return render(
         request,
         "comunidades/huerto_real.html",
-        {"comunidad": comunidad, "huerto_form": huerto_form, "bodega_form": bodega_form},
+        {
+            "comunidad": comunidad,
+            "huerto_form": huerto_form,
+            "bodega_form": bodega_form,
+        },
     )
 
 
@@ -162,7 +181,10 @@ def solicitar_membresia(request, pk):
     if existente and existente.estado != Miembro.Estado.RETIRADA:
         messages.error(
             request,
-            "Ya perteneces a una comunidad. Retírate de ella antes de solicitar unirte a otra.",
+            (
+                "Ya perteneces a una comunidad. Retírate de ella antes de "
+                "solicitar unirte a otra."
+            ),
         )
         return redirect("comunidades:detalle", pk=comunidad.pk)
     form = SolicitudMiembroForm(request.POST or None, instance=existente)
@@ -218,7 +240,9 @@ def agregar_por_codigo(request, pk):
         messages.error(request, "Ingresa un código válido de 6 dígitos.")
         return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
     codigo = form.cleaned_data["codigo"]
-    persona = get_user_model().objects.filter(codigo_unico=codigo,is_active=True).first()
+    persona = (
+        get_user_model().objects.filter(codigo_unico=codigo, is_active=True).first()
+    )
     if persona is None:
         messages.error(request, "No se encontró a nadie con ese código.")
         return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
@@ -240,7 +264,10 @@ def agregar_por_codigo(request, pk):
             else:
                 messages.error(
                     request,
-                    "Esa persona ya pertenece a otra comunidad. Debe retirarse antes de unirse a esta.",
+                    (
+                        "Esa persona ya pertenece a otra comunidad. Debe retirarse "
+                        "antes de unirse a esta."
+                    ),
                 )
             return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
         Miembro.objects.update_or_create(
@@ -257,7 +284,10 @@ def agregar_por_codigo(request, pk):
             actor=request.user,
             accion="miembro_agregado_por_codigo",
         )
-    messages.success(request, f"{persona.name or "Cultivador"} fue agregado a la comunidad.")
+    messages.success(
+        request,
+        f"{persona.name or 'Cultivador'} fue agregado a la comunidad.",
+    )
     return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
 
 
@@ -266,8 +296,8 @@ def agregar_por_codigo(request, pk):
 @require_profile
 def decidir_miembro(request, pk, miembro_pk):
     accion = request.POST.get("accion")
-    if accion not in ('aprobar','rechazar'):
-        return redirect('comunidades:gestionar_miembros',pk=pk)
+    if accion not in ("aprobar", "rechazar"):
+        return redirect("comunidades:gestionar_miembros", pk=pk)
     with transaction.atomic():
         comunidad = get_object_or_404(Comunidad, pk=pk, responsable=request.user)
         miembro = get_object_or_404(
@@ -276,9 +306,14 @@ def decidir_miembro(request, pk, miembro_pk):
             comunidad=comunidad,
             estado=Miembro.Estado.SOLICITADA,
         )
-        if accion == 'aprobar' and (not miembro.usuario.is_active or not profile_complete(miembro.usuario)):
-            messages.error(request,'La persona debe completar su perfil antes de aprobar su ingreso.')
-            return redirect('comunidades:gestionar_miembros',pk=pk)
+        if accion == "aprobar" and (
+            not miembro.usuario.is_active or not profile_complete(miembro.usuario)
+        ):
+            messages.error(
+                request,
+                "La persona debe completar su perfil antes de aprobar su ingreso.",
+            )
+            return redirect("comunidades:gestionar_miembros", pk=pk)
         if accion == "aprobar":
             miembro.estado = Miembro.Estado.APROBADA
             registro = "miembro_aprobado"
@@ -288,7 +323,11 @@ def decidir_miembro(request, pk, miembro_pk):
             registro = "miembro_rechazado"
             texto = "Solicitud rechazada."
         miembro.save(update_fields=["estado", "actualizado"])
-        EventoComunidad.objects.create(comunidad=comunidad, actor=request.user, accion=registro)
+        EventoComunidad.objects.create(
+            comunidad=comunidad,
+            actor=request.user,
+            accion=registro,
+        )
     messages.success(request, texto)
     return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
 
@@ -306,7 +345,11 @@ def retirar_miembro(request, pk, miembro_pk):
         )
         miembro.estado = Miembro.Estado.RETIRADA
         miembro.save(update_fields=["estado", "actualizado"])
-        EventoComunidad.objects.create(comunidad=comunidad, actor=request.user, accion="miembro_retirado")
+        EventoComunidad.objects.create(
+            comunidad=comunidad,
+            actor=request.user,
+            accion="miembro_retirado",
+        )
     messages.success(request, "Miembro retirado de la comunidad.")
     return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
 
@@ -326,11 +369,24 @@ def proponer_talento(request, pk, miembro_pk):
         ya_existe = CertificacionTalento.objects.filter(
             miembro=miembro,
             talento=talento,
-            estado__in=[CertificacionTalento.Estado.PROPUESTA, CertificacionTalento.Estado.CERTIFICADA],
+            estado__in=[
+                CertificacionTalento.Estado.PROPUESTA,
+                CertificacionTalento.Estado.CERTIFICADA,
+            ],
         ).exists()
         if ya_existe:
-            messages.info(request, "Ese talento ya está propuesto o certificado para este miembro.")
+            messages.info(
+                request,
+                "Ese talento ya está propuesto o certificado para este miembro.",
+            )
         else:
-            CertificacionTalento.objects.create(miembro=miembro, talento=talento, propuesto_por=request.user)
-            messages.success(request, "Talento propuesto. Queda pendiente de certificación.")
+            CertificacionTalento.objects.create(
+                miembro=miembro,
+                talento=talento,
+                propuesto_por=request.user,
+            )
+            messages.success(
+                request,
+                "Talento propuesto. Queda pendiente de certificación.",
+            )
     return redirect("comunidades:gestionar_miembros", pk=comunidad.pk)
