@@ -1,6 +1,9 @@
 """Primary phases from USNO; local dates for continental Ecuador."""
+
 import json
-from datetime import datetime, timezone
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
 from functools import lru_cache
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -19,17 +22,40 @@ INTERMEDIATE = {
     "Last Quarter": ("Luna menguante", "🌘", False),
 }
 
+
 @lru_cache(maxsize=1)
 def events():
-    data = json.loads(Path(__file__).with_name("moon_phases_usno.json").read_text(encoding="utf-8-sig"))
+    data = json.loads(
+        Path(__file__)
+        .with_name("moon_phases_usno.json")
+        .read_text(encoding="utf-8-sig"),
+    )
     result = []
     for rows in data["years"].values():
         for row in rows:
             hour, minute = map(int, row["time"].split(":"))
-            instant = datetime(row["year"], row["month"], row["day"], hour, minute, tzinfo=timezone.utc).astimezone(ZONE)
+            instant = datetime(
+                row["year"],
+                row["month"],
+                row["day"],
+                hour,
+                minute,
+                tzinfo=UTC,
+            ).astimezone(ZONE)
             name, icon, sow = PHASES[row["phase"]]
-            result.append(dict(date=instant.date(), time=instant.strftime("%H:%M"), name=name, icon=icon, sow=sow, primary=True, phase=row["phase"]))
+            result.append(
+                {
+                    "date": instant.date(),
+                    "time": instant.strftime("%H:%M"),
+                    "name": name,
+                    "icon": icon,
+                    "sow": sow,
+                    "primary": True,
+                    "phase": row["phase"],
+                },
+            )
     return sorted(result, key=lambda item: item["date"])
+
 
 def phase_on(day):
     records = events()
@@ -40,18 +66,30 @@ def phase_on(day):
         return None
     previous = next(event for event in reversed(records) if event["date"] < day)
     name, icon, sow = INTERMEDIATE[previous["phase"]]
-    return dict(date=day, name=name, icon=icon, sow=sow, primary=False)
+    return {"date": day, "name": name, "icon": icon, "sow": sow, "primary": False}
+
 
 def month_phases(month):
-    return [dict(event) for event in events() if (event["date"].year,event["date"].month) == (month.year,month.month)]
+    return [
+        dict(event)
+        for event in events()
+        if (event["date"].year, event["date"].month) == (month.year, month.month)
+    ]
+
 
 # Fases según conocimiento ancestral: MSP Ecuador (2017), Lineamientos de
 # huertos medicinales, p. 42-47 ("ritual de siembra en fase de luna creciente
 # o luna llena"; "si se va a utilizar las hojas, flores y frutos se cosecha
 # en fase de luna creciente o luna llena. Si se va a utilizar las semillas o
 # raíces se cosecha en cuarto menguante").
-CRECIENTE_O_LLENA = {"Luna creciente", "Cuarto creciente", "Gibosa creciente", "Luna llena"}
+CRECIENTE_O_LLENA = {
+    "Luna creciente",
+    "Cuarto creciente",
+    "Gibosa creciente",
+    "Luna llena",
+}
 MENGUANTE = {"Cuarto menguante", "Gibosa menguante", "Luna menguante"}
+
 
 def recomendacion(tipo, fecha, parte_usada=""):
     fase = phase_on(fecha)
@@ -59,23 +97,44 @@ def recomendacion(tipo, fecha, parte_usada=""):
         return None
     nombre = fase["name"]
     if tipo == "preparacion":
-        ideal, detalle = nombre == "Luna nueva", "La preparación de la tierra se recomienda en luna nueva (oscura)."
+        ideal, detalle = (
+            nombre == "Luna nueva",
+            "La preparación de la tierra se recomienda en luna nueva (oscura).",
+        )
     elif tipo == "siembra":
-        ideal, detalle = nombre in CRECIENTE_O_LLENA, "La siembra se recomienda en luna creciente o luna llena."
+        ideal, detalle = (
+            nombre in CRECIENTE_O_LLENA,
+            "La siembra se recomienda en luna creciente o luna llena.",
+        )
     elif tipo == "cosecha" and parte_usada == "hojas_flores_frutos":
-        ideal, detalle = nombre in CRECIENTE_O_LLENA, "La cosecha de hojas, flores o frutos se recomienda en luna creciente o luna llena."
+        ideal, detalle = (
+            nombre in CRECIENTE_O_LLENA,
+            (
+                "La cosecha de hojas, flores o frutos se recomienda en luna "
+                "creciente o luna llena."
+            ),
+        )
     elif tipo == "cosecha" and parte_usada == "semillas_raices":
-        ideal, detalle = nombre in MENGUANTE, "La cosecha de semillas o raíces se recomienda en cuarto menguante."
+        ideal, detalle = (
+            nombre in MENGUANTE,
+            "La cosecha de semillas o raíces se recomienda en cuarto menguante.",
+        )
     else:
         return None
-    return dict(ideal=ideal, fase=nombre, icono=fase["icon"], detalle=detalle)
+    return {"ideal": ideal, "fase": nombre, "icono": fase["icon"], "detalle": detalle}
+
 
 def proxima_buena_para_sembrar(desde, limite_dias=30):
-    """Hoy si ya es buena luna para sembrar, o la próxima fecha que lo sea dentro de `limite_dias`."""
-    from datetime import timedelta
+    """Hoy si ya es buena luna para sembrar, o la próxima en `limite_dias` días."""
+
     for offset in range(limite_dias + 1):
         dia = desde + timedelta(days=offset)
         fase = phase_on(dia)
         if fase and fase["name"] in CRECIENTE_O_LLENA:
-            return dict(fecha=dia, hoy=offset == 0, fase=fase["name"], icono=fase["icon"])
+            return {
+                "fecha": dia,
+                "hoy": offset == 0,
+                "fase": fase["name"],
+                "icono": fase["icon"],
+            }
     return None

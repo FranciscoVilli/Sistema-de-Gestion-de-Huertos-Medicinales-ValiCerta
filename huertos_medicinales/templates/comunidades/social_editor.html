@@ -1,8 +1,19 @@
-<form enctype="multipart/form-data" method="post" action="{{ request.get_full_path }}" data-community-form class="post-composer social-editor" data-social-editor data-mode="{{ media_mode }}">{% csrf_token %}<input type="hidden" name="social" value="1"><input type="hidden" name="adjunto" value="{{ media_mode }}">{% if general_publication %}<input type="hidden" name="destino" value="general">{% endif %}
-{{ form.non_field_errors }}<div class="composer-identity"><span class="composer-avatar">{{ composer_name|slice:':1' }}</span><div><strong>{{ composer_name }}</strong><span>{% if general_publication %}◉ Foro general · Público para todos{% else %}Publicación en tu comunidad{% endif %}</span></div></div>
-{% if general_publication %}<input type="hidden" name="visibilidad" value="publico">{% else %}<div class="composer-audience">{{ form.comunidad }}{{ form.comunidad.errors }}{{ form.visibilidad }}{{ form.visibilidad.errors }}</div>{% endif %}
-<input type="hidden" name="tipo" value="{% if media_mode == 'encuesta' %}pregunta{% else %}experiencia{% endif %}">
-{% if media_mode == 'encuesta' %}<label class="social-field-title" for="id_titulo">¿Qué quieres preguntar?</label>{{ form.titulo }}{{ form.titulo.errors }}<label class="social-field-title" for="id_opciones_encuesta">Opciones de respuesta</label>{{ form.opciones_encuesta }}{{ form.opciones_encuesta.errors }}<small>Escribe entre 2 y 6 opciones, una por línea.</small><input type="hidden" name="contenido" value="">{% else %}<input type="hidden" name="titulo" value=""><label class="sr-only" for="id_contenido">¿Qué estás cultivando hoy?</label>{{ form.contenido }}{{ form.contenido.errors }}{% endif %}
-{% if media_mode == 'foto' %}<label class="social-upload-zone" for="id_foto"><strong>＋ Añadir una foto</strong><span>Selecciona una imagen de tu huerto · JPG, PNG o WebP · 8 MB</span>{{ form.foto }}</label>{{ form.foto.errors }}<img data-upload-preview hidden alt="Vista previa de tu foto">{% endif %}
-{% if media_mode == 'enlace' %}<label class="social-field-title" for="id_enlace">Pega el enlace que quieres compartir</label>{{ form.enlace }}{{ form.enlace.errors }}{% endif %}
-<p class="social-editor-note">{% if general_publication %}Tu publicación será visible para todo público.{% else %}Revisa quién puede ver tu publicación antes de compartir.{% endif %}</p><button type="submit" class="purple-button composer-publish">Publicar →</button></form>
+<form enctype="multipart/form-data"
+      method="post"
+      action="{{ request.get_full_path }}"
+      data-community-form
+      class="post-composer social-editor"
+      data-social-editor
+      data-mode="{{ media_mode }}">
+  {% csrf_token %}
+  <input type="hidden" name="social" value="1" /><input type="hidden" name="adjunto" value="{{ media_mode }}" />
+  {% if general_publication %}<input type="hidden" name="destino" value="general" />{% endif %}
+  {{ form.non_field_errors }}<div class="composer-identity"><span class="composer-avatar">{{ composer_name|slice:':1' }}</span><div><strong>{{ composer_name }}</strong><span>{% if general_publication %}◉ Foro general · Público para todos{% else %}Publicación en tu comunidad{% endif %}</span></div></div>
+  {% if general_publication %}<input type="hidden" name="visibilidad" value="publico" />{% else %}<div class="composer-audience">{{ form.comunidad }}{{ form.comunidad.errors }}{{ form.visibilidad }}{{ form.visibilidad.errors }}</div>{% endif %}
+  <input type="hidden"
+         name="tipo"
+         value="{% if media_mode == 'encuesta' %}pregunta{% else %}experiencia{% endif %}" />
+  {% if media_mode == "encuesta" %}<label class="social-field-title" for="id_titulo">¿Qué quieres preguntar?</label>{{ form.titulo }}{{ form.titulo.errors }}<label class="social-field-title" for="id_opciones_encuesta">Opciones de respuesta</label>{{ form.opciones_encuesta }}{{ form.opciones_encuesta.errors }}<small>Escribe entre 2 y 6 opciones, una por línea.</small><input type="hidden" name="contenido" value="" />{% else %}<input type="hidden" name="titulo" value="" /><label class="sr-only" for="id_contenido">¿Qué estás cultivando hoy?</label>{{ form.contenido }}{{ form.contenido.errors }}{% endif %}
+  {% if media_mode == "foto" %}<label class="social-upload-zone" for="id_foto"><strong>＋ Añadir una foto</strong><span>Selecciona una imagen de tu huerto · JPG, PNG o WebP · 8 MB</span>{{ form.foto }}</label>{{ form.foto.errors }}<img data-upload-preview hidden alt="Vista previa de tu foto" />{% endif %}
+  {% if media_mode == "enlace" %}<label class="social-field-title" for="id_enlace">Pega el enlace que quieres compartir</label>{{ form.enlace }}{{ form.enlace.errors }}{% endif %}
+  <p class="social-editor-note">{% if general_publication %}Tu publicación será visible para todo público.{% else %}Revisa quién puede ver tu publicación antes de compartir.{% endif %}</p><button type="submit" class="purple-button composer-publish">Publicar →</button></form>

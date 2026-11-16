@@ -12,6 +12,9 @@ from huertos_medicinales.aprendizaje.educational_models import FuenteEducativa
 from huertos_medicinales.aprendizaje.educational_models import LeccionEducativa
 from huertos_medicinales.aprendizaje.educational_models import RutaEducativa
 
+# Capitulo que se publica como piloto revisable.
+CAPITULO_PILOTO = 5
+
 BLOCKS = [
     (
         "Fundamentos de las plantas",
@@ -98,7 +101,10 @@ QUESTIONS = [
             "Evitar cualquier intercambio de agua",
         ],
         [0],
-        "El medio de cultivo sostiene la planta y participa en el suministro de aire, agua y nutrientes.",
+        (
+            "El medio de cultivo sostiene la planta y participa en el "
+            "suministro de aire, agua y nutrientes."
+        ),
     ),
     q(
         "El suelo de jardín se comporta siempre igual en una maceta.",
@@ -115,7 +121,10 @@ QUESTIONS = [
             "Solo el color del recipiente",
         ],
         [0, 1],
-        "La selección debe considerar drenaje y necesidades de la planta; la apariencia no basta.",
+        (
+            "La selección debe considerar drenaje y necesidades de la "
+            "planta; la apariencia no basta."
+        ),
         "multiple",
     ),
 ]
@@ -127,11 +136,20 @@ LESSONS = [
         [
             {
                 "titulo": "Un entorno para las raíces",
-                "texto": "En una maceta, las raíces ocupan un volumen limitado. El medio de cultivo sostiene la planta y permite el acceso a agua, aire y nutrientes. Por eso su elección importa.",
+                "texto": (
+                    "En una maceta, las raíces ocupan un volumen limitado. El "
+                    "medio de cultivo sostiene la planta y permite el acceso a "
+                    "agua, aire y nutrientes. Por eso su elección importa."
+                ),
             },
             {
                 "titulo": "Espacios entre partículas",
-                "texto": "Los espacios del sustrato permiten el movimiento de aire y agua. Si el agua sobrante no puede salir, se dificulta la entrada de aire. La apariencia superficial no describe todo lo que sucede alrededor de las raíces.",
+                "texto": (
+                    "Los espacios del sustrato permiten el movimiento de aire y "
+                    "agua. Si el agua sobrante no puede salir, se dificulta la "
+                    "entrada de aire. La apariencia superficial no describe todo "
+                    "lo que sucede alrededor de las raíces."
+                ),
             },
         ],
         "El sustrato es parte del entorno de las raíces, no solo un soporte.",
@@ -144,11 +162,22 @@ LESSONS = [
         [
             {
                 "titulo": "El recipiente cambia el contexto",
-                "texto": "El suelo tomado del jardín puede compactarse en una maceta. Esto puede dificultar el drenaje y la aireación. No conviene asumir que un material funcionará igual en cualquier espacio.",
+                "texto": (
+                    "El suelo tomado del jardín puede compactarse en una maceta. "
+                    "Esto puede dificultar el drenaje y la aireación. No conviene "
+                    "asumir que un material funcionará igual en cualquier "
+                    "espacio."
+                ),
             },
             {
                 "titulo": "Comparar antes de elegir",
-                "texto": "Las mezclas comerciales tienen distintas cualidades. Consulta su composición y uso indicado. Una mezcla para recipientes debe permitir drenaje y retener humedad; una etiqueta o un precio por sí solos no garantizan que sea adecuada para tu especie.",
+                "texto": (
+                    "Las mezclas comerciales tienen distintas cualidades. "
+                    "Consulta su composición y uso indicado. Una mezcla para "
+                    "recipientes debe permitir drenaje y retener humedad; una "
+                    "etiqueta o un precio por sí solos no garantizan que sea "
+                    "adecuada para tu especie."
+                ),
             },
         ],
         "Compara el uso indicado y las características de la mezcla antes de elegir.",
@@ -161,11 +190,22 @@ LESSONS = [
         [
             {
                 "titulo": "Revisar la salida de agua",
-                "texto": "Para la mayoría de las plantas en maceta, un recipiente con drenaje adecuado reduce los problemas asociados al encharcamiento. Comprueba la salida de agua y consulta las necesidades de la especie antes de preparar el cultivo.",
+                "texto": (
+                    "Para la mayoría de las plantas en maceta, un recipiente con "
+                    "drenaje adecuado reduce los problemas asociados al "
+                    "encharcamiento. Comprueba la salida de agua y consulta las "
+                    "necesidades de la especie antes de preparar el cultivo."
+                ),
             },
             {
                 "titulo": "Tu observación inicial",
-                "texto": "Observa un recipiente vacío y anota si tiene salida de agua, qué mezcla piensas usar y qué información te falta consultar. No necesitas sembrar ni modificar una planta para realizar este ejercicio. Es una actividad de reconocimiento, no una prueba de que todas las condiciones sean adecuadas.",
+                "texto": (
+                    "Observa un recipiente vacío y anota si tiene salida de agua, "
+                    "qué mezcla piensas usar y qué información te falta "
+                    "consultar. No necesitas sembrar ni modificar una planta para "
+                    "realizar este ejercicio. Es una actividad de reconocimiento, "
+                    "no una prueba de que todas las condiciones sean adecuadas."
+                ),
             },
         ],
         "Anota lo observado y lo que todavía necesitas verificar para tu especie.",
@@ -182,23 +222,30 @@ class Command(BaseCommand):
         number = 0
         for i, (title, chapters) in enumerate(BLOCKS, 1):
             block, _ = BloqueEducativo.objects.get_or_create(
-                numero=i, defaults={"titulo": title},
+                numero=i,
+                defaults={"titulo": title},
             )
-            for title in chapters:
+            for chapter_title in chapters:
                 number += 1
                 CapituloEducativo.objects.get_or_create(
                     numero=number,
                     defaults={
                         "bloque": block,
-                        "slug": slugify(title),
-                        "titulo": title,
-                        "estado": "piloto" if number == 5 else "borrador",
-                        "descripcion": "Contenido piloto revisable: lectura, comprensión y evaluación."
-                        if number == 5
-                        else "Estructura editorial. Contenido pendiente de revisión y publicación.",
+                        "slug": slugify(chapter_title),
+                        "titulo": chapter_title,
+                        "estado": "piloto" if number == CAPITULO_PILOTO else "borrador",
+                        "descripcion": (
+                            "Contenido piloto revisable: lectura, comprensión y "
+                            "evaluación."
+                        )
+                        if number == CAPITULO_PILOTO
+                        else (
+                            "Estructura editorial. Contenido pendiente de revisión y "
+                            "publicación."
+                        ),
                     },
                 )
-        chapter = CapituloEducativo.objects.get(numero=5)
+        chapter = CapituloEducativo.objects.get(numero=CAPITULO_PILOTO)
         sources = []
         for title, institution, url in SOURCES:
             source, _ = FuenteEducativa.objects.get_or_create(
@@ -212,7 +259,8 @@ class Command(BaseCommand):
             sources.append(source)
         lessons = []
         for order, (slug, title, objectives, sections, summary, index) in enumerate(
-            LESSONS, 1,
+            LESSONS,
+            1,
         ):
             lesson, created = LeccionEducativa.objects.get_or_create(
                 slug=slug,
@@ -227,7 +275,11 @@ class Command(BaseCommand):
                     "minutos": 4,
                     "revisada": date(2026, 10, 28),
                     "estado": "borrador",
-                    "nota_editorial": "Piloto educativo. Fuentes documentales consultadas; pendiente de revisión pedagógica y agronómica local. No es una receta de sustrato por especie.",
+                    "nota_editorial": (
+                        "Piloto educativo. Fuentes documentales consultadas; "
+                        "pendiente de revisión pedagógica y agronómica local. No es "
+                        "una receta de sustrato por especie."
+                    ),
                 },
             )
             if created:
@@ -240,7 +292,11 @@ class Command(BaseCommand):
             slug="sustrato-observacion",
             defaults={
                 "nombre": "Reconocimiento inicial de sustrato y drenaje",
-                "descripcion": "Distingue funciones del medio de cultivo y criterios iniciales de observación de recipientes. Competencia piloto, no certificación profesional.",
+                "descripcion": (
+                    "Distingue funciones del medio de cultivo y criterios "
+                    "iniciales de observación de recipientes. Competencia piloto, "
+                    "no certificación profesional."
+                ),
             },
         )
         exam, created = EvaluacionEducativa.objects.get_or_create(
@@ -259,8 +315,17 @@ class Command(BaseCommand):
             defaults={
                 "nombre": "Manzanilla: observar mi recipiente (piloto)",
                 "especie": "manzanilla",
-                "descripcion": "Primer ejercicio guiado de observación. No equivale a una ruta completa de cultivo de manzanilla.",
-                "instrucciones": "1. Consulta la ficha de manzanilla.\n2. Observa el recipiente vacío y su salida de agua.\n3. Anota qué sustrato considerarías y qué información necesitas verificar.\n4. Si ya tienes un cultivo, guarda la observación en su bitácora. No necesitas crear otro cultivo ni cambiar el existente.",
+                "descripcion": (
+                    "Primer ejercicio guiado de observación. No equivale a una "
+                    "ruta completa de cultivo de manzanilla."
+                ),
+                "instrucciones": (
+                    "1. Consulta la ficha de manzanilla.\n2. Observa el "
+                    "recipiente vacío y su salida de agua.\n3. Anota qué sustrato "
+                    "considerarías y qué información necesitas verificar.\n4. Si "
+                    "ya tienes un cultivo, guarda la observación en su bitácora. "
+                    "No necesitas crear otro cultivo ni cambiar el existente."
+                ),
                 "estado": "piloto",
             },
         )
@@ -269,6 +334,9 @@ class Command(BaseCommand):
             route.lecciones.add(*lessons)
         self.stdout.write(
             self.style.SUCCESS(
-                "Estructura: 6 bloques, 24 capítulos. Piloto: 3 lecciones, evaluación y ruta. Datos anteriores conservados.",
+                (
+                    "Estructura: 6 bloques, 24 capítulos. Piloto: 3 lecciones, "
+                    "evaluación y ruta. Datos anteriores conservados."
+                ),
             ),
         )

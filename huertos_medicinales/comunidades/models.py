@@ -5,9 +5,15 @@ from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from huertos_medicinales.aprendizaje.catalogo import PLANTAS
+
+from .media_storage import attachment_path
+from .media_storage import forum_storage
+
 
 class Comunidad(models.Model):
     grupo_virtual = models.BooleanField(default=False)
+
     class Estado(models.TextChoices):
         PENDIENTE = "pendiente", "Pendiente de revisión"
         PUBLICADA = "publicada", "Publicada"
@@ -37,14 +43,16 @@ class Comunidad(models.Model):
     )
     latitud = models.DecimalField(
         "Latitud aproximada",
-        null=True, blank=True,
+        null=True,
+        blank=True,
         max_digits=4,
         decimal_places=2,
         validators=[MinValueValidator(-90), MaxValueValidator(90)],
     )
     longitud = models.DecimalField(
         "Longitud aproximada",
-        null=True, blank=True,
+        null=True,
+        blank=True,
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(-180), MaxValueValidator(180)],
@@ -84,7 +92,10 @@ class HuertoReal(models.Model):
         NATURAL = "natural", "Material natural (caña guadua, bahareque, tapial)"
         RECICLADO = "reciclado", "Material reciclado (tablas, botellas, neumáticos)"
         METALICA = "metalica", "Material metálico (alambre de púas)"
-        CONVENCIONAL = "convencional", "Material convencional (piedra, ladrillo, bloque)"
+        CONVENCIONAL = (
+            "convencional",
+            "Material convencional (piedra, ladrillo, bloque)",
+        )
 
     class Suelo(models.TextChoices):
         ARCILLOSO = "arcilloso", "Arcilloso"
@@ -111,14 +122,21 @@ class HuertoReal(models.Model):
         M2 = "m2", "metros cuadrados"
         HA = "ha", "hectáreas"
 
-    comunidad = models.OneToOneField(Comunidad, on_delete=models.CASCADE, related_name="huerto_real")
+    comunidad = models.OneToOneField(
+        Comunidad,
+        on_delete=models.CASCADE,
+        related_name="huerto_real",
+    )
     provincia = models.CharField("Provincia", max_length=80)
     parroquia = models.CharField("Parroquia", max_length=100)
     plantas = models.JSONField(
         "Plantas medicinales que cultivan",
         default=list,
         blank=True,
-        help_text="Según las plantas elegidas se recomienda el suelo, el agua de riego y el abono.",
+        help_text=(
+            "Según las plantas elegidas se recomienda el suelo, el agua "
+            "de riego y el abono."
+        ),
     )
     tipo_diseno = models.CharField("Diseño del huerto", max_length=16, choices=Diseno)
     tecnica_diseno = models.CharField(
@@ -135,7 +153,11 @@ class HuertoReal(models.Model):
         help_text="Por ejemplo: higuerilla, floripondio, caña guadua.",
     )
     area_total = models.DecimalField("Área total", max_digits=8, decimal_places=2)
-    unidad_area = models.CharField(max_length=4, choices=UnidadArea, default=UnidadArea.M2)
+    unidad_area = models.CharField(
+        max_length=4,
+        choices=UnidadArea,
+        default=UnidadArea.M2,
+    )
     tipo_suelo = models.CharField(
         "Tipo de suelo",
         max_length=16,
@@ -167,21 +189,31 @@ class HuertoReal(models.Model):
 
     @property
     def plantas_nombres(self):
-        from huertos_medicinales.aprendizaje.catalogo import PLANTAS
+
         nombres = {planta["slug"]: planta["nombre"] for planta in PLANTAS}
         return [nombres[slug] for slug in self.plantas if slug in nombres]
 
 
 class Bodega(models.Model):
-    huerto_real = models.OneToOneField(HuertoReal, on_delete=models.CASCADE, related_name="bodega")
-    tiene_espacio_herramientas = models.BooleanField("Espacio para herramientas e implementos", default=False)
+    huerto_real = models.OneToOneField(
+        HuertoReal,
+        on_delete=models.CASCADE,
+        related_name="bodega",
+    )
+    tiene_espacio_herramientas = models.BooleanField(
+        "Espacio para herramientas e implementos",
+        default=False,
+    )
     detalle_herramientas = models.CharField(max_length=150, blank=True)
     tiene_espacio_semillas = models.BooleanField(
         "Espacio para semillas, estacas, esquejes o plántulas",
         default=False,
     )
     detalle_semillas = models.CharField(max_length=150, blank=True)
-    tiene_espacio_abonos = models.BooleanField("Espacio para abonos orgánicos y compost", default=False)
+    tiene_espacio_abonos = models.BooleanField(
+        "Espacio para abonos orgánicos y compost",
+        default=False,
+    )
     detalle_abonos = models.CharField(max_length=150, blank=True)
 
     def __str__(self):
@@ -205,11 +237,24 @@ class Miembro(models.Model):
         OFICIAL = "oficial", "Oficial"
         MAESTRO = "maestro", "Maestro"
 
-    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="membresia")
-    comunidad = models.ForeignKey(Comunidad, on_delete=models.PROTECT, related_name="miembros")
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="membresia",
+    )
+    comunidad = models.ForeignKey(
+        Comunidad,
+        on_delete=models.PROTECT,
+        related_name="miembros",
+    )
     fecha_nacimiento = models.DateField("Fecha de nacimiento")
     genero = models.CharField("Género", max_length=20, choices=Genero, blank=True)
-    estado = models.CharField(max_length=16, choices=Estado, default=Estado.SOLICITADA, db_index=True)
+    estado = models.CharField(
+        max_length=16,
+        choices=Estado,
+        default=Estado.SOLICITADA,
+        db_index=True,
+    )
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 
@@ -221,12 +266,14 @@ class Miembro(models.Model):
 
     @property
     def puntos(self):
-        from . import gamificacion
+        from . import gamificacion  # noqa: PLC0415 (evita una importación circular)
+
         return gamificacion.calcular_puntos(self)
 
     @property
     def nivel(self):
-        from . import gamificacion
+        from . import gamificacion  # noqa: PLC0415 (evita una importación circular)
+
         puntos = self.puntos
         if puntos >= gamificacion.UMBRAL_MAESTRO:
             return self.Nivel.MAESTRO
@@ -240,13 +287,20 @@ class Miembro(models.Model):
 
 
 class InsigniaObtenida(models.Model):
-    miembro = models.ForeignKey(Miembro, on_delete=models.CASCADE, related_name="insignias_obtenidas")
+    miembro = models.ForeignKey(
+        Miembro,
+        on_delete=models.CASCADE,
+        related_name="insignias_obtenidas",
+    )
     clave = models.CharField(max_length=40)
     obtenida = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["miembro", "clave"], name="unique_member_badge"),
+            models.UniqueConstraint(
+                fields=["miembro", "clave"],
+                name="unique_member_badge",
+            ),
         ]
         ordering = ["-obtenida"]
 
@@ -255,7 +309,8 @@ class InsigniaObtenida(models.Model):
 
     @property
     def info(self):
-        from .gamificacion import INSIGNIAS
+        from .gamificacion import INSIGNIAS  # noqa: PLC0415 (evita una importación circular)
+
         return next((i for i in INSIGNIAS if i["clave"] == self.clave), None)
 
 
@@ -283,9 +338,18 @@ class CertificacionTalento(models.Model):
         CERTIFICADA = "certificada", "Certificada"
         RECHAZADA = "rechazada", "Rechazada"
 
-    miembro = models.ForeignKey(Miembro, on_delete=models.CASCADE, related_name="talentos")
+    miembro = models.ForeignKey(
+        Miembro,
+        on_delete=models.CASCADE,
+        related_name="talentos",
+    )
     talento = models.CharField("Talento", max_length=80)
-    estado = models.CharField(max_length=16, choices=Estado, default=Estado.PROPUESTA, db_index=True)
+    estado = models.CharField(
+        max_length=16,
+        choices=Estado,
+        default=Estado.PROPUESTA,
+        db_index=True,
+    )
     propuesto_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -329,86 +393,278 @@ class EventoComunidad(models.Model):
 
 
 class PerfilComunitario(models.Model):
-    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="perfil_comunitario")
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="perfil_comunitario",
+    )
     nombre = models.CharField("Nombre público", max_length=80)
-    nivel = models.CharField("Experiencia declarada", max_length=16, blank=True, choices=[("inicial","Principiante"),("intermedio","Intermedio"),("avanzado","Avanzado")])
+    nivel = models.CharField(
+        "Experiencia declarada",
+        max_length=16,
+        blank=True,
+        choices=[
+            ("inicial", "Principiante"),
+            ("intermedio", "Intermedio"),
+            ("avanzado", "Avanzado"),
+        ],
+    )
     experiencia = models.TextField("Sobre tu experiencia", max_length=1000, blank=True)
-    anos = models.PositiveSmallIntegerField("Años cultivando (opcional)", null=True, blank=True, validators=[MaxValueValidator(100)])
+    anos = models.PositiveSmallIntegerField(
+        "Años cultivando (opcional)",
+        null=True,
+        blank=True,
+        validators=[MaxValueValidator(100)],
+    )
     localidad = models.CharField("Ciudad o sector general", max_length=120, blank=True)
     visible = models.BooleanField("Mostrar mi perfil a la comunidad", default=False)
 
+    def __str__(self):
+        return self.nombre
+
+
 class JardinCompartido(models.Model):
-    jardin = models.OneToOneField("seguimiento.Jardin", on_delete=models.CASCADE, related_name="publicacion")
-    visible = models.BooleanField("Autorizo publicar este jardín y su ubicación aproximada", default=False)
+    jardin = models.OneToOneField(
+        "seguimiento.Jardin",
+        on_delete=models.CASCADE,
+        related_name="publicacion",
+    )
+    visible = models.BooleanField(
+        "Autorizo publicar este jardín y su ubicación aproximada",
+        default=False,
+    )
     localidad = models.CharField("Ciudad o sector (sin dirección)", max_length=120)
-    latitud = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(-90), MaxValueValidator(90)])
-    longitud = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(-180), MaxValueValidator(180)])
+    latitud = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+    )
+    longitud = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+    )
     actualizada = models.DateTimeField(auto_now=True)
 
-from .media_storage import forum_storage, attachment_path
+    def __str__(self):
+        return f"{self.localidad} · jardín {self.jardin_id}"
+
 
 class Pregunta(models.Model):
-    foto = models.ImageField(upload_to=attachment_path, storage=forum_storage, blank=True)
-    video = models.FileField(upload_to=attachment_path, storage=forum_storage, blank=True)
+    foto = models.ImageField(
+        upload_to=attachment_path,
+        storage=forum_storage,
+        blank=True,
+    )
+    video = models.FileField(
+        upload_to=attachment_path,
+        storage=forum_storage,
+        blank=True,
+    )
     enlace = models.URLField(blank=True, max_length=600)
     encuesta = models.JSONField(default=list, blank=True)
 
-    TIPOS=[('pregunta','Pregunta'),('experiencia','Experiencia'),('consejo','Consejo')]
-    tipo=models.CharField('Tipo de publicación',max_length=12,choices=TIPOS,default='pregunta')
-    guardada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='publicaciones_guardadas')
-    reportada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='publicaciones_reportadas')
-    comunidad = models.ForeignKey(Comunidad, null=True, blank=True, on_delete=models.PROTECT, related_name="temas")
-    visibilidad = models.CharField("Visibilidad", max_length=8, choices=[("publico","Público: cualquiera puede leer"),("privado","Privado: solo integrantes de la comunidad")], default="publico")
-    CATEGORIAS = [("cultivo","Cultivo"),("plagas","Plagas y enfermedades"),("riego","Riego"),("suelo","Suelo y nutrientes"),("experiencias","Experiencias"),("cosecha","Cosecha")]
-    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="preguntas_comunidad")
+    TIPOS = [
+        ("pregunta", "Pregunta"),
+        ("experiencia", "Experiencia"),
+        ("consejo", "Consejo"),
+    ]
+    tipo = models.CharField(
+        "Tipo de publicación",
+        max_length=12,
+        choices=TIPOS,
+        default="pregunta",
+    )
+    guardada_por = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="publicaciones_guardadas",
+    )
+    reportada_por = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="publicaciones_reportadas",
+    )
+    comunidad = models.ForeignKey(
+        Comunidad,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="temas",
+    )
+    visibilidad = models.CharField(
+        "Visibilidad",
+        max_length=8,
+        choices=[
+            ("publico", "Público: cualquiera puede leer"),
+            ("privado", "Privado: solo integrantes de la comunidad"),
+        ],
+        default="publico",
+    )
+    CATEGORIAS = [
+        ("cultivo", "Cultivo"),
+        ("plagas", "Plagas y enfermedades"),
+        ("riego", "Riego"),
+        ("suelo", "Suelo y nutrientes"),
+        ("experiencias", "Experiencias"),
+        ("cosecha", "Cosecha"),
+    ]
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="preguntas_comunidad",
+    )
     titulo = models.CharField("Título de tu pregunta", max_length=180)
     contenido = models.TextField("Describe tu pregunta o experiencia", max_length=5000)
-    categoria = models.CharField("Categoría", max_length=20, choices=CATEGORIAS, blank=True)
+    categoria = models.CharField(
+        "Categoría",
+        max_length=20,
+        choices=CATEGORIAS,
+        blank=True,
+    )
     resuelta = models.BooleanField(default=False)
     oculta = models.BooleanField(default=False)
     huella = models.CharField(max_length=64, editable=False)
     creada = models.DateTimeField(auto_now_add=True)
     actualizada = models.DateTimeField(auto_now=True)
+
     class Meta:
-        ordering = ["-creada","-pk"]
-        constraints = [models.CheckConstraint(condition=models.Q(visibilidad="publico") | models.Q(comunidad__isnull=False),name="private_topic_has_community"),models.UniqueConstraint(fields=["autor","huella"],condition=models.Q(oculta=False),name="community_unique_question")]
-        indexes = [models.Index(fields=["oculta","categoria","-creada"])]
+        ordering = ["-creada", "-pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(visibilidad="publico")
+                | models.Q(comunidad__isnull=False),
+                name="private_topic_has_community",
+            ),
+            models.UniqueConstraint(
+                fields=["autor", "huella"],
+                condition=models.Q(oculta=False),
+                name="community_unique_question",
+            ),
+        ]
+        indexes = [models.Index(fields=["oculta", "categoria", "-creada"])]
+
+    def __str__(self):
+        return self.titulo
+
 
 class Respuesta(models.Model):
-    padre = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT, related_name="hijos")
-    raiz = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT, related_name="descendientes")
+    padre = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="hijos",
+    )
+    raiz = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="descendientes",
+    )
     profundidad = models.PositiveSmallIntegerField(default=0)
-    pregunta = models.ForeignKey(Pregunta,on_delete=models.CASCADE,related_name="respuestas")
-    autor = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name="respuestas_comunidad")
-    contenido = models.TextField("Tu respuesta",max_length=4000)
-    huella = models.CharField(max_length=64,editable=False)
+    pregunta = models.ForeignKey(
+        Pregunta,
+        on_delete=models.CASCADE,
+        related_name="respuestas",
+    )
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="respuestas_comunidad",
+    )
+    contenido = models.TextField("Tu respuesta", max_length=4000)
+    huella = models.CharField(max_length=64, editable=False)
     oculta = models.BooleanField(default=False)
-    reportada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='respuestas_reportadas')
+    reportada_por = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="respuestas_reportadas",
+    )
     creada = models.DateTimeField(auto_now_add=True)
     actualizada = models.DateTimeField(auto_now=True)
+
     class Meta:
-        ordering = ["creada","pk"]
-        constraints = [models.UniqueConstraint(fields=["pregunta","autor","huella"],condition=models.Q(oculta=False),name="community_unique_answer")]
+        ordering = ["creada", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pregunta", "autor", "huella"],
+                condition=models.Q(oculta=False),
+                name="community_unique_answer",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Respuesta {self.pk} a la pregunta {self.pregunta_id}"
 
 
 class VotoPregunta(models.Model):
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    pregunta = models.ForeignKey(Pregunta,on_delete=models.CASCADE,related_name="votos")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pregunta = models.ForeignKey(
+        Pregunta,
+        on_delete=models.CASCADE,
+        related_name="votos",
+    )
     valor = models.SmallIntegerField()
+
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["usuario","pregunta"],name="unique_topic_vote"),models.CheckConstraint(condition=models.Q(valor__in=[-1,1]),name="valid_topic_vote")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["usuario", "pregunta"],
+                name="unique_topic_vote",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(valor__in=[-1, 1]),
+                name="valid_topic_vote",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Voto {self.valor:+d} de {self.usuario_id} en {self.pregunta_id}"
+
 
 class VotoRespuesta(models.Model):
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
-    respuesta = models.ForeignKey(Respuesta,on_delete=models.CASCADE,related_name="votos")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    respuesta = models.ForeignKey(
+        Respuesta,
+        on_delete=models.CASCADE,
+        related_name="votos",
+    )
     valor = models.SmallIntegerField()
+
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["usuario","respuesta"],name="unique_reply_vote"),models.CheckConstraint(condition=models.Q(valor__in=[-1,1]),name="valid_reply_vote")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["usuario", "respuesta"],
+                name="unique_reply_vote",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(valor__in=[-1, 1]),
+                name="valid_reply_vote",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Voto {self.valor:+d} de {self.usuario_id} en {self.respuesta_id}"
 
 
 class VotoEncuesta(models.Model):
-    pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE, related_name='votos_encuesta')
+    pregunta = models.ForeignKey(
+        Pregunta,
+        on_delete=models.CASCADE,
+        related_name="votos_encuesta",
+    )
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     opcion = models.PositiveSmallIntegerField()
+
     class Meta:
-        constraints = [models.UniqueConstraint(fields=['pregunta','usuario'], name='one_poll_vote_per_user')]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pregunta", "usuario"],
+                name="one_poll_vote_per_user",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Opción {self.opcion} de {self.usuario_id} en {self.pregunta_id}"

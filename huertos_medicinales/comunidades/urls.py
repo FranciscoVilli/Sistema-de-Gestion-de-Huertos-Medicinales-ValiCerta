@@ -1,19 +1,37 @@
 from django.urls import path
 
-from . import views, community
+from . import community
+from . import views
 
 app_name = "comunidades"
 urlpatterns = [
-    path('preguntas/<int:pk>/archivo/<str:kind>/', community.attachment, name='archivo'),
-    path('preguntas/<int:pk>/encuesta/', community.poll_vote, name='encuesta'),
+    path(
+        "preguntas/<int:pk>/archivo/<str:kind>/",
+        community.attachment,
+        name="archivo",
+    ),
+    path("preguntas/<int:pk>/encuesta/", community.poll_vote, name="encuesta"),
     path("preguntas/<int:pk>/guardar/", community.bookmark, name="guardar_pregunta"),
-    path("preguntas/<int:pk>/reportar/", community.reportar_pregunta, name="reportar_pregunta"),
-    path("respuestas/<int:pk>/reportar/", community.reportar_respuesta, name="reportar_respuesta"),
+    path(
+        "preguntas/<int:pk>/reportar/",
+        community.reportar_pregunta,
+        name="reportar_pregunta",
+    ),
+    path(
+        "respuestas/<int:pk>/reportar/",
+        community.reportar_respuesta,
+        name="reportar_respuesta",
+    ),
     path("grupos/nueva/", community.group_create, name="crear_grupo"),
     path("grupos/<uuid:pk>/unirme/", community.join_group, name="unirse_grupo"),
     path("grupos/<uuid:pk>/salir/", community.leave_group, name="salir_grupo"),
     path("preguntas/<int:pk>/votar/", community.vote, name="votar_pregunta"),
-    path("respuestas/<int:pk>/votar/", community.vote, {"reply":True}, name="votar_respuesta"),
+    path(
+        "respuestas/<int:pk>/votar/",
+        community.vote,
+        {"reply": True},
+        name="votar_respuesta",
+    ),
     path("", community.hub, name="listado"),
     path("reglas/", community.reglas, name="reglas"),
     path("ranking/", views.ranking, name="ranking"),
@@ -21,7 +39,11 @@ urlpatterns = [
     path("preguntas/nueva/", community.question_edit, name="nueva_pregunta"),
     path("preguntas/<int:pk>/", community.question, name="pregunta"),
     path("preguntas/<int:pk>/editar/", community.question_edit, name="editar_pregunta"),
-    path("preguntas/<int:pk>/estado/", community.question_action, name="estado_pregunta"),
+    path(
+        "preguntas/<int:pk>/estado/",
+        community.question_action,
+        name="estado_pregunta",
+    ),
     path("respuestas/<int:pk>/editar/", community.answer_edit, name="editar_respuesta"),
     path("perfil/editar/", community.profile_edit, name="editar_perfil"),
     path("perfil/<int:pk>/", community.profile, name="perfil"),
@@ -33,8 +55,24 @@ urlpatterns = [
     path("<uuid:pk>/huerto-real/", views.huerto_real, name="huerto_real"),
     path("<uuid:pk>/unirme/", views.solicitar_membresia, name="solicitar_membresia"),
     path("<uuid:pk>/miembros/", views.gestionar_miembros, name="gestionar_miembros"),
-    path("<uuid:pk>/miembros/agregar-por-codigo/", views.agregar_por_codigo, name="agregar_por_codigo"),
-    path("<uuid:pk>/miembros/<int:miembro_pk>/decidir/", views.decidir_miembro, name="decidir_miembro"),
-    path("<uuid:pk>/miembros/<int:miembro_pk>/retirar/", views.retirar_miembro, name="retirar_miembro"),
-    path("<uuid:pk>/miembros/<int:miembro_pk>/talento/", views.proponer_talento, name="proponer_talento"),
+    path(
+        "<uuid:pk>/miembros/agregar-por-codigo/",
+        views.agregar_por_codigo,
+        name="agregar_por_codigo",
+    ),
+    path(
+        "<uuid:pk>/miembros/<int:miembro_pk>/decidir/",
+        views.decidir_miembro,
+        name="decidir_miembro",
+    ),
+    path(
+        "<uuid:pk>/miembros/<int:miembro_pk>/retirar/",
+        views.retirar_miembro,
+        name="retirar_miembro",
+    ),
+    path(
+        "<uuid:pk>/miembros/<int:miembro_pk>/talento/",
+        views.proponer_talento,
+        name="proponer_talento",
+    ),
 ]

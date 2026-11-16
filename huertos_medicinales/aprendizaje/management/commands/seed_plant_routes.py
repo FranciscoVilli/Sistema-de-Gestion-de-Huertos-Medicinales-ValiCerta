@@ -4,6 +4,7 @@ No modifica ni archiva la ruta piloto de manzanilla (Capítulo 5): esta
 solo añade una ruta adicional, más temprana, para que el Módulo 1
 también la desbloquee. Idempotente: no duplica rutas en ejecuciones repetidas.
 """
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -33,18 +34,20 @@ class Command(BaseCommand):
             )
             route, created = RutaEducativa.objects.get_or_create(
                 slug=slug,
-                defaults=dict(
-                    nombre=nombre,
-                    especie=especie,
-                    estado="piloto",
-                    descripcion=(
+                defaults={
+                    "nombre": nombre,
+                    "especie": especie,
+                    "estado": "piloto",
+                    "descripcion": (
                         f"Se desbloquea al aprobar el Capítulo {numero} "
                         f"({chapter.titulo})."
                     ),
-                ),
+                },
             )
             route.requisitos.set([competency])
             count += created
         self.stdout.write(
-            self.style.SUCCESS(f"{count} rutas nuevas por planta. Existentes conservadas."),
+            self.style.SUCCESS(
+                f"{count} rutas nuevas por planta. Existentes conservadas.",
+            ),
         )

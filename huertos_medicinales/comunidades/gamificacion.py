@@ -1,5 +1,12 @@
 """Puntos e insignias por actividad real de cultivo. No miden avance educativo."""
 
+from huertos_medicinales.seguimiento.models import ActividadCalendario
+from huertos_medicinales.seguimiento.models import Observacion
+
+from .models import CertificacionTalento
+from .models import InsigniaObtenida
+from .models import Mision
+
 PUNTOS_ACTIVIDAD_COMPLETADA = 5
 PUNTOS_OBSERVACION = 3
 PUNTOS_TALENTO_CERTIFICADO = 20
@@ -36,7 +43,7 @@ INSIGNIAS = (
 
 
 def contar_actividades(usuario_id):
-    from huertos_medicinales.seguimiento.models import ActividadCalendario
+
     return ActividadCalendario.objects.filter(
         practica__participante_id=usuario_id,
         completada=True,
@@ -44,18 +51,19 @@ def contar_actividades(usuario_id):
 
 
 def contar_observaciones(usuario_id):
-    from huertos_medicinales.seguimiento.models import Observacion
+
     return Observacion.objects.filter(practica__participante_id=usuario_id).count()
 
 
 def contar_talentos_certificados(miembro):
-    from .models import CertificacionTalento
-    return miembro.talentos.filter(estado=CertificacionTalento.Estado.CERTIFICADA).count()
+
+    return miembro.talentos.filter(
+        estado=CertificacionTalento.Estado.CERTIFICADA,
+    ).count()
 
 
 def misiones_completadas(miembro):
-    from .models import Mision
-    from huertos_medicinales.seguimiento.models import ActividadCalendario
+
     completadas = ActividadCalendario.objects.filter(
         practica__participante_id=miembro.usuario_id,
         completada=True,
@@ -80,16 +88,22 @@ def calcular_puntos(miembro):
 
 
 def evaluar_insignias(miembro):
-    from .models import InsigniaObtenida
+
     actividades = contar_actividades(miembro.usuario_id)
     talentos = contar_talentos_certificados(miembro)
     obtenidas = set(
-        InsigniaObtenida.objects.filter(miembro=miembro).values_list("clave", flat=True),
+        InsigniaObtenida.objects.filter(miembro=miembro).values_list(
+            "clave",
+            flat=True,
+        ),
     )
     for insignia in INSIGNIAS:
         if insignia["clave"] in obtenidas:
             continue
-        if "umbral_actividades" in insignia and actividades >= insignia["umbral_actividades"]:
-            InsigniaObtenida.objects.create(miembro=miembro, clave=insignia["clave"])
-        elif "umbral_talentos" in insignia and talentos >= insignia["umbral_talentos"]:
+        if (
+            "umbral_actividades" in insignia
+            and actividades >= insignia["umbral_actividades"]
+        ) or (
+            "umbral_talentos" in insignia and talentos >= insignia["umbral_talentos"]
+        ):
             InsigniaObtenida.objects.create(miembro=miembro, clave=insignia["clave"])

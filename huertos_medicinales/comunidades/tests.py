@@ -15,7 +15,14 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def usuario(django_user_model):
-    return django_user_model.objects.create_user(email="comunidad@example.com", name="Cultivadora",fecha_nacimiento="1990-01-01",genero="otro",telefono="0990000000",direccion="Quito")
+    return django_user_model.objects.create_user(
+        email="comunidad@example.com",
+        name="Cultivadora",
+        fecha_nacimiento="1990-01-01",
+        genero="otro",
+        telefono="0990000000",
+        direccion="Quito",
+    )
 
 
 def payload():
@@ -100,14 +107,14 @@ def test_sin_confirmacion_o_coordenadas_validas_no_hay_solicitud(client, usuario
 
 def test_iniciativas_removed_and_rules_have_return(client, usuario):
     client.force_login(usuario)
-    assert client.get('/comunidades/iniciativas/').status_code == 404
-    for view in ('foro', 'comunidades', 'mapa'):
-        response = client.get(reverse('comunidades:listado'), {'vista': view})
+    assert client.get("/comunidades/iniciativas/").status_code == 404
+    for view in ("foro", "comunidades", "mapa"):
+        response = client.get(reverse("comunidades:listado"), {"vista": view})
         assert response.status_code == 200
-        assert '/comunidades/iniciativas/' not in response.content.decode()
-    response = client.get(reverse('comunidades:reglas'))
+        assert "/comunidades/iniciativas/" not in response.content.decode()
+    response = client.get(reverse("comunidades:reglas"))
     assert response.status_code == 200
-    assert response.content.decode().count('Regresar al foro') == 2
+    assert response.content.decode().count("Regresar al foro") == 2
     assert response.content.decode().count('class="rules-item"') == 5
 
 
@@ -135,7 +142,11 @@ def test_public_name_usa_el_nombre_de_cuenta_por_defecto(usuario, django_user_mo
 
 
 def test_public_name_respeta_perfil_comunitario_visible_u_oculto(usuario):
-    PerfilComunitario.objects.create(usuario=usuario, nombre="Jardinera Q", visible=True)
+    PerfilComunitario.objects.create(
+        usuario=usuario,
+        nombre="Jardinera Q",
+        visible=True,
+    )
     assert public_name(usuario) == "Jardinera Q"
     usuario.perfil_comunitario.visible = False
     usuario.perfil_comunitario.save()

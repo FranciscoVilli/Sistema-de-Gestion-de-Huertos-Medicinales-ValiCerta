@@ -62,11 +62,18 @@ class EmpaquetadoForm(forms.ModelForm):
     class Meta:
         model = Empaquetado
         fields = [
-            "peso_gramos", "indicaciones", "dosificacion", "contraindicaciones",
-            "region", "fecha_empaquetado",
+            "peso_gramos",
+            "indicaciones",
+            "dosificacion",
+            "contraindicaciones",
+            "region",
+            "fecha_empaquetado",
         ]
         widgets = {
             "indicaciones": forms.Textarea(attrs={"rows": 3}),
             "contraindicaciones": forms.Textarea(attrs={"rows": 3}),
-            "fecha_empaquetado": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+            "fecha_empaquetado": forms.DateInput(
+                format="%Y-%m-%d",
+                attrs={"type": "date"},
+            ),
         }

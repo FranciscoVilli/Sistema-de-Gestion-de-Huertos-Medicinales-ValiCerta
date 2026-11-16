@@ -1,19 +1,49 @@
-{% extends 'account/garden_layout.html' %}
+{% extends "account/garden_layout.html" %}
+
 {% block content %}
-<div class="welcome"><h1>¡Bienvenido de nuevo!</h1><p>Ingresa para continuar aprendiendo<br>y gestionando tu huerto medicinal.</p></div>
-{% if request.user.is_authenticated %}
-<p>Ya tienes una sesión iniciada.</p><a class="primary" href="{% url 'workspace' %}">Ir a mi espacio →</a>
-{% else %}
-<form method="post" action="{% url 'account_login' %}">
-{% csrf_token %}
-{% if form.non_field_errors %}<div class="errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
-{% for field in form %}{% if field.name != 'remember' %}
-<div class="field"><label for="{{ field.id_for_label }}">{% if field.name == 'login' %}Correo electrónico{% elif field.name == 'password' %}Contraseña{% else %}{{ field.label }}{% endif %}</label><div class="input-wrap"><svg aria-hidden="true"><use href="{% if field.name == 'password' %}#i-lock{% else %}#i-mail{% endif %}"/></svg>{% if field.name == 'login' %}<input type="email" name="login" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:'' }}" placeholder="Correo electrónico" autocomplete="username" maxlength="320" required>{% elif field.name == 'password' %}<input type="password" name="password" id="{{ field.id_for_label }}" placeholder="Contraseña" autocomplete="current-password" required>{% else %}{{ field }}{% endif %}{% if field.name == 'password' %}<button class="show-password" type="button" data-show-password="{{ field.id_for_label }}" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>{% endif %}</div>{% if field.errors %}<div class="errors" role="alert">{{ field.errors }}</div>{% endif %}</div>
-{% endif %}{% endfor %}
-<div class="options"><label>{{ form.remember }} Recordarme</label><a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a></div>
-{% if redirect_field_value %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">{% endif %}
-<button class="primary" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button>
-</form>
-<p class="register">¿No tienes una cuenta? <a href="{% url 'account_signup' %}{% if redirect_field_value %}?next={{ redirect_field_value|urlencode }}{% endif %}">Regístrate</a></p>
-{% endif %}
+  <div class="welcome">
+    <h1>¡Bienvenido de nuevo!</h1>
+    <p>
+      Ingresa para continuar aprendiendo
+      <br />
+      y gestionando tu huerto medicinal.
+    </p>
+  </div>
+  {% if request.user.is_authenticated %}
+    <p>Ya tienes una sesión iniciada.</p><a class="primary" href="{% url 'workspace' %}">Ir a mi espacio →</a>
+  {% else %}
+    <form method="post" action="{% url 'account_login' %}">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        {% if field.name != "remember" %}
+          <div class="field"><label for="{{ field.id_for_label }}">{% if field.name == "login" %}Correo electrónico{% elif field.name == "password" %}Contraseña{% else %}{{ field.label }}{% endif %}</label><div class="input-wrap"><svg aria-hidden="true"><use href="{% if field.name == 'password' %}#i-lock{% else %}#i-mail{% endif %}" /></svg>{% if field.name == "login" %}<input type="email"
+       name="login"
+       id="{{ field.id_for_label }}"
+       value="{{ field.value|default_if_none:'' }}"
+       placeholder="Correo electrónico"
+       autocomplete="username"
+       maxlength="320"
+       required />{% elif field.name == "password" %}<input type="password"
+       name="password"
+       id="{{ field.id_for_label }}"
+       placeholder="Contraseña"
+       autocomplete="current-password"
+       required />{% else %}{{ field }}{% endif %}{% if field.name == "password" %}<button class="show-password"
+        type="button"
+        data-show-password="{{ field.id_for_label }}"
+        aria-label="Mostrar contraseña"
+        aria-pressed="false">Mostrar</button>{% endif %}</div>{% if field.errors %}<div class="errors" role="alert">{{ field.errors }}</div>{% endif %}</div>
+        {% endif %}
+      {% endfor %}
+      <div class="options"><label>{{ form.remember }} Recordarme</label><a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a></div>
+      {% if redirect_field_value %}
+        <input type="hidden"
+               name="{{ redirect_field_name }}"
+               value="{{ redirect_field_value }}" />
+      {% endif %}
+      <button class="primary" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="register">¿No tienes una cuenta? <a href="{% url 'account_signup' %}{% if redirect_field_value %}?next={{ redirect_field_value|urlencode }}{% endif %}">Regístrate</a></p>
+  {% endif %}
 {% endblock %}

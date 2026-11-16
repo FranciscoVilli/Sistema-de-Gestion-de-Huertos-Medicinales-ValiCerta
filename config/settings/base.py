@@ -1,5 +1,6 @@
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
+
 import os
 from pathlib import Path
 
@@ -62,7 +63,6 @@ else:
 
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -310,9 +310,15 @@ SOCIALACCOUNT_FORMS = {"signup": "huertos_medicinales.users.forms.UserSocialSign
 # Confirm these operational/legal details before public deployment.
 LEGAL_PROFILE = {
     "responsable": "ValiCerta",
-    "razon_social": env("LEGAL_RAZON_SOCIAL", default="ValiCerta Soluciones Digitales S.A.S. — dato de prueba"),
+    "razon_social": env(
+        "LEGAL_RAZON_SOCIAL",
+        default="ValiCerta Soluciones Digitales S.A.S. — dato de prueba",
+    ),
     "email": env("LEGAL_EMAIL", default="privacidad@valicerta.invalid"),
-    "telefono": env("LEGAL_TELEFONO", default="+593 00 000 0000 — dato de prueba no operativo"),
+    "telefono": env(
+        "LEGAL_TELEFONO",
+        default="+593 00 000 0000 — dato de prueba no operativo",
+    ),
     "domicilio": env("LEGAL_DOMICILIO", default=""),
     "bases": env("LEGAL_BASES_TRATAMIENTO", default=""),
     "conservacion": env("LEGAL_CONSERVACION", default=""),

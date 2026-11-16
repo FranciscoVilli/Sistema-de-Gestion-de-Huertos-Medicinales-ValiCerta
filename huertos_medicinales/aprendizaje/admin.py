@@ -18,4 +18,3 @@ class IntentoAdmin(SoloLectura):
 @admin.register(Logro)
 class LogroAdmin(SoloLectura):
     list_display = ["user", "leccion", "xp", "created_at"]
-

@@ -1,3 +1,7 @@
-{% extends 'base.html' %}{% load static %}
-{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/terraza.css' %}"><link rel="stylesheet" href="{% static 'css/inicio-botanico.css' %}?v=shared-shell-2"><link rel="stylesheet" href="{% static 'css/botanical-secondary.css' %}">{% endblock %}
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/terraza.css' %}" /><link rel="stylesheet"
+      href="{% static 'css/inicio-botanico.css' %}?v=shared-shell-2" /><link rel="stylesheet" href="{% static 'css/botanical-secondary.css' %}" />{% endblock %}
 {% block bodyclass %}terrace-app home-botanical botanical-secondary{% endblock %}

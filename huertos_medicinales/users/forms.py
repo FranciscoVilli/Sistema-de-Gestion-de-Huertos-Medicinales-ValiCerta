@@ -90,9 +90,11 @@ class UserProfileForm(forms.ModelForm):
         fecha = self.cleaned_data["fecha_nacimiento"]
         hoy = timezone.localdate()
         if fecha > hoy:
-            raise forms.ValidationError("La fecha de nacimiento no puede ser futura.")
+            msg = "La fecha de nacimiento no puede ser futura."
+            raise forms.ValidationError(msg)
         if fecha < hoy.replace(year=hoy.year - 120):
-            raise forms.ValidationError("Ingresa una fecha de nacimiento válida.")
+            msg = "Ingresa una fecha de nacimiento válida."
+            raise forms.ValidationError(msg)
         return fecha
 
 

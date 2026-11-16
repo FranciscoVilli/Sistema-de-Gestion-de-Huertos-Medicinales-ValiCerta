@@ -11,8 +11,16 @@ NIVELES = ((0, "Aprendiz"), (75, "Oficial"), (150, "Maestro"))
 # asigna cuando esa fuente (u otra equivalente) la confirma explícitamente;
 # si no, el campo queda vacío en vez de asumirse.
 PROVINCIAS_SIERRA = (
-    "Pichincha", "Carchi", "Imbabura", "Cotopaxi", "Tungurahua",
-    "Bolívar", "Chimborazo", "Cañar", "Azuay", "Loja",
+    "Pichincha",
+    "Carchi",
+    "Imbabura",
+    "Cotopaxi",
+    "Tungurahua",
+    "Bolívar",
+    "Chimborazo",
+    "Cañar",
+    "Azuay",
+    "Loja",
 )
 FUENTE_SIERRA_NOMBRE = "MSP Ecuador (2017), Lineamientos de huertos medicinales, p. 20"
 FUENTE_SIERRA_URL = (
@@ -102,7 +110,7 @@ PLANTAS = (
         "temperatura": "caliente",
         "fuente_temperatura_nombre": (
             "Cachiguango (2012), Herbolaria simbólica andina, cit. en MSP "
-            "Ecuador (2017), p. 73 (\"Hierba buena y menta\")"
+            'Ecuador (2017), p. 73 ("Hierba buena y menta")'
         ),
         "fuente_temperatura_url": FUENTE_SIERRA_URL,
         "xp": 50,
@@ -206,8 +214,7 @@ PLANTAS = (
         ),
         "fuente_nombre": "NC State Extension · Salvia rosmarinus",
         "fuente_url": (
-            "https://plants.ces.ncsu.edu/plants/salvia-rosmarinus/"
-            "common-name/rosemary/"
+            "https://plants.ces.ncsu.edu/plants/salvia-rosmarinus/common-name/rosemary/"
         ),
         "luz": "sol",
         "sustrato": "ligero",

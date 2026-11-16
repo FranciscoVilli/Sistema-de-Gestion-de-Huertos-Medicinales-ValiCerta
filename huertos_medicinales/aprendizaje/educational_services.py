@@ -30,12 +30,14 @@ def ordered_chapters():
 
 def chapter_approved(user, chapter):
     return IntentoCapitulo.objects.filter(
-        user=user, evaluacion__capitulo=chapter, aprobado=True,
+        user=user,
+        evaluacion__capitulo=chapter,
+        aprobado=True,
     ).exists()
 
 
 def chapter_progress(user):
-    """Avance secuencial por todo el temario: cada capítulo requiere el anterior aprobado."""
+    """Avance por el temario: cada capítulo requiere el anterior aprobado."""
     rows = []
     unlocked = True
     for chapter in ordered_chapters():
@@ -47,22 +49,33 @@ def chapter_progress(user):
 
 def chapter_unlocked(user, chapter):
     return next(
-        (row["unlocked"] for row in chapter_progress(user) if row["chapter"].pk == chapter.pk),
+        (
+            row["unlocked"]
+            for row in chapter_progress(user)
+            if row["chapter"].pk == chapter.pk
+        ),
         False,
     )
 
 
 def lesson_progress(user, chapter):
-    """Avance secuencial dentro de un capítulo: cada lección requiere la anterior completada."""
+    """Avance dentro de un capítulo: cada lección requiere la anterior completada."""
     rows = []
     unlocked = True
     for lesson in visible_lessons(chapter).order_by("orden"):
         progress = ProgresoLeccion.objects.filter(
-            user=user, leccion=lesson, revision=lesson.revision,
+            user=user,
+            leccion=lesson,
+            revision=lesson.revision,
         ).first()
         completed = bool(progress and progress.completada)
         rows.append(
-            {"lesson": lesson, "progress": progress, "completed": completed, "unlocked": unlocked},
+            {
+                "lesson": lesson,
+                "progress": progress,
+                "completed": completed,
+                "unlocked": unlocked,
+            },
         )
         unlocked = unlocked and completed
     return rows
@@ -72,7 +85,11 @@ def lesson_unlocked(user, lesson):
     if not chapter_unlocked(user, lesson.capitulo):
         return False
     return next(
-        (row["unlocked"] for row in lesson_progress(user, lesson.capitulo) if row["lesson"].pk == lesson.pk),
+        (
+            row["unlocked"]
+            for row in lesson_progress(user, lesson.capitulo)
+            if row["lesson"].pk == lesson.pk
+        ),
         False,
     )
 
@@ -81,9 +98,12 @@ def lessons_ready(user, chapter):
     lessons = list(visible_lessons(chapter))
     return bool(lessons) and all(
         ProgresoLeccion.objects.filter(
-            user=user, leccion=l, revision=l.revision, completada=True,
+            user=user,
+            leccion=leccion,
+            revision=leccion.revision,
+            completada=True,
         ).exists()
-        for l in lessons
+        for leccion in lessons
     )
 
 
@@ -113,7 +133,9 @@ def snapshot(exam):
         "competencias": list(
             exam.competencias.order_by("pk").values_list("pk", flat=True),
         ),
-        "lecciones": [[l.pk, l.revision] for l in visible_lessons(exam.capitulo)],
+        "lecciones": [
+            [leccion.pk, leccion.revision] for leccion in visible_lessons(exam.capitulo)
+        ],
     }
 
 
@@ -126,7 +148,8 @@ def fingerprint(content):
 def route_status(user, route):
     acquired = set(
         CompetenciaAdquirida.objects.filter(user=user).values_list(
-            "competencia_id", flat=True,
+            "competencia_id",
+            flat=True,
         ),
     )
     requirements = list(route.requisitos.all())
@@ -150,7 +173,8 @@ def record_unlocks(user):
         if state["eligible"]:
             evidence = list(
                 CompetenciaAdquirida.objects.filter(
-                    user=user, competencia__in=state["requirements"],
+                    user=user,
+                    competencia__in=state["requirements"],
                 ).values("competencia_id", "intento_id"),
             )
             DesbloqueoRuta.objects.get_or_create(
@@ -165,8 +189,11 @@ def start_attempt(user, exam):
     get_user_model().objects.select_for_update().get(pk=user.pk)
     exam.full_clean()
     if not lessons_ready(user, exam.capitulo):
+        msg = (
+            "Completa las lecciones y sus actividades de comprensión antes de evaluar."
+        )
         raise ValidationError(
-            "Completa las lecciones y sus actividades de comprensión antes de evaluar.",
+            msg,
         )
     content = snapshot(exam)
     order = list(range(len(exam.preguntas)))
@@ -195,17 +222,20 @@ def submit_attempt(user, attempt_id, post):
         or exam.capitulo.estado not in VISIBLE
         or fingerprint(snapshot(exam)) != attempt.version
     ):
+        msg = "El contenido cambió. Inicia un nuevo intento con la versión actual."
         raise ValidationError(
-            "El contenido cambió. Inicia un nuevo intento con la versión actual.",
+            msg,
         )
     if not lessons_ready(user, exam.capitulo):
+        msg = "Completa las lecciones de esta versión antes de evaluar."
         raise ValidationError(
-            "Completa las lecciones de esta versión antes de evaluar.",
+            msg,
         )
     questions = attempt.contenido["preguntas"]
     answers = {str(i): post.getlist(f"q_{i}") for i in range(len(questions))}
     if any(not values for values in answers.values()):
-        raise ValidationError("Responde todas las preguntas antes de enviar.")
+        msg = "Responde todas las preguntas antes de enviar."
+        raise ValidationError(msg)
     hits = sum(correct(q, answers[str(i)]) for i, q in enumerate(questions))
     attempt.respuestas = answers
     attempt.porcentaje = (hits * 100) // len(questions)
@@ -215,7 +245,9 @@ def submit_attempt(user, attempt_id, post):
     if attempt.aprobado:
         for competency_id in attempt.contenido["competencias"]:
             CompetenciaAdquirida.objects.get_or_create(
-                user=user, competencia_id=competency_id, defaults={"intento": attempt},
+                user=user,
+                competencia_id=competency_id,
+                defaults={"intento": attempt},
             )
         record_unlocks(user)
     return attempt

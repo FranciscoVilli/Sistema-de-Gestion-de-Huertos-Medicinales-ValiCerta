@@ -1,1 +1,5 @@
-{% extends 'producto/botanical_base.html' %}{% block title %}No pudimos completar la solicitud · Huertos{% endblock %}{% block main %}<article class="container account-page"><p class="eyebrow">AYUDA PARA CONTINUAR</p><h1>No pudimos completar la solicitud</h1><p>Actualiza la página y vuelve a intentarlo.</p><a class="btn" href="{% url 'home' %}">Volver al inicio</a></article>{% endblock %}
+{% extends "producto/botanical_base.html" %}
+
+{% block title %}No pudimos completar la solicitud · Huertos{% endblock %}{% block main %}<article class="container account-page"><p class="eyebrow">AYUDA PARA CONTINUAR</p><h1>No pudimos completar la solicitud</h1>
+<p>Actualiza la página y vuelve a intentarlo.</p><a class="btn"
+   href="{% url 'home' %}">Volver al inicio</a></article>{% endblock %}

@@ -1,44 +1,80 @@
-{% extends 'producto/base.html' %}{% load static %}{% block title %}Bitácora de {{ practica.titulo }} · Huertos{% endblock %}{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/bitacora.css' %}">{% endblock %}{% block javascript %}{{ block.super }}<script defer src="{% static 'js/bitacora.js' %}"></script>{% endblock %}{% block workspace %}<a class="back-link" href="{% url 'seguimiento:detalle' practica.pk %}">← {{ practica.titulo }}</a>
+{% extends "producto/base.html" %}
+
+{% load static %}
+
+{% block title %}Bitácora de {{ practica.titulo }} · Huertos{% endblock %}{% block css %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/bitacora.css' %}" />{% endblock %}{% block javascript %}{{ block.super }}<script defer src="{% static 'js/bitacora.js' %}"></script>{% endblock %}{% block workspace %}<a class="back-link" href="{% url 'seguimiento:detalle' practica.pk %}">← {{ practica.titulo }}</a>
 <section class="bitacora-page" data-bitacora>
-<header class="bitacora-header">
-<div class="bitacora-title"><span class="bitacora-icon" aria-hidden="true">📖</span><div><h1>Bitácora del cultivo</h1><p>Historial de cuidados y observaciones de tu planta, en orden cronológico.</p></div></div>
-<div class="bitacora-stats">
-<span class="bitacora-stat"><span aria-hidden="true">📚</span>{{ total_registros }} registro{{ total_registros|pluralize }} total{{ total_registros|pluralize:",es" }}</span>
-<span class="bitacora-stat"><span aria-hidden="true">📅</span>{{ total_esta_semana }} esta semana</span>
-<span class="bitacora-stat"><span aria-hidden="true">📷</span>{{ total_con_foto }} con foto</span>
-</div>
-</header>
-<div class="bitacora-toolbar">
-<label class="bitacora-search"><span class="sr-only">Buscar en la bitácora</span><svg aria-hidden="true"><use href="#i-note"/></svg><input type="search" data-bitacora-search placeholder="Buscar en la bitácora..."></label>
-<div class="bitacora-filters" role="group" aria-label="Filtrar por tipo">
-<button type="button" class="bitacora-pill is-active" data-bitacora-filter="todos">Todos</button>
-<button type="button" class="bitacora-pill" data-bitacora-filter="riego">💧 Riegos</button>
-<button type="button" class="bitacora-pill" data-bitacora-filter="poda">✂️ Poda</button>
-<button type="button" class="bitacora-pill" data-bitacora-filter="observaciones">🔎 Observaciones</button>
-<button type="button" class="bitacora-pill" data-bitacora-filter="fotos">📷 Fotos</button>
-</div>
-<label class="bitacora-sort">Ordenar por:
-<select onchange="location.href=this.value">
-<option value="?orden=recientes" {% if orden == 'recientes' %}selected{% endif %}>Más recientes</option>
-<option value="?orden=antiguos" {% if orden == 'antiguos' %}selected{% endif %}>Más antiguos</option>
-</select>
-</label>
-</div>
-<ol class="bitacora-timeline">
-{% for fila in filas %}<li class="bitacora-entry" data-grupo="{{ fila.grupo }}" data-foto="{% if fila.item.foto %}1{% else %}0{% endif %}">
-<div class="bitacora-date"><span>{{ fila.item.fecha|date:'d M' }}</span><small>{{ fila.item.fecha|date:'Y' }}</small></div>
-<article class="bitacora-card">
-<span class="bitacora-type-icon" aria-hidden="true">{% if fila.tipo == 'riego' %}💧{% elif fila.tipo == 'poda' %}✂️{% elif fila.tipo == 'limpieza' %}🍂{% elif fila.tipo == 'revision' %}🔎{% else %}📝{% endif %}</span>
-<div class="bitacora-card-body">
-<h2>{{ fila.item.accion }}</h2>
-<p class="bitacora-resultado"><strong>Resultado observado:</strong> {{ fila.item.resultado }}</p>
-{% if fila.item.pregunta %}<p class="bitacora-duda"><strong>Dudas o dificultades:</strong> {{ fila.item.pregunta }}</p>{% endif %}
-{% if fila.item.video_url %}<a class="text-link" href="{{ fila.item.video_url }}" target="_blank" rel="noopener noreferrer">▶ Ver video</a>{% endif %}
-</div>
-{% if fila.item.foto %}<img class="bitacora-foto" src="{{ fila.item.foto.url }}" alt="Foto registrada el {{ fila.item.fecha|date:'d/m/Y' }}" loading="lazy">{% endif %}
-</article>
-</li>{% empty %}<li class="bitacora-empty"><p>Aún no hay observaciones. Registra qué haces y qué cambia a lo largo del cultivo.</p></li>{% endfor %}
-</ol>
-<p class="bitacora-sin-resultados" data-bitacora-sin-resultados hidden>No encontramos registros con ese filtro o búsqueda.</p>
+  <header class="bitacora-header">
+    <div class="bitacora-title">
+      <span class="bitacora-icon" aria-hidden="true">📖</span>
+      <div>
+        <h1>Bitácora del cultivo</h1>
+        <p>Historial de cuidados y observaciones de tu planta, en orden cronológico.</p>
+      </div>
+    </div>
+    <div class="bitacora-stats">
+      <span class="bitacora-stat"><span aria-hidden="true">📚</span>{{ total_registros }} registro{{ total_registros|pluralize }} total{{ total_registros|pluralize:",es" }}</span>
+      <span class="bitacora-stat"><span aria-hidden="true">📅</span>{{ total_esta_semana }} esta semana</span>
+      <span class="bitacora-stat"><span aria-hidden="true">📷</span>{{ total_con_foto }} con foto</span>
+    </div>
+  </header>
+  <div class="bitacora-toolbar">
+    <label class="bitacora-search">
+      <span class="sr-only">Buscar en la bitácora</span><svg aria-hidden="true">
+        <use href="#i-note" />
+      </svg><input type="search"
+       data-bitacora-search
+       placeholder="Buscar en la bitácora..." />
+    </label>
+    <div class="bitacora-filters" role="group" aria-label="Filtrar por tipo">
+      <button type="button"
+              class="bitacora-pill is-active"
+              data-bitacora-filter="todos">Todos</button>
+      <button type="button" class="bitacora-pill" data-bitacora-filter="riego">💧 Riegos</button>
+      <button type="button" class="bitacora-pill" data-bitacora-filter="poda">✂️ Poda</button>
+      <button type="button"
+              class="bitacora-pill"
+              data-bitacora-filter="observaciones">🔎 Observaciones</button>
+      <button type="button" class="bitacora-pill" data-bitacora-filter="fotos">📷 Fotos</button>
+    </div>
+    <label class="bitacora-sort">
+      Ordenar por:
+      <select onchange="location.href=this.value">
+        <option value="?orden=recientes"
+                {% if orden == 'recientes' %}selected{% endif %}>Más recientes</option>
+        <option value="?orden=antiguos"
+                {% if orden == 'antiguos' %}selected{% endif %}>Más antiguos</option>
+      </select>
+    </label>
+  </div>
+  <ol class="bitacora-timeline">
+    {% for fila in filas %}
+      <li class="bitacora-entry"
+          data-grupo="{{ fila.grupo }}"
+          data-foto="{% if fila.item.foto %}1{% else %}0{% endif %}">
+        <div class="bitacora-date"><span>{{ fila.item.fecha|date:'d M' }}</span><small>{{ fila.item.fecha|date:'Y' }}</small></div>
+        <article class="bitacora-card">
+          <span class="bitacora-type-icon" aria-hidden="true">{% if fila.tipo == "riego" %}💧{% elif fila.tipo == "poda" %}✂️{% elif fila.tipo == "limpieza" %}🍂{% elif fila.tipo == "revision" %}🔎{% else %}📝{% endif %}</span>
+          <div class="bitacora-card-body">
+            <h2>{{ fila.item.accion }}</h2>
+            <p class="bitacora-resultado"><strong>Resultado observado:</strong> {{ fila.item.resultado }}</p>
+            {% if fila.item.pregunta %}<p class="bitacora-duda"><strong>Dudas o dificultades:</strong> {{ fila.item.pregunta }}</p>{% endif %}
+            {% if fila.item.video_url %}<a class="text-link"
+   href="{{ fila.item.video_url }}"
+   target="_blank"
+   rel="noopener noreferrer">▶ Ver video</a>{% endif %}
+          </div>
+          {% if fila.item.foto %}
+            <img class="bitacora-foto"
+                 src="{{ fila.item.foto.url }}"
+                 alt="Foto registrada el {{ fila.item.fecha|date:'d/m/Y' }}"
+                 loading="lazy" />
+          {% endif %}
+        </article>
+      </li>{% empty %}<li class="bitacora-empty"><p>Aún no hay observaciones. Registra qué haces y qué cambia a lo largo del cultivo.</p></li>{% endfor %}
+  </ol>
+  <p class="bitacora-sin-resultados"
+     data-bitacora-sin-resultados
+     hidden>No encontramos registros con ese filtro o búsqueda.</p>
 </section>
 {% endblock %}

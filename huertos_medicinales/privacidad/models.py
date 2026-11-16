@@ -30,5 +30,3 @@ class AceptacionCondiciones(models.Model):
 
     def __str__(self):
         return f"Condiciones {self.version}: {self.usuario_id}"
-
-
