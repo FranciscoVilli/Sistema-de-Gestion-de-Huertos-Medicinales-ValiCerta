@@ -1,0 +1,86 @@
+account
+ [X] 0001_initial
+ [X] 0002_email_max_length
+ [X] 0003_alter_emailaddress_create_unique_verified_email
+ [X] 0004_alter_emailaddress_drop_unique_email
+ [X] 0005_emailaddress_idx_upper_email
+ [X] 0006_emailaddress_lower
+ [X] 0007_emailaddress_idx_email
+ [X] 0008_emailaddress_unique_primary_email_fixup
+ [X] 0009_emailaddress_unique_primary_email
+admin
+ [X] 0001_initial
+ [X] 0002_logentry_remove_auto_add
+ [X] 0003_logentry_add_action_flag_choices
+aprendizaje
+ [X] 0001_initial
+ [X] 0002_intentoevaluacion
+ [X] 0003_bloqueeducativo_competencia_fuenteeducativa_and_more
+ [X] 0004_alter_evaluacioneducativa_preguntas_and_more
+auth
+ [X] 0001_initial
+ [X] 0002_alter_permission_name_max_length
+ [X] 0003_alter_user_email_max_length
+ [X] 0004_alter_user_username_opts
+ [X] 0005_alter_user_last_login_null
+ [X] 0006_require_contenttypes_0002
+ [X] 0007_alter_validators_add_error_messages
+ [X] 0008_alter_user_username_max_length
+ [X] 0009_alter_user_last_name_max_length
+ [X] 0010_alter_group_name_max_length
+ [X] 0011_update_proxy_permissions
+ [X] 0012_alter_user_first_name_max_length
+comunidades
+ [X] 0001_initial
+ [X] 0002_comunidad_plantas_destacadas
+ [X] 0003_jardincompartido_perfilcomunitario_pregunta_and_more
+ [X] 0004_miembro_certificaciontalento
+ [X] 0005_huertoreal_bodega
+ [X] 0006_mision_insigniaobtenida
+ [X] 0007_votopregunta_votorespuesta_comunidad_grupo_virtual_and_more
+ [X] 0008_pregunta_guardada_por_pregunta_tipo
+ [X] 0009_alter_pregunta_categoria_alter_pregunta_tipo
+ [X] 0010_pregunta_encuesta_pregunta_enlace_pregunta_foto_and_more
+ [X] 0011_remove_huertoreal_direccion_and_more
+ [X] 0012_alter_pregunta_foto_alter_pregunta_video
+ [X] 0013_pregunta_reportada_por_respuesta_reportada_por
+contenttypes
+ [X] 0001_initial
+ [X] 0002_remove_content_type_name
+mfa
+ [X] 0001_initial
+ [X] 0002_authenticator_timestamps
+ [X] 0003_authenticator_type_uniq
+privacidad
+ [X] 0001_initial
+ [X] 0002_remove_solicitudderecho_usuario_and_more
+seguimiento
+ [X] 0001_initial
+ [X] 0002_alter_practica_options_observacion_foto_and_more
+ [X] 0003_practica_posicion_jardin_practica_jardin_and_more
+ [X] 0004_actividadcalendario
+ [X] 0005_jardin_clima
+ [X] 0006_actividadcalendario_parte_usada_and_more
+ [X] 0007_alter_practica_options_delete_devolucion
+ [X] 0008_actividadcalendario_recordatorio_dias_antes
+ [X] 0009_alter_actividadcalendario_tipo
+ [X] 0010_actividadcalendario_tipo_texto_libre
+sessions
+ [X] 0001_initial
+sites
+ [X] 0001_initial
+ [X] 0002_alter_domain_unique
+ [X] 0003_set_site_domain_and_name
+ [X] 0004_alter_options_ordering_domain
+socialaccount
+ [X] 0001_initial
+ [X] 0002_token_max_lengths
+ [X] 0003_extra_data_default_dict
+ [X] 0004_app_provider_id_settings
+ [X] 0005_socialtoken_nullable_app
+ [X] 0006_alter_socialaccount_extra_data
+users
+ [X] 0001_initial
+ [X] 0002_user_codigo_unico_user_direccion_and_more
+ [X] 0003_alter_user_name
+No changes detected

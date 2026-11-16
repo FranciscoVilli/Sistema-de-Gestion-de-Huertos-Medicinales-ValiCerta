@@ -17,9 +17,14 @@ uv sync --locked
 docker compose -f compose.database.yml up -d --wait
 $env:DJANGO_READ_DOT_ENV_FILE = 'True'
 uv run python manage.py migrate
+uv run python manage.py seed_curriculum
+uv run python manage.py seed_plant_routes
+uv run python manage.py agregar_saberes_ancestrales
 uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
+
+Sin `seed_curriculum` y `seed_plant_routes` el módulo Aprender aparece vacío.
 
 Abrir http://127.0.0.1:8000/ y el panel http://127.0.0.1:8000/admin/.
 
@@ -39,4 +44,4 @@ Detener la base local sin borrar datos:
 docker compose -f compose.database.yml stop
 ```
 
-La portada es la página de ejemplo de la plantilla. Los mockups y las funciones de negocio aún no están implementados. Falta configurar fotografías y correo real antes de un despliegue de producción.
+Antes de un despliegue de producción falta configurar el correo real (SMTP) y el almacenamiento remoto de fotografías. La guía completa y el recorrido de demostración están en `README.md`; la documentación de la Versión 1 está en `docs/v1/`.

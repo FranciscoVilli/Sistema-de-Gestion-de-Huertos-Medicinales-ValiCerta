@@ -155,6 +155,9 @@ class EventoPractica(models.Model):
 
 
 class ActividadCalendario(models.Model):
+    # Categorias sugeridas. No son una lista cerrada: el campo `tipo` acepta
+    # texto libre (HU-007) y estas claves solo activan el aviso lunar, los
+    # colores y las estadisticas del calendario.
     TIPOS = [
         ("preparacion", "Preparación de la tierra"),
         ("siembra", "Siembra"),
@@ -168,6 +171,7 @@ class ActividadCalendario(models.Model):
         ("empaquetado", "Empaquetado"),
         ("otro", "Otro cuidado"),
     ]
+    ETIQUETAS_TIPO = dict(TIPOS)
     TECNICAS = [("surcos", "Surcos"), ("andenes", "Andenes o terrazas"), ("camellones", "Camellones")]
     PROPAGACIONES = [("semilla", "Semilla"), ("estaca", "Estaca"), ("esqueje", "Esqueje"), ("plantula", "Plántula")]
     PARTES = [
@@ -175,7 +179,9 @@ class ActividadCalendario(models.Model):
         ("semillas_raices", "Semillas o raíces"),
     ]
     practica = models.ForeignKey(Practica, on_delete=models.PROTECT, related_name="actividades_calendario")
-    tipo = models.CharField("Actividad", max_length=60, choices=TIPOS)
+    # Sin `choices` a proposito (INC-01): la interfaz permite escribir la
+    # actividad libremente y sugiere las categorias de TIPOS.
+    tipo = models.CharField("Actividad", max_length=60)
     fecha = models.DateField("Fecha")
     hora = models.TimeField("Hora", blank=True, null=True)
     tecnica = models.CharField(
@@ -220,6 +226,15 @@ class ActividadCalendario(models.Model):
 
     def __str__(self):
         return f"{self.get_tipo_display()} · {self.practica} · {self.fecha}"
+
+    def get_tipo_display(self):
+        """Etiqueta de la categoria conocida o, si es texto libre, el texto tal cual."""
+        return self.ETIQUETAS_TIPO.get(self.tipo, self.tipo)
+
+    @property
+    def tipo_categoria(self):
+        """Clave CSS segura: la categoria conocida o "otro" para texto libre."""
+        return self.tipo if self.tipo in self.ETIQUETAS_TIPO else "otro"
 
     class Meta:
         ordering = ["fecha", "hora", "pk"]
