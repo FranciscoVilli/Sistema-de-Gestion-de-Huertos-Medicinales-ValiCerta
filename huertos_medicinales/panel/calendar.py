@@ -18,7 +18,10 @@ from huertos_medicinales.seguimiento.models import ActividadCalendario
 from huertos_medicinales.seguimiento.models import Practica
 
 
-TIPO_POR_ETIQUETA = {etiqueta.lower(): valor for valor, etiqueta in ActividadCalendario.TIPOS}
+TIPO_POR_ETIQUETA = {
+    **{valor: valor for valor, _ in ActividadCalendario.TIPOS},
+    **{etiqueta.lower(): valor for valor, etiqueta in ActividadCalendario.TIPOS},
+}
 
 
 class TipoLibreMixin:
@@ -34,6 +37,10 @@ class TipoLibreMixin:
             max_length=60,
             widget=forms.TextInput(attrs={"list": "actividad-sugerencias", "placeholder": "Riego, siembra, cosecha..."}),
         )
+        instancia = getattr(self, "instance", None)
+        if instancia is not None and instancia.pk:
+            # Al editar se muestra la etiqueta ("Ritual de siembra"), no la clave interna.
+            self.initial["tipo"] = instancia.get_tipo_display()
 
     def clean_tipo(self):
         valor = self.cleaned_data["tipo"].strip()
@@ -143,7 +150,11 @@ def nueva(request, pk=None):
         return redirect(reverse("calendar")+"?dia="+activity.fecha.isoformat())
     data = form.data if form.is_bound else form.initial
     fecha_actual = parse_date(str(data.get("fecha","")), None)
-    luna = recomendacion(data.get("tipo",""), fecha_actual, data.get("parte_usada","")) if fecha_actual else None
+    tipo_escrito = str(data.get("tipo", "")).strip()
+    tipo_clave = TIPO_POR_ETIQUETA.get(tipo_escrito.lower(), tipo_escrito)
+    luna = None
+    if fecha_actual:
+        luna = recomendacion(tipo_clave, fecha_actual, data.get("parte_usada", ""))
     sin_cultivos_activos = instance is None and not form.fields["practica"].queryset.exists()
     return render(request,"panel/calendario_form.html",{"form":form,"editing":instance is not None,"luna":luna,"types":ActividadCalendario.TIPOS,"sin_cultivos_activos":sin_cultivos_activos})
 

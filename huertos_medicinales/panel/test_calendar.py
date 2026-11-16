@@ -55,6 +55,36 @@ def test_tipo_texto_libre_con_sugerencias(client,data):
     b=ActividadCalendario.objects.get(practica=p,fecha=date(2026,10,29))
     assert b.tipo=="Fertilizar con compost" and b.get_tipo_display()=="Fertilizar con compost"
 
+def test_texto_libre_se_muestra_tal_cual(client, data):
+    p, _ = data
+    libre = ActividadCalendario.objects.create(
+        practica=p,
+        fecha=date(2026, 10, 20),
+        tipo="Abonar con ceniza",
+    )
+    assert libre.get_tipo_display() == "Abonar con ceniza"
+    assert libre.tipo_categoria == "otro"
+    riego = ActividadCalendario.objects.create(
+        practica=p,
+        fecha=date(2026, 10, 21),
+        tipo="riego",
+    )
+    assert riego.get_tipo_display() == "Riego"
+    assert riego.tipo_categoria == "riego"
+
+
+def test_editar_muestra_la_etiqueta_y_conserva_el_aviso_lunar(client, data):
+    p, _ = data
+    actividad = ActividadCalendario.objects.create(
+        practica=p,
+        fecha=date(2026, 11, 24),
+        tipo="siembra",
+    )
+    respuesta = client.get(reverse("calendar_edit", args=[actividad.pk]))
+    assert respuesta.context["form"]["tipo"].value() == "Siembra"
+    assert respuesta.context["luna"]["ideal"]  # 24-11-2026 es luna llena
+
+
 def test_sin_cultivos_activos_invita_a_ir_al_jardin(client,data):
     p,foreign=data
     p.estado="finalizada"; p.save()
