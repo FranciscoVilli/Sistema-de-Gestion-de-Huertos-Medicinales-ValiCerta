@@ -51,13 +51,17 @@ def test_privacy_markers_profiles_and_withdrawal(client,people):
  Practica.objects.create(participante=a,jardin=g,posicion=1,titulo='Menta',planta='menta',inicio=date.today(),espacio='Dirección privada',objetivo='Observar')
  api=reverse('comunidades:map_data');assert client.get(api).json()['markers']==[]
  share=reverse('comunidades:compartir',args=[g.pk])
+ workspace=reverse('workspace')
  assert client.post(share,{'visible':'on'}).status_code==302
  assert client.get(api).json()['markers']==[]
+ inicio=client.get(workspace,{'jardin':g.pk})
+ assert b'garden-sharing' in inicio.content and not inicio.context['garden_compartido']
  profile=PerfilComunitario.objects.create(usuario=a,nombre='Ana',visible=True,nivel='inicial')
  sin_ubicacion=Jardin.objects.create(propietario=a,nombre='Sin ubicación')
  assert client.post(reverse('comunidades:compartir',args=[sin_ubicacion.pk]),{'visible':'on'}).status_code==302
  assert not JardinCompartido.objects.filter(jardin=sin_ubicacion,visible=True).exists()
  assert client.post(share,{'visible':'on'}).status_code==302
+ assert client.get(workspace,{'jardin':g.pk}).context['garden_compartido']
  content=client.get(api).json();assert len(content['markers'])==1 and content['markers'][0]['plants']==['Menta'] and content['markers'][0]['location']=='Quito'
  assert 'Dirección privada' not in str(content) and a.email not in str(content)
  client.logout()
