@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import transaction
+from django.db.models import Count
 
 from huertos_medicinales.common.admin import SoloLectura
 
@@ -117,16 +118,21 @@ class ModeracionComunitaria(SoloLectura):
     def retirar_publicaciones(self, request, queryset):
         count=queryset.update(oculta=True)
         self.message_user(request,f'{count} publicaciones retiradas.')
+    @admin.display(description='Reportes', ordering='_reportes')
+    def reportes(self, obj):
+        return obj._reportes
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(_reportes=Count('reportada_por', distinct=True)).order_by('-_reportes','-creada')
 
 @admin.register(Pregunta)
 class PreguntaAdmin(ModeracionComunitaria):
-    list_display=['titulo','autor','categoria','resuelta','oculta','creada']
+    list_display=['titulo','autor','categoria','resuelta','oculta','reportes','creada']
     list_filter=['oculta','resuelta','categoria']
     search_fields=['titulo','contenido']
 
 @admin.register(Respuesta)
 class RespuestaAdmin(ModeracionComunitaria):
-    list_display=['pregunta','autor','oculta','creada']
+    list_display=['pregunta','autor','oculta','reportes','creada']
     list_filter=['oculta']
     search_fields=['contenido']
 

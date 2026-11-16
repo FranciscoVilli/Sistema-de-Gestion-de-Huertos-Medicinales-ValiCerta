@@ -129,6 +129,22 @@ def test_bookmarks_respect_private_access_and_kind_filters(client,forum):
     assert public.titulo.encode() in response.content and private.titulo.encode() not in response.content
     assert response.context['profile_percentage']==100
 
+def test_report_question_and_answer_for_moderation(client,forum):
+    owner,member,outsider,group,membership,private,public,answer=forum
+    client.force_login(member)
+    url=reverse('comunidades:reportar_pregunta',args=[private.pk])
+    assert client.post(url,{},HTTP_X_REQUESTED_WITH='XMLHttpRequest').json()['reportada']
+    assert private in member.publicaciones_reportadas.all()
+    assert 'Reportada a moderación'.encode() in client.get(reverse('comunidades:pregunta',args=[private.pk])).content
+    client.force_login(owner)
+    assert client.get(reverse('comunidades:pregunta',args=[private.pk])).context['question'].can_edit
+    url_resp=reverse('comunidades:reportar_respuesta',args=[answer.pk])
+    assert client.post(url_resp,{},HTTP_X_REQUESTED_WITH='XMLHttpRequest').json()['reportada']
+    assert answer in owner.respuestas_reportadas.all()
+    client.force_login(outsider)
+    assert client.post(url,{}).status_code==404
+    assert client.post(url_resp,{}).status_code==404
+
 def test_sections_are_separate_and_empty_membership_is_explicit(client,forum):
     owner,member,outsider,group,*_=forum
     client.force_login(owner)

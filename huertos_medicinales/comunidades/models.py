@@ -356,6 +356,7 @@ class Pregunta(models.Model):
     TIPOS=[('pregunta','Pregunta'),('experiencia','Experiencia'),('consejo','Consejo')]
     tipo=models.CharField('Tipo de publicación',max_length=12,choices=TIPOS,default='pregunta')
     guardada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='publicaciones_guardadas')
+    reportada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='publicaciones_reportadas')
     comunidad = models.ForeignKey(Comunidad, null=True, blank=True, on_delete=models.PROTECT, related_name="temas")
     visibilidad = models.CharField("Visibilidad", max_length=8, choices=[("publico","Público: cualquiera puede leer"),("privado","Privado: solo integrantes de la comunidad")], default="publico")
     CATEGORIAS = [("cultivo","Cultivo"),("plagas","Plagas y enfermedades"),("riego","Riego"),("suelo","Suelo y nutrientes"),("experiencias","Experiencias"),("cosecha","Cosecha")]
@@ -382,6 +383,7 @@ class Respuesta(models.Model):
     contenido = models.TextField("Tu respuesta",max_length=4000)
     huella = models.CharField(max_length=64,editable=False)
     oculta = models.BooleanField(default=False)
+    reportada_por=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='respuestas_reportadas')
     creada = models.DateTimeField(auto_now_add=True)
     actualizada = models.DateTimeField(auto_now=True)
     class Meta:

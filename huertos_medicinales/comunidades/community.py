@@ -118,8 +118,10 @@ def hub(request):
     page=Paginator(questions,6).get_page(request.GET.get('page'))
     decorate(page.object_list,request.user)
     saved_ids=set(request.user.publicaciones_guardadas.values_list('pk',flat=True)) if request.user.is_authenticated else set()
+    reported_ids=set(request.user.publicaciones_reportadas.values_list('pk',flat=True)) if request.user.is_authenticated else set()
     for post in page.object_list:
         post.saved=post.pk in saved_ids
+        post.reported=post.pk in reported_ids
         words=(post.titulo+' '+post.contenido).casefold()
         species=None
         for text in (post.titulo.casefold(),words):
@@ -164,6 +166,7 @@ def hub(request):
             decorate(group_page.object_list,request.user)
             for post in group_page.object_list:
                 post.saved=post.pk in saved_ids
+                post.reported=post.pk in reported_ids
                 species=next((name for name in ('menta','manzanilla','calendula','romero') if name in (post.titulo+' '+post.contenido).lower().replace('é','e')),None)
                 post.thumbnail='images/huertos/plantas/'+species+'.png' if species else 'images/huertos/comunidad-brote.png'
     recommended = list(groups.exclude(pk__in=my_groups.values_list('pk',flat=True)).annotate(approved_members=Count('miembros',filter=Q(miembros__estado='aprobada'),distinct=True)).order_by('-approved_members','nombre')[:3])
@@ -233,6 +236,7 @@ def question_edit(request,pk=None):
 def question(request,pk):
     item=get_object_or_404(visible_questions(request.user).select_related('autor__perfil_comunitario','comunidad'),pk=pk)
     decorate([item],request.user)
+    item.reported=request.user.is_authenticated and item.reportada_por.filter(pk=request.user.pk).exists()
     form=RespuestaForm(request.POST or None)
     parent=None
     if request.method=='POST':
@@ -265,9 +269,11 @@ def question(request,pk):
     descendants=list(Respuesta.objects.filter(pregunta=item,raiz_id__in=[r.pk for r in root_items]).select_related('autor__perfil_comunitario').order_by('creada','pk'))
     nodes=decorate(root_items+descendants,request.user)
     by_id={n.pk:n for n in nodes}
+    reported_resp_ids=set(request.user.respuestas_reportadas.values_list('pk',flat=True)) if request.user.is_authenticated else set()
     for node in nodes:
         node.children=[]
         node.removed=node.oculta or not node.autor.is_active
+        node.reported=node.pk in reported_resp_ids
     for node in descendants:
         if node.padre_id in by_id:by_id[node.padre_id].children.append(node)
     answers.object_list=root_items
@@ -429,6 +435,24 @@ def bookmark(request,pk):
     else:item.guardada_por.remove(request.user)
     if request.headers.get('X-Requested-With')=='XMLHttpRequest':return JsonResponse({'saved':saved})
     return redirect('comunidades:listado')
+
+
+@login_required
+@require_POST
+def reportar_pregunta(request,pk):
+    item=get_object_or_404(visible_questions(request.user),pk=pk)
+    item.reportada_por.add(request.user)
+    if request.headers.get('X-Requested-With')=='XMLHttpRequest':return JsonResponse({'reportada':True})
+    return redirect('comunidades:listado')
+
+
+@login_required
+@require_POST
+def reportar_respuesta(request,pk):
+    item=get_object_or_404(Respuesta,pk=pk,oculta=False,pregunta__in=visible_questions(request.user))
+    item.reportada_por.add(request.user)
+    if request.headers.get('X-Requested-With')=='XMLHttpRequest':return JsonResponse({'reportada':True})
+    return redirect('comunidades:pregunta',pk=item.pregunta_id)
 
 
 @require_GET
